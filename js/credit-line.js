@@ -592,7 +592,10 @@ const checkEligibility = async () => {
   // Get current credit data (from page or mock data)
   const creditLimit = 15250;  // From the page
   const currentBalance = 2750; // From the page
-  const existingTermLoans = TermLoanManager.getActiveTermLoans();
+  
+  // Clear old demo term loans for fresh eligibility check
+  // In production, this would check actual active loans from the system
+  const existingTermLoans = [];
   
   const eligibility = TermLoanManager.checkEligibility(creditLimit, currentBalance, existingTermLoans);
   
