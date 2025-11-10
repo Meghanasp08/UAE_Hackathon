@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Smart Credit - Dashboard</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="Mercury Logo" class="logo" onerror="this.style.display='none'"/>
+      <h1>Mercury Smart Credit</h1>
+    </div>
+    <nav class="nav-links">
+  <a href="index.html" class="nav-link active">Dashboard</a>
+  <a href="credit-line.html" class="nav-link">Credit Line</a>
+  <a href="apply.html" class="nav-link">Apply</a>
+  <a href="transactions.html" class="nav-link">Transactions</a>
+    </nav>
+    <div class="user">Hello, Meghana</div>
+  </header>
+
+  <main class="container">
+    <section class="welcome">
+      <h2>Your Financial Dashboard</h2>
+      <p class="subtitle">Real-time credit insights with ESG impact tracking</p>
+    </section>
+
+    <section class="cards">
+      <article class="card" role="region" aria-label="Available Credit">
+        <div class="card-icon">💳</div>
+        <h3>Available Credit</h3>
+        <p class="large" id="availableCredit">AED 12,500</p>
+        <span class="card-meta">of AED 15,250 limit</span>
+      </article>
+      <article class="card" role="region" aria-label="Used Credit">
+        <div class="card-icon">📊</div>
+        <h3>Used</h3>
+        <p class="large" id="usedCredit">AED 2,750</p>
+        <span class="card-meta">18% utilization</span>
+      </article>
+      <article class="card" role="region" aria-label="Loan Eligibility">
+        <div class="card-icon">💰</div>
+        <h3>Loan Eligible</h3>
+        <p class="large" id="loanEligible">AED 1,000,000</p>
+  <span class="card-meta">Eligible for up to AED 1,000,000</span>
+      </article>
+      <article class="card" role="region" aria-label="Credit Score">
+        <div class="card-icon">📊</div>
+        <h3>Credit Score</h3>
+        <p class="large" id="creditScore">88 / 100</p>
+        <span class="card-meta">Excellent standing</span>
+      </article>
+    </section>
+
+    <section class="controls">
+      <button id="applyBtn" class="btn-primary" onclick="location.href='apply.html'">
+        Apply for Smart Credit
+      </button>
+      <button id="openCredit" class="btn-outline" onclick="location.href='credit-line.html'">
+        Open Credit Controls
+      </button>
+      <button id="viewLoanOffers" class="btn-primary" onclick="location.href='loan-offers.html'">
+        View Loan Offers (3)
+      </button>
+    </section>
+
+    <section class="recent">
+      <h2>Recent Activity</h2>
+      <ul id="recentList" class="list" role="list">
+        <li class="list-item" role="listitem">
+          <div class="list-content">
+            <span class="merchant">Fuel Station - ENOC</span>
+            <span class="amount">-AED 120</span>
+          </div>
+          <span class="date">Nov 5, 2025</span>
+        </li>
+        <li class="list-item" role="listitem">
+          <div class="list-content">
+            <span class="merchant">Supermarket - Carrefour</span>
+            <span class="amount">-AED 230</span>
+          </div>
+          <span class="date">Nov 4, 2025</span>
+        </li>
+        <li class="list-item green" role="listitem">
+          <div class="list-content">
+            <span class="merchant">EV Charger 🌱</span>
+            <span class="amount">-AED 45</span>
+          </div>
+          <span class="date">Nov 3, 2025 · Low carbon</span>
+        </li>
+      </ul>
+      <button class="btn-text" onclick="location.href='transactions.html'">View All Transactions →</button>
+    </section>
+
+    <section class="quick-actions">
+      <h2>Quick Actions</h2>
+      <div class="action-grid">
+        <button class="action-card" id="quickWithdraw">
+          <span class="action-icon">💰</span>
+          <span class="action-label">Withdraw</span>
+        </button>
+        <button class="action-card" id="quickRepay">
+          <span class="action-icon">↩️</span>
+          <span class="action-label">Repay</span>
+        </button>
+        <button class="action-card" id="quickTransfer">
+          <span class="action-icon">🔄</span>
+          <span class="action-label">Transfer</span>
+        </button>
+        <button class="action-card" id="quickAutoSweep">
+          <span class="action-icon">⚡</span>
+          <span class="action-label">Auto-Sweep</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating voice button -->
+  <button id="voiceBtn" class="voice-btn" aria-label="Activate voice commands" title="Voice commands">
+    🎤
+  </button>
+
+  <!-- Voice feedback live region -->
+  <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Modal for quick actions -->
+  <div id="actionModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Quick Action</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Dynamic content -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

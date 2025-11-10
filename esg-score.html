@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ESG Scorecard</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="Mercury Logo" class="logo" onerror="this.style.display='none'"/>
+      <h1>Mercury Smart Credit</h1>
+    </div>
+    <nav class="nav-links">
+  <a href="index.html" class="nav-link">Dashboard</a>
+  <a href="credit-line.html" class="nav-link">Credit Line</a>
+  <a href="apply.html" class="nav-link">Apply</a>
+  <a href="transactions.html" class="nav-link">Transactions</a>
+  <a href="esg-score.html" class="nav-link active">ESG Score</a>
+    </nav>
+    <div class="user">Hello, Meghana</div>
+  </header>
+
+  <main class="container">
+    <section class="esg-header">
+      <h2>Your ESG Scorecard</h2>
+      <p class="subtitle">Track your environmental impact and sustainable finance practices</p>
+    </section>
+
+    <!-- Overall ESG Score -->
+    <div class="esg-score-card">
+      <div class="score-visual">
+        <svg viewBox="0 0 200 200" class="score-circle">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#e5e7eb" stroke-width="16"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#16a34a" stroke-width="16" 
+                  stroke-dasharray="502.65" stroke-dashoffset="110.58" stroke-linecap="round"
+                  transform="rotate(-90 100 100)"/>
+          <text x="100" y="95" text-anchor="middle" font-size="36" font-weight="bold" fill="#16a34a">78</text>
+          <text x="100" y="115" text-anchor="middle" font-size="14" fill="#6b7280">out of 100</text>
+        </svg>
+      </div>
+      <div class="score-details">
+        <h3>Good ESG Performance</h3>
+        <p>Your spending habits demonstrate strong environmental consciousness. Keep up the great work!</p>
+        <div class="score-breakdown">
+          <div class="breakdown-item">
+            <span class="breakdown-label">Environmental</span>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width: 75%"></div>
+            </div>
+            <span class="breakdown-value">75/100</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Social</span>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width: 82%"></div>
+            </div>
+            <span class="breakdown-value">82/100</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Governance</span>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width: 77%"></div>
+            </div>
+            <span class="breakdown-value">77/100</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carbon Footprint -->
+    <section class="carbon-section">
+      <h3>🌍 Carbon Footprint</h3>
+      <div class="carbon-grid">
+        <div class="carbon-card">
+          <div class="carbon-icon">📉</div>
+          <div class="carbon-content">
+            <span class="carbon-label">This Month</span>
+            <span class="carbon-value">245 kg CO₂e</span>
+            <span class="carbon-change positive">-15% vs last month</span>
+          </div>
+        </div>
+        <div class="carbon-card">
+          <div class="carbon-icon">🍃</div>
+          <div class="carbon-content">
+            <span class="carbon-label">Carbon Saved</span>
+            <span class="carbon-value">120 kg CO₂e</span>
+            <span class="carbon-meta">Greener choices</span>
+          </div>
+        </div>
+        <div class="carbon-card">
+          <div class="carbon-icon">🎯</div>
+          <div class="carbon-content">
+            <span class="carbon-label">Monthly Goal</span>
+            <span class="carbon-value">200 kg CO₂e</span>
+            <span class="carbon-change negative">22% above target</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carbon Breakdown -->
+      <div class="carbon-breakdown">
+        <h4>Carbon Emissions by Category</h4>
+        <div class="carbon-chart">
+          <div class="chart-bar">
+            <div class="bar-label">
+              <span>🚗 Transport</span>
+              <span>145 kg CO₂e</span>
+            </div>
+            <div class="bar-visual">
+              <div class="bar-fill high" style="width: 59%"></div>
+            </div>
+          </div>
+          <div class="chart-bar">
+            <div class="bar-label">
+              <span>🍔 Food & Dining</span>
+              <span>68 kg CO₂e</span>
+            </div>
+            <div class="bar-visual">
+              <div class="bar-fill medium" style="width: 28%"></div>
+            </div>
+          </div>
+          <div class="chart-bar">
+            <div class="bar-label">
+              <span>⚡ Energy & Utilities</span>
+              <span>22 kg CO₂e</span>
+            </div>
+            <div class="bar-visual">
+              <div class="bar-fill low" style="width: 9%"></div>
+            </div>
+          </div>
+          <div class="chart-bar">
+            <div class="bar-label">
+              <span>🛍️ Shopping</span>
+              <span>10 kg CO₂e</span>
+            </div>
+            <div class="bar-visual">
+              <div class="bar-fill low" style="width: 4%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Impact Metrics -->
+    <section class="impact-section">
+      <h3>Environmental Impact Metrics</h3>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon">💧</div>
+          <div class="metric-content">
+            <span class="metric-label">Water Usage</span>
+            <span class="metric-value">2,340 L</span>
+            <span class="metric-info">Indirect water footprint from purchases</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">♻️</div>
+          <div class="metric-content">
+            <span class="metric-label">Waste Generated</span>
+            <span class="metric-value">12.5 kg</span>
+            <span class="metric-info">Estimated from packaging</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">🌳</div>
+          <div class="metric-content">
+            <span class="metric-label">Trees Needed</span>
+            <span class="metric-value">2.8 trees</span>
+            <span class="metric-info">To offset your monthly carbon</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recommendations -->
+    <section class="recommendations-section">
+      <h3>🌱 Greener Alternatives</h3>
+      <p>Based on your spending patterns, here are some eco-friendly suggestions:</p>
+      
+      <div class="recommendation-list">
+        <div class="recommendation-card">
+          <div class="recommendation-header">
+            <span class="recommendation-icon">🚇</span>
+            <h4>Use Public Transport More</h4>
+            <span class="potential-savings">Save ~80 kg CO₂e/month</span>
+          </div>
+          <p>You spent AED 480 on fuel this month. Using Dubai Metro could save both money and carbon.</p>
+          <div class="recommendation-actions">
+            <button class="btn-outline small">Learn More</button>
+            <button class="btn-text small">Set Reminder</button>
+          </div>
+        </div>
+
+        <div class="recommendation-card">
+          <div class="recommendation-header">
+            <span class="recommendation-icon">🔋</span>
+            <h4>Switch to EV Charging</h4>
+            <span class="potential-savings">Save ~120 kg CO₂e/month</span>
+          </div>
+          <p>Consider using EV charging stations instead of traditional fuel. We've partnered with DEWA for discounts.</p>
+          <div class="recommendation-actions">
+            <button class="btn-outline small">View Partners</button>
+            <button class="btn-text small">Not Interested</button>
+          </div>
+        </div>
+
+        <div class="recommendation-card">
+          <div class="recommendation-header">
+            <span class="recommendation-icon">🌿</span>
+            <h4>Shop at Organic Markets</h4>
+            <span class="potential-savings">Save ~25 kg CO₂e/month</span>
+          </div>
+          <p>Local organic produce has a lower carbon footprint than imported goods. Earn bonus ESG points!</p>
+          <div class="recommendation-actions">
+            <button class="btn-outline small">Find Markets</button>
+            <button class="btn-text small">Dismiss</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESG Logic Transparency -->
+    <section class="transparency-section">
+      <div class="transparency-card">
+        <h3>📊 How We Calculate Your ESG Score</h3>
+        <p>Our ESG scoring methodology is transparent and auditable. We use industry-standard emission factors and real transaction data.</p>
+        <details class="methodology">
+          <summary>View Calculation Methodology</summary>
+          <div class="methodology-content">
+            <h4>Environmental Score (75/100)</h4>
+            <ul>
+              <li><strong>Carbon Emissions:</strong> Calculated using merchant category codes (MCC) and average emission factors per industry</li>
+              <li><strong>Transport:</strong> Fuel purchases = 2.3 kg CO₂e per liter; Public transport = 0.05 kg CO₂e per trip</li>
+              <li><strong>Energy:</strong> Utility bills mapped to UAE grid emission factor (0.49 kg CO₂e per kWh)</li>
+              <li><strong>Food:</strong> Restaurant meals = 3-5 kg CO₂e; Organic/local = 40% reduction</li>
+            </ul>
+
+            <h4>Social Score (82/100)</h4>
+            <ul>
+              <li>Purchases from certified social enterprises (+5 points)</li>
+              <li>Fair-trade certified merchants (+3 points)</li>
+              <li>Local businesses vs international chains (+2 points)</li>
+            </ul>
+
+            <h4>Governance Score (77/100)</h4>
+            <ul>
+              <li>Merchants with transparent supply chains (+4 points)</li>
+              <li>Companies with published sustainability reports (+3 points)</li>
+              <li>Regulatory compliance and certifications (+2 points)</li>
+            </ul>
+
+            <p><strong>Data Sources:</strong> IPCC emission factors, UAE Ministry of Climate Change, Global Carbon Atlas</p>
+          </div>
+        </details>
+        <div class="transparency-actions">
+          <button class="btn-outline" id="requestDetailedReport">Request Detailed Report</button>
+          <button class="btn-text" id="viewDataSources">View Data Sources</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Progress Over Time -->
+    <section class="progress-section">
+      <h3>Your ESG Journey</h3>
+      <div class="progress-chart">
+        <div class="chart-timeline">
+          <div class="timeline-point">
+            <div class="point-marker"></div>
+            <span class="point-label">Aug</span>
+            <span class="point-value">65</span>
+          </div>
+          <div class="timeline-point">
+            <div class="point-marker"></div>
+            <span class="point-label">Sep</span>
+            <span class="point-value">70</span>
+          </div>
+          <div class="timeline-point">
+            <div class="point-marker"></div>
+            <span class="point-label">Oct</span>
+            <span class="point-value">73</span>
+          </div>
+          <div class="timeline-point active">
+            <div class="point-marker"></div>
+            <span class="point-label">Nov</span>
+            <span class="point-value">78</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating voice button -->
+  <button id="voiceBtn" class="voice-btn" aria-label="Activate voice commands" title="Voice commands">
+    🎤
+  </button>
+
+  <!-- Voice feedback live region -->
+  <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/esg-score.js"></script>
+</body>
+</html>

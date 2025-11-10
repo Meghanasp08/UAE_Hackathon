@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Transaction Statement</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="Mercury Logo" class="logo" onerror="this.style.display='none'"/>
+      <h1>Mercury Smart Credit</h1>
+    </div>
+    <nav class="nav-links">
+  <a href="index.html" class="nav-link">Dashboard</a>
+  <a href="credit-line.html" class="nav-link">Credit Line</a>
+  <a href="apply.html" class="nav-link">Apply</a>
+  <a href="transactions.html" class="nav-link active">Transactions</a>
+    </nav>
+    <div class="user">Hello, Meghana</div>
+  </header>
+
+  <main class="container">
+    <section class="transactions-header">
+      <h2>Transaction Statement</h2>
+      <p class="subtitle">View and filter your credit line activity</p>
+    </section>
+
+    <!-- Summary Cards -->
+    <div class="transaction-summary">
+      <div class="summary-card">
+        <span class="summary-label">Total Spent</span>
+        <span class="summary-value">AED 2,750</span>
+        <span class="summary-period">This month</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-label">Transactions</span>
+        <span class="summary-value">23</span>
+        <span class="summary-period">This month</span>
+      </div>
+      <div class="summary-card green">
+        <span class="summary-label">Low Carbon</span>
+        <span class="summary-value">8</span>
+        <span class="summary-period">Eco-friendly purchases</span>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <section class="filters">
+      <div class="filter-group">
+        <label for="dateFilter">Date Range</label>
+        <select id="dateFilter">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 3 months</option>
+          <option value="all">All time</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="categoryFilter">Category</label>
+        <select id="categoryFilter">
+          <option value="all">All categories</option>
+          <option value="transport">Transport</option>
+          <option value="food">Food & Dining</option>
+          <option value="utilities">Utilities</option>
+          <option value="shopping">Shopping</option>
+          <option value="entertainment">Entertainment</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="esgFilter">ESG Impact</label>
+        <select id="esgFilter">
+          <option value="all">All transactions</option>
+          <option value="low">Low carbon only</option>
+          <option value="medium">Medium impact</option>
+          <option value="high">High impact</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="searchFilter">Search</label>
+        <input type="search" id="searchFilter" placeholder="Search merchant..."/>
+      </div>
+
+      <button class="btn-outline" id="clearFilters">Clear Filters</button>
+    </section>
+
+    <!-- Transactions List -->
+    <section class="transactions-list">
+      <div class="transaction-item" data-id="1" data-carbon="low">
+        <div class="transaction-icon">🔋</div>
+        <div class="transaction-details">
+          <div class="transaction-main">
+            <span class="merchant">DEWA - EV Charging</span>
+            <span class="amount">-AED 45.00</span>
+          </div>
+          <div class="transaction-meta">
+            <span class="date">Nov 5, 2025 · 14:30</span>
+            <span class="category">Utilities</span>
+            <span class="esg-badge low">🌱 Low Carbon</span>
+          </div>
+        </div>
+        <button class="transaction-expand" aria-label="View details">›</button>
+      </div>
+
+      <div class="transaction-item" data-id="2" data-carbon="medium">
+        <div class="transaction-icon">🛒</div>
+        <div class="transaction-details">
+          <div class="transaction-main">
+            <span class="merchant">Carrefour Supermarket</span>
+            <span class="amount">-AED 230.00</span>
+          </div>
+          <div class="transaction-meta">
+            <span class="date">Nov 4, 2025 · 18:45</span>
+            <span class="category">Food & Dining</span>
+            <span class="esg-badge medium">Medium Impact</span>
+          </div>
+        </div>
+        <button class="transaction-expand" aria-label="View details">›</button>
+      </div>
+
+      <div class="transaction-item" data-id="3" data-carbon="high">
+        <div class="transaction-icon">⛽</div>
+        <div class="transaction-details">
+          <div class="transaction-main">
+            <span class="merchant">ENOC Fuel Station</span>
+            <span class="amount">-AED 120.00</span>
+          </div>
+          <div class="transaction-meta">
+            <span class="date">Nov 3, 2025 · 08:15</span>
+            <span class="category">Transport</span>
+            <span class="esg-badge high">High Carbon</span>
+          </div>
+        </div>
+        <button class="transaction-expand" aria-label="View details">›</button>
+      </div>
+
+      <div class="transaction-item" data-id="4" data-carbon="low">
+        <div class="transaction-icon">🚇</div>
+        <div class="transaction-details">
+          <div class="transaction-main">
+            <span class="merchant">Dubai Metro - Nol Card</span>
+            <span class="amount">-AED 25.00</span>
+          </div>
+          <div class="transaction-meta">
+            <span class="date">Nov 3, 2025 · 07:30</span>
+            <span class="category">Transport</span>
+            <span class="esg-badge low">🌱 Low Carbon</span>
+          </div>
+        </div>
+        <button class="transaction-expand" aria-label="View details">›</button>
+      </div>
+
+      <div class="transaction-item" data-id="5" data-carbon="medium">
+        <div class="transaction-icon">🍕</div>
+        <div class="transaction-details">
+          <div class="transaction-main">
+            <span class="merchant">Pizza Hut - Dubai Mall</span>
+            <span class="amount">-AED 85.00</span>
+          </div>
+          <div class="transaction-meta">
+            <span class="date">Nov 2, 2025 · 20:00</span>
+            <span class="category">Food & Dining</span>
+            <span class="esg-badge medium">Medium Impact</span>
+          </div>
+        </div>
+        <button class="transaction-expand" aria-label="View details">›</button>
+      </div>
+
+      <div class="transaction-item positive" data-id="6">
+        <div class="transaction-icon">↩️</div>
+        <div class="transaction-details">
+          <div class="transaction-main">
+            <span class="merchant">Credit Repayment</span>
+            <span class="amount positive">+AED 500.00</span>
+          </div>
+          <div class="transaction-meta">
+            <span class="date">Nov 1, 2025 · 10:00</span>
+            <span class="category">Payment</span>
+          </div>
+        </div>
+        <button class="transaction-expand" aria-label="View details">›</button>
+      </div>
+
+      <div class="transaction-item" data-id="7" data-carbon="medium">
+        <div class="transaction-icon">💊</div>
+        <div class="transaction-details">
+          <div class="transaction-main">
+            <span class="merchant">Life Pharmacy</span>
+            <span class="amount">-AED 145.00</span>
+          </div>
+          <div class="transaction-meta">
+            <span class="date">Oct 31, 2025 · 16:20</span>
+            <span class="category">Health</span>
+            <span class="esg-badge medium">Medium Impact</span>
+          </div>
+        </div>
+        <button class="transaction-expand" aria-label="View details">›</button>
+      </div>
+
+      <div class="transaction-item" data-id="8" data-carbon="low">
+        <div class="transaction-icon">🌿</div>
+        <div class="transaction-details">
+          <div class="transaction-main">
+            <span class="merchant">Organic Foods & Cafe</span>
+            <span class="amount">-AED 95.00</span>
+          </div>
+          <div class="transaction-meta">
+            <span class="date">Oct 30, 2025 · 12:30</span>
+            <span class="category">Food & Dining</span>
+            <span class="esg-badge low">🌱 Low Carbon</span>
+          </div>
+        </div>
+        <button class="transaction-expand" aria-label="View details">›</button>
+      </div>
+    </section>
+
+    <div class="load-more">
+      <button class="btn-outline" id="loadMore">Load More Transactions</button>
+    </div>
+  </main>
+
+  <!-- Floating voice button -->
+  <button id="voiceBtn" class="voice-btn" aria-label="Activate voice commands" title="Voice commands">
+    🎤
+  </button>
+
+  <!-- Voice feedback live region -->
+  <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Transaction Detail Modal -->
+  <div id="detailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="detailTitle">Transaction Details</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="transactionDetail" class="transaction-detail">
+          <!-- Dynamic content -->
+        </div>
+        <div class="modal-actions">
+          <button class="btn-outline" id="voiceRead">🔊 Read Aloud</button>
+          <button class="btn-outline" id="downloadReceipt">Download Receipt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/transactions.js"></script>
+</body>
+</html>
