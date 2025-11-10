@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Credit Line Controls</title>
   <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/auto-sweep-benefits.css"/>
 </head>
 <body>
   <header class="topbar">
@@ -112,6 +113,43 @@
             </select>
           </div>
           <button class="btn-outline small" id="saveSweepSettings">Save Settings</button>
+        </div>
+        
+        <!-- Auto-sweep Benefits Section -->
+        <div class="sweep-benefits" id="sweepBenefits" style="display:none;">
+          <h4>💡 Smart Auto-Sweep Benefits</h4>
+          <div class="benefits-grid">
+            <div class="benefit-card">
+              <span class="benefit-icon">💰</span>
+              <h5>Interest Saved (Monthly)</h5>
+              <p class="benefit-value" id="interestSaved">AED 0</p>
+              <span class="benefit-trend positive" id="interestTrend">↗ Projected 12% annual savings</span>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">⚡</span>
+              <h5>Auto-Payments Made</h5>
+              <p class="benefit-value" id="autoPayments">0</p>
+              <span class="benefit-meta">Last 30 days</span>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">⏱️</span>
+              <h5>Time Saved</h5>
+              <p class="benefit-value" id="timeSaved">0 hrs</p>
+              <span class="benefit-meta">Manual payment time saved</span>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">📈</span>
+              <h5>Cash Efficiency</h5>
+              <p class="benefit-value" id="cashEfficiency">0%</p>
+              <span class="benefit-meta">Improved cash utilization</span>
+            </div>
+          </div>
+          <div class="benefits-summary">
+            <h5>Smart Management Summary</h5>
+            <ul class="benefits-list" id="benefitsList">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -274,5 +312,6 @@
 
   <script src="js/main.js"></script>
   <script src="js/credit-line.js"></script>
+  <script src="js/auto-sweep-benefits.js"></script>
 </body>
 </html>

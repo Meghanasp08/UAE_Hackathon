@@ -24,9 +24,21 @@ document.addEventListener('DOMContentLoaded', () => {
     autoSweepToggle.addEventListener('change', (e) => {
       if (e.target.checked) {
         sweepSettings?.removeAttribute('hidden');
+        const sweepBenefits = document.getElementById('sweepBenefits');
+        if (sweepBenefits) {
+          sweepBenefits.style.display = 'block';
+          // Initialize benefits calculator with demo data if needed
+          if (window.autoSweepBenefits) {
+            window.autoSweepBenefits.initializeWithDemoData();
+          }
+        }
         speak('Auto-sweep enabled. Set your preferences below.', false);
       } else {
         sweepSettings?.setAttribute('hidden', '');
+        const sweepBenefits = document.getElementById('sweepBenefits');
+        if (sweepBenefits) {
+          sweepBenefits.style.display = 'none';
+        }
         speak('Auto-sweep disabled.');
       }
     });
@@ -39,6 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const schedule = document.getElementById('sweepSchedule')?.value;
 
       speak(`Auto-sweep settings saved. Will trigger when balance exceeds ${threshold} dirhams.`);
+      
+      // Simulate a new auto-sweep transaction for demo
+      if (window.autoSweepBenefits) {
+        window.autoSweepBenefits.addSweepTransaction(
+          parseFloat(threshold),
+          new Date()
+        );
+      }
       
       console.log('Sweep settings:', { threshold, schedule });
     });
