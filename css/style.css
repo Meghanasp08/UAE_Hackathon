@@ -1567,7 +1567,7 @@ a{text-decoration:none;color:inherit}
 
 /* BNPL Button Styles */
 .bnpl-btn {
-  background: linear-gradient(135deg, #0f6ef3, #4f46e5);
+  background: linear-gradient(135deg, #7B2687, #B83280);
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -1577,18 +1577,18 @@ a{text-decoration:none;color:inherit}
   cursor: pointer;
   transition: all 0.2s ease;
   margin-left: 0.5rem;
-  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+  box-shadow: 0 2px 4px rgba(123, 38, 135, 0.2);
 }
 
 .bnpl-btn:hover {
-  background: linear-gradient(135deg, #0d5dd1, #4338ca);
+  background: linear-gradient(135deg, #6B2077, #A02B70);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 8px rgba(123, 38, 135, 0.3);
 }
 
 .bnpl-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+  box-shadow: 0 2px 4px rgba(123, 38, 135, 0.2);
 }
 
 .bnpl-btn:disabled {
@@ -1708,13 +1708,13 @@ a{text-decoration:none;color:inherit}
 .bnpl-plans-section {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #FDF8FF 0%, #F6F1FA 100%);
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E0CFEA;
 }
 
 .bnpl-plans-section .section-header h3 {
-  color: #0f6ef3;
+  color: #7B2687;
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
 }
@@ -1733,14 +1733,15 @@ a{text-decoration:none;color:inherit}
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(123, 38, 135, 0.08);
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
 }
 
 .bnpl-plan-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(123, 38, 135, 0.15);
   transform: translateY(-2px);
+  border-color: #E0CFEA;
 }
 
 .plan-header {
@@ -1768,7 +1769,7 @@ a{text-decoration:none;color:inherit}
 .total-amount {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #0f6ef3;
+  color: #7B2687;
   margin-bottom: 0.25rem;
 }
 
@@ -1792,7 +1793,7 @@ a{text-decoration:none;color:inherit}
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #0f6ef3, #4f46e5);
+  background: linear-gradient(90deg, #7B2687, #B83280);
   transition: width 0.3s ease;
 }
 
@@ -1903,18 +1904,18 @@ a{text-decoration:none;color:inherit}
 }
 
 .plan-actions .btn-outline:hover {
-  border-color: #0f6ef3;
-  color: #0f6ef3;
+  border-color: #7B2687;
+  color: #7B2687;
 }
 
 .plan-actions .btn-primary {
-  background: linear-gradient(135deg, #0f6ef3, #4f46e5);
+  background: linear-gradient(135deg, #7B2687, #B83280);
   border: none;
   color: white;
 }
 
 .plan-actions .btn-primary:hover {
-  background: linear-gradient(135deg, #0d5dd1, #4338ca);
+  background: linear-gradient(135deg, #6B2077, #A02B70);
   transform: translateY(-1px);
 }
 
