@@ -1,0 +1,776 @@
+/* Term Loan Specific Styles */
+
+/* Loan Product Cards */
+.loan-product-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.loan-product-card:hover {
+  border-color: #8b5cf6;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+}
+
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.product-header h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+}
+
+.product-badge {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.product-badge.new {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.product-description {
+  margin-bottom: 1.5rem;
+}
+
+.product-description p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.product-features {
+  margin-bottom: 1.5rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.feature-item {
+  background: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.feature-label {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.feature-value {
+  display: block;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.eligibility-status {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.eligibility-status .loading {
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+}
+
+.eligibility-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.eligibility-badge.eligible {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.eligibility-badge.not-eligible {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.eligibility-details {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.eligibility-details strong {
+  color: #059669;
+}
+
+.eligibility-reasons {
+  margin-top: 8px;
+}
+
+.eligibility-reasons .reason {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.product-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.product-actions button {
+  flex: 1;
+}
+
+.product-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Info Modal Styles */
+.info-section {
+  margin-bottom: 1.5rem;
+}
+
+.info-section h4 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+}
+
+.info-section p {
+  margin: 0 0 12px 0;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.info-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.info-section li {
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.info-section ol {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+}
+
+.info-section ol li {
+  margin-bottom: 8px;
+  color: #4b5563;
+}
+
+.rate-table {
+  background: #f8fafc;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.rate-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rate-row:last-child {
+  border-bottom: none;
+}
+
+.rate-row span:first-child {
+  color: #374151;
+}
+
+.rate-row span:last-child {
+  font-weight: 600;
+  color: #059669;
+}
+
+/* Term Loan Button */
+.action-btn.tertiary {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  border: 2px solid #8b5cf6;
+}
+
+.action-btn.tertiary:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+/* Term Loan Modal */
+.modal-content.large {
+  max-width: 700px;
+  width: 95vw;
+}
+
+/* Step Progress */
+.step-progress {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  padding: 0 2rem;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  color: #6b7280;
+  transition: all 0.3s ease;
+}
+
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 60%;
+  right: -40%;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.step.active {
+  color: #0f6ef3;
+}
+
+.step.completed {
+  color: #059669;
+}
+
+.step.completed::after {
+  background: #059669;
+}
+
+.step.active::after {
+  background: linear-gradient(to right, #059669, #0f6ef3);
+}
+
+.step-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+  background: #0f6ef3;
+  color: white;
+}
+
+.step.completed .step-number {
+  background: #059669;
+  color: white;
+}
+
+.step-label {
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Term Loan Steps */
+.term-loan-step {
+  display: none;
+  padding: 1rem 0;
+}
+
+.term-loan-step.active {
+  display: block;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.term-loan-step h4 {
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+/* Eligibility Result */
+.eligibility-result {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.eligibility-card {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.eligibility-card.eligible {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border-color: #10b981;
+}
+
+.eligibility-card.not-eligible {
+  background: linear-gradient(135deg, #fef2f2 0%, #fefefe 100%);
+  border-color: #ef4444;
+}
+
+.eligibility-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.status-icon {
+  font-size: 1.5rem;
+}
+
+.eligibility-status h5 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.eligibility-details {
+  margin-bottom: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detail-row .highlight {
+  font-weight: 600;
+  color: #059669;
+}
+
+.eligibility-reasons {
+  margin-bottom: 1rem;
+}
+
+.reason {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.next-step {
+  background: rgba(16, 185, 129, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #10b981;
+}
+
+.next-step p {
+  margin: 0;
+  color: #065f46;
+  font-weight: 500;
+}
+
+.improve-eligibility {
+  background: rgba(239, 68, 68, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #ef4444;
+}
+
+.improve-eligibility p {
+  margin: 0 0 8px 0;
+  color: #7f1d1d;
+  font-weight: 500;
+}
+
+.improve-eligibility ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.improve-eligibility li {
+  color: #991b1b;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+/* Calculator Form */
+.calculator-form {
+  max-width: 400px;
+  margin: 0 auto 2rem auto;
+}
+
+.calculator-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.calculator-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.calculator-form input,
+.calculator-form select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.calculator-form input:focus,
+.calculator-form select:focus {
+  outline: none;
+  border-color: #0f6ef3;
+  box-shadow: 0 0 0 3px rgba(15, 110, 243, 0.1);
+}
+
+.field-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.field-note.valid {
+  color: #059669;
+}
+
+.field-note.invalid {
+  color: #dc2626;
+}
+
+/* Loan Results */
+.loan-results {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 480px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.result-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.result-item.highlight {
+  background: linear-gradient(135deg, #0f6ef3 0%, #1d4ed8 100%);
+  color: white;
+  border-color: #0f6ef3;
+}
+
+.result-label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+.result-value {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.effective-apr {
+  text-align: center;
+  padding: 12px;
+  background: rgba(15, 110, 243, 0.1);
+  border-radius: 8px;
+  color: #1e40af;
+  font-weight: 500;
+}
+
+/* Confirmation Summary */
+.confirmation-summary {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.summary-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.summary-header h5 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+}
+
+.summary-details {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row.total {
+  border-top: 2px solid #0f6ef3;
+  padding-top: 12px;
+  margin-top: 8px;
+  font-weight: 600;
+  color: #0f6ef3;
+}
+
+.terms-acceptance {
+  margin-top: 1.5rem;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  margin: 0;
+  padding: 0;
+}
+
+.checkbox-wrapper a {
+  color: #0f6ef3;
+  text-decoration: underline;
+}
+
+.checkbox-wrapper a:hover {
+  color: #1d4ed8;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.modal-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+/* Success Notification */
+.success-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notification-content {
+  padding: 1.5rem;
+}
+
+.notification-content h4 {
+  margin: 0 0 12px 0;
+  color: #065f46;
+  font-size: 1.1rem;
+}
+
+.notification-content p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.notification-content button {
+  margin-top: 12px;
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.notification-content button:hover {
+  background: #059669;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-content.large {
+    margin: 1rem;
+    max-width: none;
+    width: calc(100% - 2rem);
+  }
+  
+  .step-progress {
+    padding: 0 1rem;
+  }
+  
+  .step-label {
+    font-size: 11px;
+  }
+  
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+  
+  .success-notification {
+    left: 20px;
+    right: 20px;
+    top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .step-progress {
+    padding: 0 0.5rem;
+  }
+  
+  .step:not(:last-child)::after {
+    display: none;
+  }
+  
+  .step-number {
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+  }
+  
+  .step-label {
+    font-size: 10px;
+  }
+}

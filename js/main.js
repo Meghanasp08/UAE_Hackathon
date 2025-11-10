@@ -160,6 +160,83 @@ const handleCommand = (command) => {
     return;
   }
 
+  // Term loan commands
+  if (command.includes('term loan') || command.includes('personal loan') || 
+      command.includes('apply for loan') || command.includes('loan application')) {
+    speak('Opening term loan application.');
+    setTimeout(() => {
+      if (window.location.pathname.includes('credit-line.html')) {
+        // If already on credit line page, open modal
+        if (typeof openTermLoanModal === 'function') {
+          openTermLoanModal();
+        }
+      } else {
+        // Navigate to credit line page
+        window.location.href = 'credit-line.html?openTermLoan=true';
+      }
+    }, 1000);
+    return;
+  }
+
+  if (command.includes('loan eligibility') || command.includes('check eligibility')) {
+    speak('Checking your term loan eligibility.');
+    if (typeof TermLoanManager !== 'undefined') {
+      const creditLimit = 15250;
+      const currentBalance = 2750;
+      const existingLoans = TermLoanManager.getActiveTermLoans();
+      const eligibility = TermLoanManager.checkEligibility(creditLimit, currentBalance, existingLoans);
+      
+      if (eligibility.eligible) {
+        speak(`Great news! You are eligible for a term loan up to ${eligibility.maxLoanAmount} dirhams.`);
+      } else {
+        speak('Unfortunately, you are not currently eligible for a term loan.');
+      }
+    } else {
+      speak('Please navigate to the loan offers page to check your eligibility.');
+    }
+    return;
+  }
+
+  if (command.includes('loan calculator') || command.includes('calculate loan')) {
+    speak('Let me help you calculate loan payments. Please specify the amount and term.');
+    if (amount > 0) {
+      if (typeof TermLoanManager !== 'undefined') {
+        try {
+          const calculation = TermLoanManager.calculateLoan(amount, 36); // Default 36 months
+          speak(`For a loan of ${amount} dirhams over 36 months, your monthly payment would be ${Math.round(calculation.emi)} dirhams.`);
+        } catch (error) {
+          speak('Please check the loan amount and try again.');
+        }
+      }
+    } else {
+      speak('Please specify the loan amount. For example, say calculate loan for 10000 dirhams.');
+    }
+    return;
+  }
+
+  if (command.includes('my loans') || command.includes('existing loans') || 
+      command.includes('loan status')) {
+    speak('Checking your existing term loans.');
+    if (typeof TermLoanManager !== 'undefined') {
+      const activeLoans = TermLoanManager.getActiveTermLoans();
+      if (activeLoans.length === 0) {
+        speak('You currently have no active term loans.');
+      } else {
+        const totalOutstanding = activeLoans.reduce((sum, loan) => sum + loan.remainingBalance, 0);
+        const totalEmi = activeLoans.reduce((sum, loan) => sum + loan.emi, 0);
+        speak(`You have ${activeLoans.length} active term loan${activeLoans.length > 1 ? 's' : ''} with a total outstanding of ${Math.round(totalOutstanding)} dirhams and monthly payments of ${Math.round(totalEmi)} dirhams.`);
+      }
+    } else {
+      speak('Please navigate to the credit line page to view your loans.');
+    }
+    return;
+  }
+
+  if (command.includes('loan rates') || command.includes('interest rates')) {
+    speak('Current term loan rates start from 8 percent APR for 12 months, 9.5 percent for 24 months, 11 percent for 36 months, 12.5 percent for 48 months, and 14 percent for 60 months.');
+    return;
+  }
+
   // Auto-sweep commands
   if (command.includes('enable auto sweep') || command.includes('enable autosweep') || 
       command.includes('turn on auto sweep')) {

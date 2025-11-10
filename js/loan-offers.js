@@ -65,4 +65,158 @@ function renderLoanOffers() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', renderLoanOffers);
+// Term Loan Functionality
+function checkTermLoanEligibility() {
+  const eligibilityDiv = document.getElementById('termLoanEligibility');
+  const maxAmountSpan = document.getElementById('termLoanMaxAmount');
+  const applyBtn = document.getElementById('applyTermLoan');
+  
+  // Mock credit data (in real app, get from API)
+  const creditLimit = 15250;
+  const currentBalance = 2750;
+  const existingTermLoans = TermLoanManager.getActiveTermLoans();
+  
+  // Check eligibility using TermLoanManager
+  const eligibility = TermLoanManager.checkEligibility(creditLimit, currentBalance, existingTermLoans);
+  
+  if (eligibility.eligible) {
+    eligibilityDiv.innerHTML = `
+      <div class="eligibility-badge eligible">
+        ✅ Eligible
+      </div>
+      <p class="eligibility-details">
+        You can borrow up to <strong>AED ${eligibility.maxLoanAmount.toLocaleString()}</strong>
+      </p>
+    `;
+    
+    maxAmountSpan.textContent = `Up to AED ${eligibility.maxLoanAmount.toLocaleString()}`;
+    applyBtn.disabled = false;
+    applyBtn.textContent = 'Apply Now';
+    
+  } else {
+    eligibilityDiv.innerHTML = `
+      <div class="eligibility-badge not-eligible">
+        ❌ Not Eligible
+      </div>
+      <div class="eligibility-reasons">
+        ${eligibility.reasons.map(reason => `<p class="reason">• ${reason}</p>`).join('')}
+      </div>
+    `;
+    
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Not Eligible';
+  }
+}
+
+function setupTermLoanActions() {
+  const applyBtn = document.getElementById('applyTermLoan');
+  const learnMoreBtn = document.getElementById('learnMoreTermLoan');
+  
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      // Redirect to credit line page with term loan modal
+      window.location.href = 'credit-line.html?openTermLoan=true';
+    });
+  }
+  
+  if (learnMoreBtn) {
+    learnMoreBtn.addEventListener('click', () => {
+      showTermLoanInfo();
+    });
+  }
+}
+
+function showTermLoanInfo() {
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>About Term Loans</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="info-section">
+          <h4>What is a Term Loan?</h4>
+          <p>A term loan is a fixed-amount loan with regular monthly payments over a set period. Unlike a credit line, you receive the full amount upfront and pay it back in equal installments.</p>
+        </div>
+        
+        <div class="info-section">
+          <h4>Key Features</h4>
+          <ul>
+            <li>Fixed monthly payments (EMI)</li>
+            <li>Competitive interest rates from 8.0% APR</li>
+            <li>Flexible terms from 12 to 60 months</li>
+            <li>Up to 240% of your credit limit</li>
+            <li>Quick approval and disbursement</li>
+          </ul>
+        </div>
+        
+        <div class="info-section">
+          <h4>Interest Rates</h4>
+          <div class="rate-table">
+            <div class="rate-row">
+              <span>12 months</span>
+              <span>8.0% APR</span>
+            </div>
+            <div class="rate-row">
+              <span>24 months</span>
+              <span>9.5% APR</span>
+            </div>
+            <div class="rate-row">
+              <span>36 months</span>
+              <span>11.0% APR</span>
+            </div>
+            <div class="rate-row">
+              <span>48 months</span>
+              <span>12.5% APR</span>
+            </div>
+            <div class="rate-row">
+              <span>60 months</span>
+              <span>14.0% APR</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="info-section">
+          <h4>How to Apply</h4>
+          <p>Click "Apply Now" to start your application. You'll go through a simple 3-step process:</p>
+          <ol>
+            <li><strong>Eligibility Check</strong> - We'll verify your qualification</li>
+            <li><strong>Loan Calculator</strong> - Choose your amount and term</li>
+            <li><strong>Confirmation</strong> - Review and confirm your loan</li>
+          </ol>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="this.closest('.modal').remove()">Got It</button>
+      </div>
+    </div>
+  `;
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal || e.target.classList.contains('modal-close')) {
+      modal.remove();
+    }
+  });
+  
+  document.body.appendChild(modal);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderLoanOffers();
+  
+  // Initialize term loan functionality
+  if (typeof TermLoanManager !== 'undefined') {
+    checkTermLoanEligibility();
+    setupTermLoanActions();
+  } else {
+    // Fallback if TermLoanManager not loaded
+    setTimeout(() => {
+      if (typeof TermLoanManager !== 'undefined') {
+        checkTermLoanEligibility();
+        setupTermLoanActions();
+      }
+    }, 100);
+  }
+});

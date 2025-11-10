@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Loan Offers</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/term-loan.css">
 </head>
 <body>
   <header>
@@ -18,12 +19,54 @@
   </header>
   <main>
     <section id="loanOffersSection">
-      <h2>Eligible Loan Offers</h2>
+      <h2>Available Loan Products</h2>
+      
+      <!-- Term Loan Offer -->
+      <div class="loan-product-card" id="termLoanOffer">
+        <div class="product-header">
+          <h3>📊 Term Loan</h3>
+          <span class="product-badge new">New</span>
+        </div>
+        <div class="product-description">
+          <p>Fixed monthly payments with competitive rates. Perfect for large purchases or debt consolidation.</p>
+        </div>
+        <div class="product-features">
+          <div class="feature-grid">
+            <div class="feature-item">
+              <span class="feature-label">Loan Amount</span>
+              <span class="feature-value" id="termLoanMaxAmount">Up to AED 36,600</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-label">Interest Rate</span>
+              <span class="feature-value">From 8.0% APR</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-label">Term Options</span>
+              <span class="feature-value">12-60 months</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-label">Processing Fee</span>
+              <span class="feature-value">2.5% of loan amount</span>
+            </div>
+          </div>
+        </div>
+        <div class="eligibility-status" id="termLoanEligibility">
+          <div class="loading">Checking eligibility...</div>
+        </div>
+        <div class="product-actions">
+          <button class="btn-primary" id="applyTermLoan" disabled>Apply Now</button>
+          <button class="btn-outline" id="learnMoreTermLoan">Learn More</button>
+        </div>
+      </div>
+
+      <!-- Existing BNPL Offers -->
+      <h3>Buy Now, Pay Later Offers</h3>
       <div id="loanOffersList" class="loan-offers-list">
-        <!-- Loan offers will be dynamically inserted here -->
+        <!-- BNPL offers will be dynamically inserted here -->
       </div>
     </section>
   </main>
+  <script src="js/term-loan.js"></script>
   <script src="js/loan-offers.js"></script>
 </body>
 </html>
