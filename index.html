@@ -54,6 +54,20 @@
       </article>
     </section>
 
+    <!-- Term Loans Section -->
+    <section class="term-loans-dashboard" id="termLoansSection" style="display: none;">
+      <h2>Your Term Loans</h2>
+      <div id="termLoansList" class="term-loans-list">
+        <!-- Term loans will be populated here -->
+      </div>
+      <div id="noTermLoans" class="no-loans-message">
+        <p>You don't have any active term loans.</p>
+        <button class="btn-outline" onclick="location.href='credit-line.html?openTermLoan=true'">
+          Apply for Term Loan
+        </button>
+      </div>
+    </section>
+
     <section class="controls">
       <button id="applyBtn" class="btn-primary" onclick="location.href='apply.html'">
         Apply for Smart Credit
@@ -138,6 +152,118 @@
     </div>
   </div>
 
+  <script src="js/term-loan.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    // Term Loans Dashboard Functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTermLoansDashboard();
+    });
+
+    function loadTermLoansDashboard() {
+      // Check if TermLoanManager is available
+      if (typeof TermLoanManager === 'undefined') {
+        setTimeout(loadTermLoansDashboard, 200);
+        return;
+      }
+
+      const termLoansSection = document.getElementById('termLoansSection');
+      const termLoansList = document.getElementById('termLoansList');
+      const noLoansMessage = document.getElementById('noTermLoans');
+      
+      const activeLoans = TermLoanManager.getActiveTermLoans();
+      
+      if (activeLoans.length > 0) {
+        // Show term loans section
+        termLoansSection.style.display = 'block';
+        noLoansMessage.style.display = 'none';
+        
+        // Populate loans list
+        termLoansList.innerHTML = activeLoans.map(loan => `
+          <div class="term-loan-card">
+            <div class="loan-header">
+              <h4>Term Loan ${loan.id}</h4>
+              <span class="loan-status ${loan.status}">${loan.status.toUpperCase()}</span>
+            </div>
+            <div class="loan-details">
+              <div class="loan-row">
+                <span>Original Amount:</span>
+                <span>AED ${loan.loanAmount.toLocaleString()}</span>
+              </div>
+              <div class="loan-row">
+                <span>Remaining Balance:</span>
+                <span class="highlight">AED ${loan.remainingBalance.toLocaleString()}</span>
+              </div>
+              <div class="loan-row">
+                <span>Monthly Payment:</span>
+                <span>AED ${loan.emi.toLocaleString()}</span>
+              </div>
+              <div class="loan-row">
+                <span>Next Payment:</span>
+                <span>${new Date(loan.nextDueDate).toLocaleDateString()}</span>
+              </div>
+              <div class="loan-row">
+                <span>Remaining Terms:</span>
+                <span>${loan.remainingTerms} months</span>
+              </div>
+            </div>
+            <div class="loan-actions">
+              <button class="btn-outline small" onclick="makePayment('${loan.id}')">Make Payment</button>
+              <button class="btn-text small" onclick="viewLoanDetails('${loan.id}')">View Details</button>
+            </div>
+          </div>
+        `).join('');
+        
+      } else {
+        // Show no loans message
+        termLoansSection.style.display = 'block';
+        noLoansMessage.style.display = 'block';
+        termLoansList.innerHTML = '';
+      }
+    }
+
+    function makePayment(loanId) {
+      const loan = TermLoanManager.getTermLoanById(loanId);
+      if (!loan) return;
+      
+      const amount = prompt(`Enter payment amount for loan ${loanId}:\nMonthly EMI: AED ${loan.emi}\nRemaining balance: AED ${loan.remainingBalance}`);
+      
+      if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+        try {
+          const result = TermLoanManager.makePayment(loanId, parseFloat(amount));
+          if (result.success) {
+            alert(`Payment of AED ${amount} processed successfully!`);
+            loadTermLoansDashboard(); // Refresh the display
+          }
+        } catch (error) {
+          alert(`Error processing payment: ${error.message}`);
+        }
+      }
+    }
+
+    function viewLoanDetails(loanId) {
+      const loan = TermLoanManager.getTermLoanById(loanId);
+      if (!loan) return;
+      
+      const details = `
+Term Loan Details:
+
+Loan ID: ${loan.id}
+Original Amount: AED ${loan.loanAmount.toLocaleString()}
+Remaining Balance: AED ${loan.remainingBalance.toLocaleString()}
+Monthly Payment: AED ${loan.emi.toLocaleString()}
+Interest Rate: ${(loan.annualRate * 100).toFixed(1)}% APR
+Term: ${loan.termMonths} months
+Remaining Terms: ${loan.remainingTerms} months
+Status: ${loan.status}
+Created: ${new Date(loan.createdAt).toLocaleDateString()}
+Next Payment Due: ${new Date(loan.nextDueDate).toLocaleDateString()}
+Payments Made: ${loan.paymentsMade}
+Total Paid: AED ${loan.totalPaid.toLocaleString()}
+      `;
+      
+      alert(details);
+    }
+  </script>
 </body>
 </html>
