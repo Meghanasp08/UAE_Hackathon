@@ -34,16 +34,20 @@ const TermLoanManager = {
             const maxPossibleLoan = creditLimit * this.config.maxLoanToLimitRatio;
             const availableAmount = maxPossibleLoan - currentBalance - existingTermLoanDebt;
             
-            // Eligibility criteria
+            // Eligibility criteria - More lenient for good credit profiles
+            // Users with low utilization (<50%) can access term loans even with existing debt
             const isEligible = availableAmount >= this.config.minLoanAmount;
-            const utilizationCheck = currentUtilization <= 80; // Max 80% current utilization
+            const utilizationCheck = currentUtilization <= 90; // Max 90% current utilization (more lenient)
+            
+            // Good credit behavior allows more flexibility
+            const goodCreditProfile = currentUtilization < 50;
             
             return {
-                eligible: isEligible && utilizationCheck,
+                eligible: isEligible && (utilizationCheck || goodCreditProfile),
                 maxLoanAmount: Math.max(0, Math.floor(availableAmount)),
                 currentUtilization,
                 existingTermLoanDebt,
-                reasons: this._getEligibilityReasons(isEligible, utilizationCheck, availableAmount)
+                reasons: this._getEligibilityReasons(isEligible, utilizationCheck, availableAmount, goodCreditProfile)
             };
         } catch (error) {
             console.error('Error checking term loan eligibility:', error);
@@ -58,19 +62,24 @@ const TermLoanManager = {
     },
 
     // Get eligibility reasons
-    _getEligibilityReasons(isEligible, utilizationCheck, availableAmount) {
+    _getEligibilityReasons(isEligible, utilizationCheck, availableAmount, goodCreditProfile) {
         const reasons = [];
         
-        if (!utilizationCheck) {
-            reasons.push('Current credit utilization is too high (max 80%)');
+        if (!utilizationCheck && !goodCreditProfile) {
+            reasons.push('Current credit utilization is too high (max 90%)');
         }
         
         if (availableAmount < this.config.minLoanAmount) {
             reasons.push(`Minimum loan amount is AED ${this.config.minLoanAmount.toLocaleString()}`);
-        }
-        
-        if (isEligible && utilizationCheck) {
-            reasons.push('You are eligible for a term loan');
+            reasons.push('To improve eligibility, consider:');
+            reasons.push('• Reducing current credit usage');
+            reasons.push('• Making payments on existing loans');
+        } else if (isEligible) {
+            reasons.push('✅ You are eligible for a term loan!');
+            if (goodCreditProfile) {
+                reasons.push('🌟 Excellent credit profile with low utilization');
+            }
+            reasons.push(`You can borrow up to AED ${Math.floor(availableAmount).toLocaleString()}`);
         }
         
         return reasons;
