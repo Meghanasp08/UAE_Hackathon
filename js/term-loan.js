@@ -367,6 +367,91 @@ const TermLoanManager = {
     }
 };
 
+// Create sample loans for demo purposes
+TermLoanManager.createSampleLoans = function() {
+    // Check if sample loans already exist
+    const existingLoans = this.getAllTermLoans();
+    if (existingLoans.length > 0) {
+        return; // Don't create duplicates
+    }
+    
+    // Create 3 sample term loans with different statuses
+    const sampleLoans = [
+        {
+            id: 'TL' + Date.now() + 'w13',
+            loanAmount: 2000,
+            termMonths: 12,
+            annualRate: 0.08,
+            emi: 173.98,
+            totalInterest: 87.76,
+            totalAmount: 2087.76,
+            processingFee: 50,
+            remainingBalance: 1839.35,
+            totalPaid: 210.65,
+            paymentsMade: 1,
+            remainingTerms: 11,
+            status: 'active',
+            createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+            nextDueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+            paymentHistory: []
+        },
+        {
+            id: 'TL' + (Date.now() + 1000) + 'geqjd',
+            loanAmount: 2000,
+            termMonths: 12,
+            annualRate: 0.08,
+            emi: 173.98,
+            totalInterest: 87.76,
+            totalAmount: 2087.76,
+            processingFee: 50,
+            remainingBalance: 2000,
+            totalPaid: 50, // Only processing fee paid
+            paymentsMade: 0,
+            remainingTerms: 12,
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            nextDueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+            paymentHistory: []
+        },
+        {
+            id: 'TL' + (Date.now() + 2000) + 'qnsnp',
+            loanAmount: 5000,
+            termMonths: 24,
+            annualRate: 0.095,
+            emi: 229.57,
+            totalInterest: 509.68,
+            totalAmount: 5509.68,
+            processingFee: 125,
+            remainingBalance: 5000,
+            totalPaid: 125, // Only processing fee paid
+            paymentsMade: 0,
+            remainingTerms: 24,
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            nextDueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+            paymentHistory: []
+        }
+    ];
+    
+    // Save to localStorage
+    try {
+        localStorage.setItem('termLoans', JSON.stringify(sampleLoans));
+        console.log('Sample term loans created:', sampleLoans.length);
+    } catch (error) {
+        console.error('Error creating sample loans:', error);
+    }
+};
+
+// Auto-create sample loans when the module loads (for demo purposes)
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure everything is loaded
+    setTimeout(() => {
+        if (typeof TermLoanManager !== 'undefined') {
+            TermLoanManager.createSampleLoans();
+        }
+    }, 100);
+});
+
 // Export for use in other modules
 if (typeof window !== 'undefined') {
     window.TermLoanManager = TermLoanManager;

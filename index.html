@@ -9,22 +9,21 @@
 <body>
   <header class="topbar">
     <div class="brand">
-  <img src="assets/shukria-logo.png" alt="Shukria Logo" class="logo" style="height:48px;" onerror="this.style.display='none'"/>
-  <h1 style="color:#7B2687;font-family:sans-serif;letter-spacing:1px;"></h1>
+      <img src="assets/shukria-logo.png" alt="Shukria Logo" class="logo" onerror="this.style.display='none'"/>
     </div>
     <nav class="nav-links">
-  <a href="index.html" class="nav-link active" title="Dashboard" aria-label="Dashboard">
-    <img src="assets/nav-dashboard.svg" alt="Dashboard" style="height:28px;width:28px;vertical-align:middle;"/>
-  </a>
-  <a href="credit-line.html" class="nav-link" title="Credit Line" aria-label="Credit Line">
-    <img src="assets/nav-credit-line.svg" alt="Credit Line" style="height:28px;width:28px;vertical-align:middle;"/>
-  </a>
-  <a href="apply.html" class="nav-link" title="Apply" aria-label="Apply">
-    <img src="assets/nav-apply.svg" alt="Apply" style="height:28px;width:28px;vertical-align:middle;"/>
-  </a>
-  <a href="transactions.html" class="nav-link" title="Transactions" aria-label="Transactions">
-    <img src="assets/nav-transactions.svg" alt="Transactions" style="height:28px;width:28px;vertical-align:middle;"/>
-  </a>
+      <a href="index.html" class="nav-link active" title="Dashboard" aria-label="Dashboard">
+        <img src="assets/nav-dashboard.svg" alt="Dashboard" style="height:28px;width:28px;vertical-align:middle;"/>
+      </a>
+      <a href="credit-line.html" class="nav-link" title="Credit Line" aria-label="Credit Line">
+        <img src="assets/nav-credit-line.svg" alt="Credit Line" style="height:28px;width:28px;vertical-align:middle;"/>
+      </a>
+      <a href="apply.html" class="nav-link" title="Apply" aria-label="Apply">
+        <img src="assets/nav-apply.svg" alt="Apply" style="height:28px;width:28px;vertical-align:middle;"/>
+      </a>
+      <a href="transactions.html" class="nav-link" title="Transactions" aria-label="Transactions">
+        <img src="assets/nav-transactions.svg" alt="Transactions" style="height:28px;width:28px;vertical-align:middle;"/>
+      </a>
     </nav>
     <div class="user">Hello, Meghana</div>
   </header>
@@ -32,7 +31,6 @@
   <main class="container">
     <section class="welcome">
       <h2>Your Financial Dashboard</h2>
-      <p class="subtitle">Real-time credit insights with ESG impact tracking</p>
     </section>
 
     <section class="cards">
@@ -62,18 +60,69 @@
       </article>
     </section>
 
-    <!-- Term Loans Section -->
-    <section class="term-loans-dashboard" id="termLoansSection" style="display: none;">
-      <h2>Your Term Loans</h2>
-      <div id="termLoansList" class="term-loans-list">
-        <!-- Term loans will be populated here -->
-      </div>
-      <div id="noTermLoans" class="no-loans-message">
-        <p>You don't have any active term loans.</p>
-        <button class="btn-outline" onclick="location.href='credit-line.html?openTermLoan=true'">
-          Apply for Term Loan
+    <!-- Collapsible Finance Products Section -->
+    <section class="finance-products-section">
+      
+      <!-- Term Loans Accordion -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion('termLoans')" id="termLoansHeader">
+          <div class="accordion-title">
+            <span class="accordion-icon">📊</span>
+            <span class="accordion-text">Term Loans</span>
+            <span class="accordion-count" id="termLoansCount">(0)</span>
+          </div>
+          <span class="accordion-arrow" id="termLoansArrow">▶</span>
         </button>
+        <div class="accordion-content" id="termLoansAccordion">
+          <div class="accordion-body">
+            <div class="section-actions">
+              <button class="btn-outline small" onclick="location.href='loan-offers.html'">
+                View All Offers
+              </button>
+            </div>
+            <div id="termLoansList" class="term-loans-list">
+              <!-- Term loans will be populated here -->
+            </div>
+            <div id="noTermLoans" class="no-loans-message">
+              <p>You don't have any active term loans.</p>
+              <button class="btn-outline" onclick="location.href='credit-line.html?openTermLoan=true'">
+                Apply for Term Loan
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- BNPL Plans Accordion -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion('bnpl')" id="bnplHeader">
+          <div class="accordion-title">
+            <span class="accordion-icon">💳</span>
+            <span class="accordion-text">BNPL Plans</span>
+            <span class="accordion-count" id="bnplCount">(0)</span>
+          </div>
+          <span class="accordion-arrow" id="bnplArrow">▶</span>
+        </button>
+        <div class="accordion-content" id="bnplAccordion">
+          <div class="accordion-body">
+            <div class="section-actions">
+              <button class="btn-outline small" onclick="location.href='transactions.html#bnpl'">
+                Manage Plans
+              </button>
+            </div>
+            <div id="bnplPlansList" class="bnpl-plans-list">
+              <!-- BNPL plans will be populated here -->
+            </div>
+            <div id="noBnplPlans" class="no-loans-message">
+              <p>You don't have any active BNPL plans.</p>
+              <button class="btn-outline" onclick="location.href='transactions.html'">
+                Start Shopping with BNPL
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
     </section>
 
     <section class="controls">
@@ -163,34 +212,118 @@
   <script src="js/term-loan.js"></script>
   <script src="js/main.js"></script>
   <script>
-    // Term Loans Dashboard Functionality
+    // Accordion functionality
+    function toggleAccordion(section) {
+      const accordion = document.getElementById(section + 'Accordion');
+      const header = document.getElementById(section + 'Header');
+      const arrow = document.getElementById(section + 'Arrow');
+      
+      if (accordion.classList.contains('active')) {
+        // Close accordion
+        accordion.classList.remove('active');
+        header.classList.remove('active');
+        arrow.style.transform = 'rotate(0deg)';
+      } else {
+        // Open accordion and load content
+        accordion.classList.add('active');
+        header.classList.add('active');
+        arrow.style.transform = 'rotate(90deg)';
+        
+        // Load content based on section
+        if (section === 'termLoans') {
+          loadTermLoansDashboard();
+        } else if (section === 'bnpl') {
+          loadBNPLPlans();
+        }
+      }
+    }
+
+    // Update counts in accordion headers
+    function updateAccordionCounts() {
+      // Update term loans count
+      if (typeof TermLoanManager !== 'undefined') {
+        const activeLoans = TermLoanManager.getActiveTermLoans();
+        const termLoansCount = document.getElementById('termLoansCount');
+        if (termLoansCount) {
+          termLoansCount.textContent = `(${activeLoans.length})`;
+        }
+      }
+      
+      // Update BNPL count
+      const activeBnplPlans = mockBNPLPlans ? mockBNPLPlans.filter(plan => plan.status === 'active') : [];
+      const bnplCount = document.getElementById('bnplCount');
+      if (bnplCount) {
+        bnplCount.textContent = `(${activeBnplPlans.length})`;
+      }
+    }
+
+    // Dashboard initialization
     document.addEventListener('DOMContentLoaded', () => {
-      loadTermLoansDashboard();
+      // Wait for TermLoanManager to be available
+      setTimeout(() => {
+        if (typeof TermLoanManager !== 'undefined') {
+          // Ensure sample loans exist
+          TermLoanManager.createSampleLoans();
+          // Update counts
+          updateAccordionCounts();
+          // Show the finance products section
+          const financeSection = document.querySelector('.finance-products-section');
+          if (financeSection) {
+            financeSection.style.display = 'block';
+          }
+        }
+      }, 600);
     });
+
+    // Mock BNPL data for dashboard
+    const mockBNPLPlans = [
+      {
+        id: 'bnpl_1',
+        merchant: 'Apple Store',
+        totalAmount: 2999,
+        remainingAmount: 1499.50,
+        installments: 4,
+        paidInstallments: 2,
+        nextPayment: '2025-12-01',
+        monthlyAmount: 749.75,
+        status: 'active'
+      },
+      {
+        id: 'bnpl_2',
+        merchant: 'IKEA',
+        totalAmount: 1200,
+        remainingAmount: 400,
+        installments: 3,
+        paidInstallments: 2,
+        nextPayment: '2025-11-25',
+        monthlyAmount: 400,
+        status: 'active'
+      }
+    ];
 
     function loadTermLoansDashboard() {
       // Check if TermLoanManager is available
       if (typeof TermLoanManager === 'undefined') {
-        setTimeout(loadTermLoansDashboard, 200);
+        console.log('TermLoanManager not available yet');
         return;
       }
 
-      const termLoansSection = document.getElementById('termLoansSection');
       const termLoansList = document.getElementById('termLoansList');
       const noLoansMessage = document.getElementById('noTermLoans');
       
       const activeLoans = TermLoanManager.getActiveTermLoans();
+      console.log('Active loans found:', activeLoans.length);
       
       if (activeLoans.length > 0) {
-        // Show term loans section
-        termLoansSection.style.display = 'block';
-        noLoansMessage.style.display = 'none';
+        // Show term loans list, hide no loans message
+        if (termLoansList) termLoansList.style.display = 'grid';
+        if (noLoansMessage) noLoansMessage.style.display = 'none';
         
         // Populate loans list
         termLoansList.innerHTML = activeLoans.map(loan => `
           <div class="term-loan-card">
             <div class="loan-header">
-              <h4>Term Loan ${loan.id}</h4>
+              <h4>Term Loan ${loan.id.substring(0, 10)}...</h4>
               <span class="loan-status ${loan.status}">${loan.status.toUpperCase()}</span>
             </div>
             <div class="loan-details">
@@ -224,10 +357,88 @@
         
       } else {
         // Show no loans message
-        termLoansSection.style.display = 'block';
-        noLoansMessage.style.display = 'block';
-        termLoansList.innerHTML = '';
+        console.log('No active loans found');
+        if (termLoansList) {
+          termLoansList.style.display = 'none';
+          termLoansList.innerHTML = '';
+        }
+        if (noLoansMessage) noLoansMessage.style.display = 'block';
       }
+      
+      // Update count
+      updateAccordionCounts();
+    }
+
+    function loadBNPLPlans() {
+      const bnplPlansList = document.getElementById('bnplPlansList');
+      const noBnplPlans = document.getElementById('noBnplPlans');
+      
+      if (!bnplPlansList || !noBnplPlans) return;
+      
+      const activePlans = mockBNPLPlans.filter(plan => plan.status === 'active');
+      
+      if (activePlans.length > 0) {
+        bnplPlansList.style.display = 'grid';
+        noBnplPlans.style.display = 'none';
+        
+        bnplPlansList.innerHTML = activePlans.map(plan => {
+          const progress = (plan.paidInstallments / plan.installments) * 100;
+          
+          return `
+            <div class="bnpl-plan-card">
+              <div class="bnpl-header">
+                <h4>${plan.merchant}</h4>
+                <span class="bnpl-status ${plan.status}">${plan.status.toUpperCase()}</span>
+              </div>
+              
+              <div class="bnpl-details">
+                <div class="bnpl-row">
+                  <span>Total Amount:</span>
+                  <span>AED ${plan.totalAmount.toLocaleString()}</span>
+                </div>
+                <div class="bnpl-row">
+                  <span>Remaining:</span>
+                  <span class="highlight">AED ${plan.remainingAmount.toLocaleString()}</span>
+                </div>
+                <div class="bnpl-row">
+                  <span>Monthly Payment:</span>
+                  <span>AED ${plan.monthlyAmount.toLocaleString()}</span>
+                </div>
+                <div class="bnpl-row">
+                  <span>Next Payment:</span>
+                  <span>${plan.nextPayment}</span>
+                </div>
+                <div class="bnpl-row">
+                  <span>Progress:</span>
+                  <span>${plan.paidInstallments}/${plan.installments} installments</span>
+                </div>
+              </div>
+              
+              <div class="bnpl-progress">
+                <div class="bnpl-progress-bar">
+                  <div class="bnpl-progress-fill" style="width: ${progress}%"></div>
+                </div>
+              </div>
+              
+              <div class="bnpl-actions">
+                <button class="btn-outline small" onclick="viewBNPLDetails('${plan.id}')">
+                  View Details
+                </button>
+                <button class="btn-primary small" onclick="payBNPLInstallment('${plan.id}')">
+                  Pay Now
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+      } else {
+        bnplPlansList.style.display = 'none';
+        noBnplPlans.style.display = 'block';
+      }
+      
+      // Update count
+      updateAccordionCounts();
     }
 
     function makePayment(loanId) {
@@ -272,6 +483,53 @@ Total Paid: AED ${loan.totalPaid.toLocaleString()}
       
       alert(details);
     }
+
+    // BNPL Functions
+    function viewBNPLDetails(planId) {
+      const plan = mockBNPLPlans.find(p => p.id === planId);
+      if (plan) {
+        const details = `
+BNPL Plan Details:
+
+Merchant: ${plan.merchant}
+Plan ID: ${plan.id}
+Total Amount: AED ${plan.totalAmount.toLocaleString()}
+Remaining Balance: AED ${plan.remainingAmount.toLocaleString()}
+Monthly Payment: AED ${plan.monthlyAmount.toLocaleString()}
+Installments: ${plan.paidInstallments}/${plan.installments} completed
+Next Payment: ${plan.nextPayment}
+Status: ${plan.status}
+        `;
+        alert(details);
+      }
+    }
+
+    function payBNPLInstallment(planId) {
+      const plan = mockBNPLPlans.find(p => p.id === planId);
+      if (plan && plan.remainingAmount > 0) {
+        const confirmed = confirm(`Pay AED ${plan.monthlyAmount} for ${plan.merchant} BNPL plan?`);
+        if (confirmed) {
+          // Simulate payment
+          plan.paidInstallments++;
+          plan.remainingAmount = Math.max(0, plan.remainingAmount - plan.monthlyAmount);
+          
+          if (plan.remainingAmount === 0) {
+            plan.status = 'completed';
+            alert(`BNPL plan for ${plan.merchant} has been completed successfully!`);
+          } else {
+            alert(`Payment successful! Remaining balance: AED ${plan.remainingAmount}`);
+          }
+          
+          // Reload BNPL plans
+          loadBNPLPlans();
+        }
+      }
+    }
+
+    // Make functions globally available
+    window.toggleAccordion = toggleAccordion;
+    window.viewBNPLDetails = viewBNPLDetails;
+    window.payBNPLInstallment = payBNPLInstallment;
   </script>
 </body>
 </html>

@@ -318,6 +318,25 @@ document.addEventListener('DOMContentLoaded', () => {
     voiceBtn.addEventListener('click', startRecognition);
   }
 
+  // Initialize tabs if on dashboard
+  if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
+    initializeTabs();
+    
+    // Load initial content
+    loadTermLoans();
+    
+    // Auto-show term loans section if there are active loans
+    if (typeof TermLoanManager !== 'undefined') {
+      const activeLoans = TermLoanManager.getActiveTermLoans();
+      if (activeLoans && activeLoans.length > 0) {
+        const financeSection = document.querySelector('.finance-products-section');
+        if (financeSection) {
+          financeSection.style.display = 'block';
+        }
+      }
+    }
+  }
+
   // Quick action handlers on dashboard
   const quickWithdraw = document.getElementById('quickWithdraw');
   const quickRepay = document.getElementById('quickRepay');
@@ -539,7 +558,203 @@ const mockAPI = {
   }
 };
 
+// Tab functionality for dashboard
+const initializeTabs = () => {
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetTab = button.dataset.tab;
+      
+      // Remove active class from all buttons and panels
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabPanels.forEach(panel => panel.classList.remove('active'));
+      
+      // Add active class to clicked button and corresponding panel
+      button.classList.add('active');
+      const targetPanel = document.getElementById(targetTab + 'Content');
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+      
+      // Voice feedback
+      const tabName = button.textContent.trim();
+      speak(`Switched to ${tabName} tab.`, false);
+      
+      // Load content for the tab
+      if (targetTab === 'bnpl') {
+        loadBNPLPlans();
+      } else if (targetTab === 'termLoans') {
+        loadTermLoans();
+      }
+    });
+  });
+};
+
+// Mock BNPL data
+const mockBNPLPlans = [
+  {
+    id: 'bnpl_1',
+    merchant: 'Apple Store',
+    totalAmount: 2999,
+    remainingAmount: 1499.50,
+    installments: 4,
+    paidInstallments: 2,
+    nextPayment: '2025-12-01',
+    monthlyAmount: 749.75,
+    status: 'active'
+  },
+  {
+    id: 'bnpl_2',
+    merchant: 'IKEA',
+    totalAmount: 1200,
+    remainingAmount: 400,
+    installments: 3,
+    paidInstallments: 2,
+    nextPayment: '2025-11-25',
+    monthlyAmount: 400,
+    status: 'active'
+  },
+  {
+    id: 'bnpl_3',
+    merchant: 'Nike Store',
+    totalAmount: 899,
+    remainingAmount: 0,
+    installments: 4,
+    paidInstallments: 4,
+    nextPayment: null,
+    monthlyAmount: 224.75,
+    status: 'completed'
+  }
+];
+
+// Load BNPL plans
+const loadBNPLPlans = () => {
+  const bnplList = document.getElementById('bnplPlansList');
+  const noBnplPlans = document.getElementById('noBnplPlans');
+  
+  if (!bnplList || !noBnplPlans) return;
+  
+  const activePlans = mockBNPLPlans.filter(plan => plan.status === 'active');
+  
+  if (activePlans.length === 0) {
+    bnplList.style.display = 'none';
+    noBnplPlans.style.display = 'block';
+    return;
+  }
+  
+  bnplList.style.display = 'grid';
+  noBnplPlans.style.display = 'none';
+  
+  bnplList.innerHTML = activePlans.map(plan => {
+    const progress = (plan.paidInstallments / plan.installments) * 100;
+    
+    return `
+      <div class="bnpl-plan-card">
+        <div class="bnpl-header">
+          <h4>${plan.merchant}</h4>
+          <span class="bnpl-status ${plan.status}">${plan.status.toUpperCase()}</span>
+        </div>
+        
+        <div class="bnpl-details">
+          <div class="bnpl-row">
+            <span>Total Amount:</span>
+            <span>AED ${plan.totalAmount.toLocaleString()}</span>
+          </div>
+          <div class="bnpl-row">
+            <span>Remaining:</span>
+            <span class="highlight">AED ${plan.remainingAmount.toLocaleString()}</span>
+          </div>
+          <div class="bnpl-row">
+            <span>Monthly Payment:</span>
+            <span>AED ${plan.monthlyAmount.toLocaleString()}</span>
+          </div>
+          <div class="bnpl-row">
+            <span>Next Payment:</span>
+            <span>${plan.nextPayment || 'N/A'}</span>
+          </div>
+          <div class="bnpl-row">
+            <span>Progress:</span>
+            <span>${plan.paidInstallments}/${plan.installments} installments</span>
+          </div>
+        </div>
+        
+        <div class="bnpl-progress">
+          <div class="bnpl-progress-bar">
+            <div class="bnpl-progress-fill" style="width: ${progress}%"></div>
+          </div>
+        </div>
+        
+        <div class="bnpl-actions">
+          <button class="btn-outline small" onclick="viewBNPLDetails('${plan.id}')">
+            View Details
+          </button>
+          <button class="btn-primary small" onclick="payBNPLInstallment('${plan.id}')" 
+                  ${plan.remainingAmount === 0 ? 'disabled' : ''}>
+            Pay Now
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+// Load term loans (use existing TermLoanManager if available)
+const loadTermLoans = () => {
+  if (typeof TermLoanManager !== 'undefined' && TermLoanManager.renderDashboard) {
+    TermLoanManager.renderDashboard();
+  } else {
+    // Fallback if TermLoanManager is not available
+    const termLoansList = document.getElementById('termLoansList');
+    const noTermLoans = document.getElementById('noTermLoans');
+    
+    if (termLoansList && noTermLoans) {
+      termLoansList.style.display = 'none';
+      noTermLoans.style.display = 'block';
+    }
+  }
+};
+
+// BNPL action handlers
+window.viewBNPLDetails = (planId) => {
+  const plan = mockBNPLPlans.find(p => p.id === planId);
+  if (plan) {
+    speak(`Showing details for ${plan.merchant} BNPL plan.`, false);
+    // Could open a modal or navigate to details page
+    window.location.href = `transactions.html#${planId}`;
+  }
+};
+
+window.payBNPLInstallment = (planId) => {
+  const plan = mockBNPLPlans.find(p => p.id === planId);
+  if (plan && plan.remainingAmount > 0) {
+    speak(`Processing payment of ${plan.monthlyAmount} dirhams for ${plan.merchant}.`, false);
+    
+    // Simulate payment processing
+    setTimeout(() => {
+      plan.paidInstallments++;
+      plan.remainingAmount = Math.max(0, plan.remainingAmount - plan.monthlyAmount);
+      
+      if (plan.remainingAmount === 0) {
+        plan.status = 'completed';
+        speak(`BNPL plan for ${plan.merchant} has been completed successfully.`);
+      } else {
+        speak(`Payment successful. Remaining balance is ${plan.remainingAmount} dirhams.`);
+      }
+      
+      // Reload BNPL plans
+      loadBNPLPlans();
+    }, 2000);
+  }
+};
+
+// Tab initialization is handled in the main DOMContentLoaded event above
+
 // Export for use in other scripts
 window.mockAPI = mockAPI;
 window.speak = speak;
 window.closeModal = closeModal;
+window.initializeTabs = initializeTabs;
+window.loadBNPLPlans = loadBNPLPlans;
+window.loadTermLoans = loadTermLoans;
