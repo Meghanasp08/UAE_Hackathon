@@ -7,7 +7,7 @@ let filteredTransactions = [];
 const realTransactions = [
   { id: 1, date: '2025-11-03 17:12', merchant: 'LocalBankTransfer - Credit', amount: 14214.45, category: 'Transfer', icon: '💰', description: 'Local bank transfer credit', type: 'credit', txnId: 'DKUO7TXOLWRZ3T8' },
   { id: 2, date: '2025-11-03 00:32', merchant: 'Deposit Reversal', amount: -17369.94, category: 'Other', icon: '🔄', description: 'Deposit reversal', type: 'debit', txnId: 'PSIIVQIYV7KMKE3' },
-  { id: 3, date: '2025-11-02 14:54', merchant: 'E-Commerce Refund', amount: -21855.23, category: 'Shopping', icon: '🛒', description: 'E-commerce refund', type: 'debit', txnId: 'EGHWG38UAUTOO80' },
+  { id: 3, date: '2025-11-02 14:54', merchant: 'POS Purchase', amount: -21855.23, category: 'Shopping', icon: '🛒', description: 'E-commerce refund', type: 'debit', txnId: 'EGHWG38UAUTOO80' },
   { id: 4, date: '2025-11-01 21:42', merchant: 'E-Commerce Purchase', amount: 3721.12, category: 'Shopping', icon: '🛒', description: 'E-commerce reversal credit', type: 'credit', txnId: 'IYVWAZQEG7XN3K6' },
   { id: 5, date: '2025-11-01 07:18', merchant: 'Money Transfer', amount: 16142.26, category: 'Transfer', icon: '💸', description: 'Bill payments money transfer', type: 'credit', txnId: 'TRB9JTAFCNYWIBN' },
   { id: 6, date: '2025-10-31 20:41', merchant: 'POS Transaction', amount: -8465.51, category: 'Shopping', icon: '💳', description: 'POS transaction', type: 'debit', txnId: 'S8R2NL1LTLQO0UY' },
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
       {
         id: Date.now() - 1000,
         originalTransactionId: 3,
-        merchant: 'E-Commerce Refund',
+        merchant: 'POS Purchase',
         totalAmount: 21855.23,
         installmentAmount: 5463.81,
         transactionId: 'EGHWG38UAUTOO80',
