@@ -88,6 +88,17 @@
       <button class="btn-outline" id="clearFilters">Clear Filters</button>
     </section>
 
+    <!-- Active BNPL Plans Section -->
+    <section class="bnpl-plans-section" id="bnplPlansSection" style="display: none;">
+      <div class="section-header">
+        <h3>🔄 Active BNPL Plans</h3>
+        <p class="subtitle">Manage your installment payments</p>
+      </div>
+      <div class="bnpl-plans-list" id="bnplPlansList">
+        <!-- BNPL plans will be dynamically generated here -->
+      </div>
+    </section>
+
     <!-- Transactions List -->
     <section class="transactions-list">
       <div class="transaction-item" data-id="1" data-carbon="low">
@@ -103,6 +114,7 @@
             <span class="esg-badge low">🌱 Low Carbon</span>
           </div>
         </div>
+        <button class="bnpl-btn" style="display:none;" data-bnpl="true">Convert to BNPL</button>
         <button class="transaction-expand" aria-label="View details">›</button>
       </div>
 
@@ -245,6 +257,24 @@
         <div class="modal-actions">
           <button class="btn-outline" id="voiceRead">🔊 Read Aloud</button>
           <button class="btn-outline" id="downloadReceipt">Download Receipt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BNPL Plan Modal -->
+  <div id="bnplModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="bnplTitle" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="bnplTitle">Convert to Installments</h3>
+        <button class="modal-close" id="closeBnplModal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="bnplPlanDetail" class="bnpl-plan-detail">
+          <!-- BNPL plan details will be injected here -->
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" id="confirmBnplPlan">Confirm & Start Plan</button>
         </div>
       </div>
     </div>
