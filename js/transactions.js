@@ -23,6 +23,16 @@ const realTransactions = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Check authentication
+  if (typeof requireAuth === 'function') {
+    requireAuth();
+  }
+  
+  // Update user display
+  if (typeof updateUserDisplay === 'function') {
+    updateUserDisplay();
+  }
+  
   allTransactions = realTransactions;
   filteredTransactions = realTransactions;
 

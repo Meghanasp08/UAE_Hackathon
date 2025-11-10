@@ -7,6 +7,29 @@
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/auto-sweep-benefits.css"/>
   <link rel="stylesheet" href="css/term-loan.css"/>
+  <script>
+    // Redirect to login if not authenticated
+    (function() {
+      const token = localStorage.getItem('authToken');
+      const loginTime = localStorage.getItem('loginTime');
+      
+      if (!token || !loginTime) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Check session expiry (24 hours)
+      const sessionDuration = 24 * 60 * 60 * 1000;
+      const elapsed = Date.now() - parseInt(loginTime);
+      
+      if (elapsed > sessionDuration) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('loginTime');
+        window.location.href = 'login.html';
+      }
+    })();
+  </script>
 </head>
 <body>
   <header class="topbar">
@@ -39,7 +62,10 @@
         </div>
       </a>
     </nav>
-    <div class="user">Hello, Priya Sharma</div>
+    <div class="user-section">
+      <div class="user">Hello, Priya Sharma</div>
+      <button class="logout-btn" id="logoutBtn" onclick="if(typeof logout === 'function') logout();" title="Logout">➜]</button>
+    </div>
   </header>
   </header>
 

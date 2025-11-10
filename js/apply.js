@@ -5,6 +5,16 @@ let consentId = null;
 let selectedBank = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Check authentication
+  if (typeof requireAuth === 'function') {
+    requireAuth();
+  }
+  
+  // Update user display
+  if (typeof updateUserDisplay === 'function') {
+    updateUserDisplay();
+  }
+  
   // Step navigation
   const nextStep1 = document.getElementById('nextStep1');
   const nextStep2 = document.getElementById('nextStep2');

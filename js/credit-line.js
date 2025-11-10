@@ -1,6 +1,16 @@
 // Credit-line.js - SmartPay rules and credit management
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Check authentication
+  if (typeof requireAuth === 'function') {
+    requireAuth();
+  }
+  
+  // Update user display
+  if (typeof updateUserDisplay === 'function') {
+    updateUserDisplay();
+  }
+  
   // Check URL parameters for automatic modal opening
   const urlParams = new URLSearchParams(window.location.search);
   const shouldOpenTermLoan = urlParams.get('openTermLoan');

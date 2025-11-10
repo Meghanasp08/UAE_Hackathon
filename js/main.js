@@ -751,6 +751,68 @@ window.payBNPLInstallment = (planId) => {
 
 // Tab initialization is handled in the main DOMContentLoaded event above
 
+// Authentication Helper Functions
+const checkAuth = () => {
+  const token = localStorage.getItem('authToken');
+  const loginTime = localStorage.getItem('loginTime');
+  
+  if (!token || !loginTime) {
+    return false;
+  }
+  
+  // Check if session expired (24 hours)
+  const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
+  const elapsed = Date.now() - parseInt(loginTime);
+  
+  if (elapsed > sessionDuration) {
+    // Session expired
+    logout();
+    return false;
+  }
+  
+  return true;
+};
+
+const requireAuth = () => {
+  if (!checkAuth()) {
+    // Redirect to login page
+    window.location.href = 'login.html';
+  }
+};
+
+const logout = () => {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('userInfo');
+  localStorage.removeItem('loginTime');
+  
+  speak('Logged out successfully. See you soon!', false);
+  
+  // Redirect to login
+  setTimeout(() => {
+    window.location.href = 'login.html';
+  }, 1000);
+};
+
+const getUser = () => {
+  const userInfo = localStorage.getItem('userInfo');
+  return userInfo ? JSON.parse(userInfo) : null;
+};
+
+const updateUserDisplay = () => {
+  const user = getUser();
+  if (user) {
+    // Update all user display elements
+    const userElements = document.querySelectorAll('.user, .user-name, [data-user-name]');
+    userElements.forEach(el => {
+      if (el.textContent.includes('Hello,') || el.textContent.includes('Hi,')) {
+        el.textContent = `Hello, ${user.name.split(' ')[0]}`;
+      } else {
+        el.textContent = user.name;
+      }
+    });
+  }
+};
+
 // Export for use in other scripts
 window.mockAPI = mockAPI;
 window.speak = speak;
@@ -758,3 +820,8 @@ window.closeModal = closeModal;
 window.initializeTabs = initializeTabs;
 window.loadBNPLPlans = loadBNPLPlans;
 window.loadTermLoans = loadTermLoans;
+window.checkAuth = checkAuth;
+window.requireAuth = requireAuth;
+window.logout = logout;
+window.getUser = getUser;
+window.updateUserDisplay = updateUserDisplay;
