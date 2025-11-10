@@ -42,21 +42,21 @@
   font-size: 1.2rem;
 }
 :root{
-  --bg:#f6f8fb;
-  --card:#ffffff;
-  --accent:#0f6ef3;
-  --accent-hover:#0d5dd1;
-  --muted:#6b7280;
-  --success:#16a34a;
-  --warning:#f59e0b;
-  --danger:#dc2626;
-  --border:#e5e7eb;
-  --text:#111827;
-  --text-light:#6b7280;
-  --shadow:0 6px 18px rgba(15,78,120,0.06);
-  --shadow-lg:0 10px 30px rgba(15,78,120,0.12);
-  --radius:12px;
-  --radius-small:8px;
+  --bg: #f9f6fb;
+  --card: #fff;
+  --accent: #7B2687; /* Shukria purple */
+  --accent-hover: #A259C6; /* Shukria light purple */
+  --muted: #a78bfa;
+  --success: #F9A826; /* Shukria orange */
+  --warning: #F15A8A; /* Shukria pink */
+  --danger: #dc2626;
+  --border: #e5e7eb;
+  --text: #3d155f;
+  --text-light: #a78bfa;
+  --shadow: 0 6px 18px rgba(122, 38, 135, 0.06);
+  --shadow-lg: 0 10px 30px rgba(122, 38, 135, 0.12);
+  --radius: 12px;
+  --radius-small: 8px;
 }
 
 /* Reset & Base */

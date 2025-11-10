@@ -6,16 +6,168 @@
   <title>Loan Offers</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/term-loan.css">
+  <style>
+    body {
+      background: #F8F6FA;
+    }
+    main {
+      max-width: 900px;
+      margin: 36px auto 0 auto;
+      padding: 0 16px;
+    }
+    #loanOffersSection {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px 0 rgba(123,38,135,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.03);
+      padding: 36px 32px 32px 32px;
+      margin-bottom: 40px;
+    }
+    #loanOffersSection h2 {
+      color: #7B2687;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 18px;
+      letter-spacing: 0.5px;
+    }
+    #loanOffersSection h3 {
+      color: #2B0B3A;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 32px;
+      margin-bottom: 12px;
+      letter-spacing: 0.2px;
+    }
+    .loan-product-card {
+      margin-bottom: 36px;
+      border: 1.5px solid #F0E6F6;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px 0 rgba(123,38,135,0.04);
+      padding: 28px 24px 24px 24px;
+      background: #FCFAFE;
+    }
+    .product-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .product-badge.new {
+      background: #1DBF73;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 2px 10px;
+      margin-left: 8px;
+    }
+    .product-description p {
+      color: #5B3A6C;
+      margin-bottom: 18px;
+      font-size: 1.05rem;
+    }
+    .feature-grid {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .feature-item {
+      background: #F6F1FA;
+      border-radius: 8px;
+      padding: 12px 18px;
+      min-width: 160px;
+      flex: 1 1 160px;
+      text-align: center;
+    }
+    .feature-label {
+      color: #7B2687;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .feature-value {
+      color: #2B0B3A;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .eligibility-status {
+      margin-bottom: 18px;
+    }
+    .product-actions {
+      display: flex;
+      gap: 18px;
+      margin-top: 10px;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #7B2687 0%, #B83280 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:disabled {
+      background: #E0CFEA;
+      color: #fff;
+      cursor: not-allowed;
+    }
+    .btn-outline {
+      background: #fff;
+      color: #7B2687;
+      border: 2px solid #7B2687;
+      border-radius: 8px;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-outline:hover {
+      background: #F6F1FA;
+    }
+    @media (max-width: 700px) {
+      #loanOffersSection {
+        padding: 18px 4px 18px 4px;
+      }
+      .loan-product-card {
+        padding: 14px 4px 14px 4px;
+      }
+      .feature-grid {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .product-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <header>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/shukria-logo.png" alt="Shukria Logo" class="logo" style="height:48px;" onerror="this.style.display='none'"/>
+      <h1 style="color:#7B2687;font-family:sans-serif;letter-spacing:1px;"></h1>
+    </div>
     <nav class="nav-links">
-      <a href="index.html" class="nav-link">Dashboard</a>
-      <a href="credit-line.html" class="nav-link">Credit Line</a>
-      <a href="apply.html" class="nav-link">Apply</a>
-      <a href="transactions.html" class="nav-link">Transactions</a>
+      <a href="index.html" class="nav-link" title="Dashboard" aria-label="Dashboard">
+        <img src="assets/nav-dashboard.svg" alt="Dashboard" style="height:28px;width:28px;vertical-align:middle;"/>
+      </a>
+      <a href="credit-line.html" class="nav-link" title="Credit Line" aria-label="Credit Line">
+        <img src="assets/nav-credit-line.svg" alt="Credit Line" style="height:28px;width:28px;vertical-align:middle;"/>
+      </a>
+      <a href="apply.html" class="nav-link" title="Apply" aria-label="Apply">
+        <img src="assets/nav-apply.svg" alt="Apply" style="height:28px;width:28px;vertical-align:middle;"/>
+      </a>
+      <a href="transactions.html" class="nav-link" title="Transactions" aria-label="Transactions">
+        <img src="assets/nav-transactions.svg" alt="Transactions" style="height:28px;width:28px;vertical-align:middle;"/>
+      </a>
     </nav>
-    <h1>Loan Offers</h1>
+    <div class="user">Hello, Priya Sharma</div>
   </header>
   <main>
     <section id="loanOffersSection">
