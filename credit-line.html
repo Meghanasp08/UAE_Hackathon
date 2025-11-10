@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Credit Line Controls</title>
   <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/auto-sweep-benefits.css"/>
+  <link rel="stylesheet" href="css/term-loan.css"/>
 </head>
 <body>
   <header class="topbar">
@@ -13,10 +15,18 @@
   <h1 style="color:#7B2687;font-family:sans-serif;letter-spacing:1px;"></h1>
     </div>
     <nav class="nav-links">
-  <a href="index.html" class="nav-link">Dashboard</a>
-  <a href="credit-line.html" class="nav-link active">Credit Line</a>
-  <a href="apply.html" class="nav-link">Apply</a>
-  <a href="transactions.html" class="nav-link">Transactions</a>
+  <a href="index.html" class="nav-link" title="Dashboard" aria-label="Dashboard">
+    <img src="assets/nav-dashboard.svg" alt="Dashboard" style="height:28px;width:28px;vertical-align:middle;"/>
+  </a>
+  <a href="credit-line.html" class="nav-link active" title="Credit Line" aria-label="Credit Line">
+    <img src="assets/nav-credit-line.svg" alt="Credit Line" style="height:28px;width:28px;vertical-align:middle;"/>
+  </a>
+  <a href="apply.html" class="nav-link" title="Apply" aria-label="Apply">
+    <img src="assets/nav-apply.svg" alt="Apply" style="height:28px;width:28px;vertical-align:middle;"/>
+  </a>
+  <a href="transactions.html" class="nav-link" title="Transactions" aria-label="Transactions">
+    <img src="assets/nav-transactions.svg" alt="Transactions" style="height:28px;width:28px;vertical-align:middle;"/>
+  </a>
     </nav>
     <div class="user">Hello, Meghana</div>
   </header>
@@ -77,6 +87,10 @@
         <span class="btn-icon">🔄</span>
         <span>Transfer to Account</span>
       </button>
+      <button class="action-btn tertiary" id="termLoanBtn">
+        <span class="btn-icon">📊</span>
+        <span>Term Loan</span>
+      </button>
     </section>
 
     <!-- SmartPay Rules -->
@@ -112,6 +126,43 @@
             </select>
           </div>
           <button class="btn-outline small" id="saveSweepSettings">Save Settings</button>
+        </div>
+        
+        <!-- Auto-sweep Benefits Section -->
+        <div class="sweep-benefits" id="sweepBenefits" style="display:none;">
+          <h4>💡 Smart Auto-Sweep Benefits</h4>
+          <div class="benefits-grid">
+            <div class="benefit-card">
+              <span class="benefit-icon">💰</span>
+              <h5>Interest Saved (Monthly)</h5>
+              <p class="benefit-value" id="interestSaved">AED 0</p>
+              <span class="benefit-trend positive" id="interestTrend">↗ Projected 12% annual savings</span>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">⚡</span>
+              <h5>Auto-Payments Made</h5>
+              <p class="benefit-value" id="autoPayments">0</p>
+              <span class="benefit-meta">Last 30 days</span>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">⏱️</span>
+              <h5>Time Saved</h5>
+              <p class="benefit-value" id="timeSaved">0 hrs</p>
+              <span class="benefit-meta">Manual payment time saved</span>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">📈</span>
+              <h5>Cash Efficiency</h5>
+              <p class="benefit-value" id="cashEfficiency">0%</p>
+              <span class="benefit-meta">Improved cash utilization</span>
+            </div>
+          </div>
+          <div class="benefits-summary">
+            <h5>Smart Management Summary</h5>
+            <ul class="benefits-list" id="benefitsList">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -272,7 +323,149 @@
     </div>
   </div>
 
+  <!-- Term Loan Modal -->
+  <div id="termLoanModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="termLoanTitle" hidden>
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3 id="termLoanTitle">Term Loan Application</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Step Progress -->
+        <div class="step-progress">
+          <div class="step active" id="step1">
+            <span class="step-number">1</span>
+            <span class="step-label">Eligibility</span>
+          </div>
+          <div class="step" id="step2">
+            <span class="step-number">2</span>
+            <span class="step-label">Calculator</span>
+          </div>
+          <div class="step" id="step3">
+            <span class="step-number">3</span>
+            <span class="step-label">Confirmation</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Eligibility Check -->
+        <div id="eligibilityStep" class="term-loan-step active">
+          <h4>Check Your Eligibility</h4>
+          <div id="eligibilityResult" class="eligibility-result">
+            <div class="loading-spinner" id="eligibilityLoading">Checking eligibility...</div>
+          </div>
+        </div>
+
+        <!-- Step 2: Loan Calculator -->
+        <div id="calculatorStep" class="term-loan-step" hidden>
+          <h4>Calculate Your Term Loan</h4>
+          <div class="calculator-form">
+            <div class="form-group">
+              <label for="loanAmount">Loan Amount (AED)</label>
+              <input type="number" id="loanAmount" min="1000" step="100" placeholder="Enter amount"/>
+              <span class="field-note" id="amountNote">Minimum: AED 1,000</span>
+            </div>
+            
+            <div class="form-group">
+              <label for="loanTerm">Loan Term</label>
+              <select id="loanTerm">
+                <option value="">Select term</option>
+                <option value="12">12 months (8.0% APR)</option>
+                <option value="24">24 months (9.5% APR)</option>
+                <option value="36">36 months (11.0% APR)</option>
+                <option value="48">48 months (12.5% APR)</option>
+                <option value="60">60 months (14.0% APR)</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn-primary" id="calculateLoan">Calculate</button>
+          </div>
+
+          <div id="loanResults" class="loan-results" hidden>
+            <div class="results-grid">
+              <div class="result-item">
+                <span class="result-label">Monthly Payment (EMI)</span>
+                <span class="result-value" id="monthlyEmi">AED 0</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Total Interest</span>
+                <span class="result-value" id="totalInterest">AED 0</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Processing Fee (2.5%)</span>
+                <span class="result-value" id="processingFee">AED 0</span>
+              </div>
+              <div class="result-item highlight">
+                <span class="result-label">Total Cost</span>
+                <span class="result-value" id="totalCost">AED 0</span>
+              </div>
+            </div>
+            
+            <div class="effective-apr">
+              <span>Effective APR: <strong id="effectiveApr">0%</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Confirmation -->
+        <div id="confirmationStep" class="term-loan-step" hidden>
+          <h4>Confirm Your Term Loan</h4>
+          <div class="confirmation-summary">
+            <div class="summary-header">
+              <h5>Loan Summary</h5>
+            </div>
+            <div class="summary-details">
+              <div class="summary-row">
+                <span>Loan Amount:</span>
+                <span id="confirmAmount">AED 0</span>
+              </div>
+              <div class="summary-row">
+                <span>Term:</span>
+                <span id="confirmTerm">0 months</span>
+              </div>
+              <div class="summary-row">
+                <span>Monthly Payment:</span>
+                <span id="confirmEmi">AED 0</span>
+              </div>
+              <div class="summary-row">
+                <span>Total Interest:</span>
+                <span id="confirmInterest">AED 0</span>
+              </div>
+              <div class="summary-row">
+                <span>Processing Fee:</span>
+                <span id="confirmProcessingFee">AED 0</span>
+              </div>
+              <div class="summary-row total">
+                <span>Total Amount to Pay:</span>
+                <span id="confirmTotal">AED 0</span>
+              </div>
+            </div>
+            
+            <div class="terms-acceptance">
+              <label class="checkbox-wrapper">
+                <input type="checkbox" id="acceptTerms" required>
+                <span class="checkmark"></span>
+                I agree to the <a href="#" target="_blank">Terms and Conditions</a> and <a href="#" target="_blank">Loan Agreement</a>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" id="termLoanPrev" hidden>Previous</button>
+          <button type="button" class="btn-primary" id="termLoanNext">Next</button>
+          <button type="button" class="btn-success" id="confirmTermLoan" hidden>Confirm Loan</button>
+          <button type="button" class="btn-outline" id="cancelTermLoan">Cancel</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script src="js/main.js"></script>
+  <script src="js/term-loan.js"></script>
   <script src="js/credit-line.js"></script>
+  <script src="js/auto-sweep-benefits.js"></script>
 </body>
 </html>
