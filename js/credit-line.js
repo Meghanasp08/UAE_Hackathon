@@ -32,13 +32,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const transferBtn = document.getElementById('transferBtn');
   const termLoanBtn = document.getElementById('termLoanBtn');
 
-  // Rule modal
+  // Rule modal (prebuilt selection)
   const addRuleBtn = document.getElementById('addRuleBtn');
   const ruleModal = document.getElementById('ruleModal');
-  const ruleForm = document.getElementById('ruleForm');
-  const cancelRule = document.getElementById('cancelRule');
-  const triggerType = document.getElementById('triggerType');
-  const actionType = document.getElementById('actionType');
+  const ruleSelectView = document.getElementById('ruleSelectView');
+  const ruleDetailView = document.getElementById('ruleDetailView');
+  const confirmRuleBtn = document.getElementById('confirmRuleBtn');
+  const backToRuleListBtn = document.getElementById('backToRuleListBtn');
+  let selectedRuleKey = null;
+
+  // Prebuilt rules data (updated with new rules)
+  const prebuiltRules = {
+    aiSmartRepay: {
+      name: 'AI Smart Repay',
+      icon: '🤖',
+      trigger: 'AI detects surplus balance',
+      action: 'Auto-transfer to credit repayment',
+      example: '"AI noticed extra funds → repaid AED 2,000 from Smart Credit."',
+      benefits: '• Maximizes interest savings\n• Zero manual intervention required\n• Learns your spending patterns'
+    },
+    weekendSweep: {
+      name: 'Weekend Sweep',
+      icon: '⏰',
+      trigger: 'Every Friday 6 PM',
+      action: 'Move extra balance to credit repayment',
+      example: '"Weekend sweep complete — AED 3,000 paid towards your loan."',
+      benefits: '• Weekly automatic payments\n• Reduces overall interest burden\n• Helps maintain cash discipline'
+    },
+    dailyRepayRule: {
+      name: 'Daily Repay Rule',
+      icon: '🌙',
+      trigger: 'Every day at 10 PM',
+      action: 'If balance > AED 10,000 → auto-repay part of credit',
+      example: '"SmartRepay transferred AED 1,500 from your account."',
+      benefits: '• Daily optimization of cash\n• Minimizes interest accumulation\n• Maintains optimal account balance'
+    },
+    aiSaveBoost: {
+      name: 'AI Save Boost',
+      icon: '💡',
+      trigger: 'AI detects lower spending this week',
+      action: 'Move part of unused amount to savings',
+      example: '"Spending lower than usual — AED 500 saved automatically."',
+      benefits: '• Automatic savings acceleration\n• Capitalizes on spending efficiency\n• Builds emergency fund faster'
+    }
+
+  };
 
   // Auto-sweep toggle handler
   if (autoSweepToggle) {
@@ -99,13 +137,84 @@ document.addEventListener('DOMContentLoaded', () => {
     termLoanBtn.addEventListener('click', () => openTermLoanModal());
   }
 
-  // Add rule button
+  // Add rule button (open modal)
   if (addRuleBtn) {
     addRuleBtn.addEventListener('click', () => {
       if (ruleModal) {
         ruleModal.removeAttribute('hidden');
-        speak('Create a new SmartPay rule.', false);
+        ruleSelectView.removeAttribute('hidden');
+        ruleDetailView.setAttribute('hidden', '');
+        // Remove selection highlight
+        document.querySelectorAll('.prebuilt-rule-card.selected').forEach(card => card.classList.remove('selected'));
+        selectedRuleKey = null;
+        speak('Select a SmartPay automation rule to add.', false);
       }
+    });
+  }
+
+  // Modal close (X button)
+  const modalCloseBtn = ruleModal?.querySelector('.modal-close');
+  if (modalCloseBtn) {
+    modalCloseBtn.addEventListener('click', () => {
+      ruleModal.setAttribute('hidden', '');
+    });
+  }
+
+  // Rule card click: show details
+  document.querySelectorAll('.prebuilt-rule-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const ruleKey = card.getAttribute('data-rule');
+      if (!prebuiltRules[ruleKey]) return;
+      selectedRuleKey = ruleKey;
+      // Highlight selected
+      document.querySelectorAll('.prebuilt-rule-card.selected').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      // Fill details
+      document.getElementById('detailIcon').textContent = prebuiltRules[ruleKey].icon;
+      document.getElementById('detailTitle').textContent = prebuiltRules[ruleKey].name;
+      document.getElementById('detailMeta').textContent = prebuiltRules[ruleKey].trigger;
+      document.getElementById('detailAction').textContent = prebuiltRules[ruleKey].action;
+      document.getElementById('detailExample').textContent = prebuiltRules[ruleKey].example;
+      document.getElementById('detailBenefitsList').textContent = prebuiltRules[ruleKey].benefits;
+      // Switch view
+      ruleSelectView.setAttribute('hidden', '');
+      ruleDetailView.removeAttribute('hidden');
+    });
+  });
+
+  // Back to rule list
+  if (backToRuleListBtn) {
+    backToRuleListBtn.addEventListener('click', () => {
+      ruleDetailView.setAttribute('hidden', '');
+      ruleSelectView.removeAttribute('hidden');
+      // Remove selection highlight
+      document.querySelectorAll('.prebuilt-rule-card.selected').forEach(card => card.classList.remove('selected'));
+      selectedRuleKey = null;
+    });
+  }
+
+  // Confirm rule (OK)
+  if (confirmRuleBtn) {
+    confirmRuleBtn.addEventListener('click', () => {
+      if (!selectedRuleKey || !prebuiltRules[selectedRuleKey]) return;
+      // Prevent duplicate rules by name
+      const rulesList = document.getElementById('rulesList');
+      const existing = Array.from(rulesList.querySelectorAll('.rule-card h4')).map(h => h.textContent);
+      if (existing.includes(prebuiltRules[selectedRuleKey].name)) {
+        speak('This rule is already active.');
+        ruleModal.setAttribute('hidden', '');
+        return;
+      }
+      // Add rule to list
+      addRuleToList({
+        name: prebuiltRules[selectedRuleKey].name,
+        trigger: prebuiltRules[selectedRuleKey].trigger,
+        action: prebuiltRules[selectedRuleKey].action,
+        priority: 'Medium',
+        status: 'active'
+      });
+      speak(`Rule "${prebuiltRules[selectedRuleKey].name}" added successfully.`);
+      ruleModal.setAttribute('hidden', '');
     });
   }
 
