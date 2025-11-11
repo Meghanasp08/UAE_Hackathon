@@ -1,0 +1,349 @@
+<?php
+session_start();
+
+// Handle OAuth return from index.php
+$oauthSuccess = false;
+$oauthError = false;
+$bankConnected = false;
+
+// Check for OAuth return parameters
+if (isset($_GET['oauth_success']) && $_GET['oauth_success'] === '1') {
+  $oauthSuccess = true;
+}
+
+if (isset($_GET['oauth_error'])) {
+  $oauthError = $_GET['oauth_error'];
+}
+
+// Check if bank is already connected via session
+if (isset($_SESSION['access_token']) && 
+    isset($_SESSION['access_token_expiry']) && 
+    $_SESSION['access_token_expiry'] > time()) {
+  $bankConnected = true;
+}
+
+// Handle application state restoration
+$applicationData = [];
+if (isset($_SESSION['application_data'])) {
+  $applicationData = $_SESSION['application_data'];
+}
+
+// Store application data if submitted via POST
+if ($_POST && !$oauthSuccess) {
+  $_SESSION['application_data'] = [
+    'fullName' => $_POST['fullName'] ?? '',
+    'emiratesID' => $_POST['emiratesID'] ?? '',
+    'email' => $_POST['email'] ?? '',
+    'phone' => $_POST['phone'] ?? '',
+    'monthlyIncome' => $_POST['monthlyIncome'] ?? '',
+    'timestamp' => time()
+  ];
+  // Set redirect URL for after OAuth completion
+  $_SESSION['redirect_after_oauth'] = 'https://mercurypay.ariticapp.com/mercurypay/v1/apply.php';
+  $applicationData = $_SESSION['application_data'];
+}
+?>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Apply for Smart Credit</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script>
+    // Pass PHP variables to JavaScript
+    window.phpData = {
+      oauthSuccess: <?php echo json_encode($oauthSuccess); ?>,
+      oauthError: <?php echo json_encode($oauthError); ?>,
+      bankConnected: <?php echo json_encode($bankConnected); ?>,
+      applicationData: <?php echo json_encode($applicationData); ?>
+    };
+
+    // Redirect to login if not authenticated
+    (function() {
+      const token = localStorage.getItem('authToken');
+      const loginTime = localStorage.getItem('loginTime');
+      
+      if (!token || !loginTime) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Check session expiry (24 hours)
+      const sessionDuration = 24 * 60 * 60 * 1000;
+      const elapsed = Date.now() - parseInt(loginTime);
+      
+      if (elapsed > sessionDuration) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('loginTime');
+        window.location.href = 'login.html';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/shukria-logo.png" alt="Shukria Logo" class="logo" onerror="this.style.display='none'"/>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link" title="Dashboard" aria-label="Dashboard">
+        <div class="nav-item">
+          <img src="assets/nav-dashboard.svg" alt="Dashboard" style="height:28px;width:28px;"/>
+          <span class="nav-label">Dashboard</span>
+        </div>
+      </a>
+      <a href="credit-line.html" class="nav-link" title="Credit Line" aria-label="Credit Line">
+        <div class="nav-item">
+          <img src="assets/nav-credit-line.svg" alt="Credit Line" style="height:28px;width:28px;"/>
+          <span class="nav-label">Credit Line</span>
+        </div>
+      </a>
+      <a href="apply.php" class="nav-link active" title="Apply" aria-label="Apply">
+        <div class="nav-item">
+          <img src="assets/nav-apply.svg" alt="Apply" style="height:28px;width:28px;"/>
+          <span class="nav-label">Apply</span>
+        </div>
+      </a>
+      <a href="transactions.html" class="nav-link" title="Transactions" aria-label="Transactions">
+        <div class="nav-item">
+          <img src="assets/nav-transactions.svg" alt="Transactions" style="height:28px;width:28px;"/>
+          <span class="nav-label">Transactions</span>
+        </div>
+      </a>
+    </nav>
+    <div class="user-section">
+      <div class="user">Hello, Priya Sharma</div>
+      <button class="logout-btn" id="logoutBtn" onclick="if(typeof logout === 'function') logout();" title="Logout">➜]</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="apply-header">
+      <h2>Apply for Smart Credit</h2>
+    </section>
+
+    <?php if ($oauthSuccess): ?>
+    <div class="alert alert-success" style="background: #10b981; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 1.2rem;">✅</span>
+      <span>Bank connection successful! You can now proceed to credit assessment.</span>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($oauthError): ?>
+    <div class="alert alert-error" style="background: #dc2626; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 1.2rem;">❌</span>
+      <span>Bank connection failed: <?php echo htmlspecialchars($oauthError); ?>. Please try again.</span>
+    </div>
+    <?php endif; ?>
+
+    <!-- Progress indicator -->
+    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-step active" data-step="1">
+        <div class="step-circle">1</div>
+        <span class="step-label">Personal Info</span>
+      </div>
+      <div class="progress-step" data-step="2">
+        <div class="step-circle">2</div>
+        <span class="step-label">Account Connect</span>
+      </div>
+      <div class="progress-step" data-step="3">
+        <div class="step-circle">3</div>
+        <span class="step-label">Credit Check</span>
+      </div>
+      <div class="progress-step" data-step="4">
+        <div class="step-circle">4</div>
+        <span class="step-label">Approval</span>
+      </div>
+    </div>
+
+    <!-- Application Form -->
+    <form id="applicationForm" class="application-form" method="post">
+      <!-- Step 1: Personal Information -->
+      <section id="step1" class="form-section active">
+        <h3>Personal Information</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fullName">Full Name *</label>
+            <input type="text" id="fullName" name="fullName" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($applicationData['fullName'] ?? 'Priya Sharma'); ?>"/>
+          </div>
+          <div class="form-group">
+            <label for="emiratesID">Emirates ID *</label>
+            <input type="text" id="emiratesID" name="emiratesID" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($applicationData['emiratesID'] ?? '784-1992-9876543-2'); ?>"/>
+          </div>
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($applicationData['email'] ?? 'priya.sharma@shukria.com'); ?>"/>
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input type="tel" id="phone" name="phone" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($applicationData['phone'] ?? '+971 55 987 6543'); ?>"/>
+          </div>
+          <div class="form-group full-width">
+            <label for="monthlyIncome">Monthly Income (AED)</label>
+            <input type="number" id="monthlyIncome" name="monthlyIncome" 
+                   value="<?php echo htmlspecialchars($applicationData['monthlyIncome'] ?? '22000'); ?>"/>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-primary" id="nextStep1">Next: Connect Account</button>
+          <button type="button" class="btn-outline" id="voiceApply">🎤 Start with Voice</button>
+        </div>
+      </section>
+
+      <!-- Step 2: Account Connection -->
+      <section id="step2" class="form-section">
+        <h3>Connect Your Bank Account</h3>
+        <p>We'll securely access your account data through Nebras (UAE's Open Banking platform) to assess your credit eligibility.</p>
+        
+        <?php if ($bankConnected): ?>
+        <div class="connection-success" style="background: #10b981; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+          ✅ Bank Account Connected Successfully
+          <br><small>Your account data is ready for credit assessment</small>
+        </div>
+        <?php endif; ?>
+        
+        <div class="consent-box">
+          <h4>Data Consent Required</h4>
+          <p>By connecting your account, you consent to:</p>
+          <ul>
+            <li>Read-only access to account balances</li>
+            <li>Transaction history (last 6 months)</li>
+            <li>Account holder information verification</li>
+          </ul>
+          <label class="checkbox-label">
+            <input type="checkbox" id="consentCheckbox" <?php echo $bankConnected ? 'checked' : ''; ?> required/>
+            <span>I consent to share my account data via Nebras Open Banking</span>
+          </label>
+        </div>
+
+        <div id="connectionStatus" class="connection-status" hidden>
+          <div class="spinner"></div>
+          <p id="statusText">Connecting to your bank...</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-outline" id="backStep2">← Back</button>
+          <button type="button" class="btn-primary" id="nextStep2" <?php echo $bankConnected ? '' : 'disabled'; ?>>Next: Credit Check</button>
+        </div>
+      </section>
+
+      <!-- Step 3: Credit Assessment -->
+      <section id="step3" class="form-section">
+        <h3>Credit Assessment</h3>
+        <p>Analyzing your financial profile...</p>
+        
+        <div class="assessment-progress">
+          <div class="assessment-item" id="assess1">
+            <div class="spinner small"></div>
+            <span>Verifying account data...</span>
+          </div>
+          <div class="assessment-item" id="assess2">
+            <div class="spinner small"></div>
+            <span>Calculating credit score...</span>
+          </div>
+          <div class="assessment-item" id="assess3">
+            <div class="spinner small"></div>
+            <span>Evaluating ESG compatibility...</span>
+          </div>
+        </div>
+
+        <div id="creditResult" class="credit-result" hidden>
+          <div class="result-success">
+            <span class="result-icon">✅</span>
+            <h4>Congratulations! You're Pre-Approved</h4>
+            <div class="credit-offer">
+              <div class="offer-item">
+                <span class="offer-label">Credit Limit</span>
+                <span class="offer-value">AED 15,250</span>
+              </div>
+              <div class="offer-item">
+                <span class="offer-label">APR</span>
+                <span class="offer-value">8.9%</span>
+              </div>
+              <div class="offer-item">
+                <span class="offer-label">Setup Fee</span>
+                <span class="offer-value">AED 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-outline" id="backStep3">← Back</button>
+          <button type="button" class="btn-primary" id="acceptOffer" disabled>Accept & Activate</button>
+        </div>
+      </section>
+
+      <!-- Step 4: Success -->
+      <section id="step4" class="form-section">
+        <div class="success-screen">
+          <span class="success-icon">🎉</span>
+          <h3>Your Smart Credit Line is Active!</h3>
+          <p>Your credit line has been activated and is ready to use.</p>
+          
+          <div class="credit-summary">
+            <div class="summary-item">
+              <span class="summary-label">Available Credit</span>
+              <span class="summary-value">AED 15,250</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Interest Rate</span>
+              <span class="summary-value">8.9% APR</span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-primary" onclick="location.href='credit-line.html'">
+              Set Up SmartPay Rules
+            </button>
+            <button type="button" class="btn-outline" onclick="location.href='index.html'">
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <!-- Floating voice button -->
+  <button id="voiceBtn" class="voice-btn" aria-label="Activate voice commands" title="Voice commands">
+    🎤
+  </button>
+
+  <!-- Voice feedback live region -->
+  <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Consent Modal -->
+  <div id="consentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="consentTitle" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="consentTitle">Nebras Open Banking Consent</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p><strong>You are about to share your financial data securely through Nebras.</strong></p>
+        <p>Mercury Smart Credit will access:</p>
+        <ul>
+          <li>Account balances (read-only)</li>
+          <li>Transaction history (6 months)</li>
+          <li>Account holder verification</li>
+        </ul>
+        <p>Your data is encrypted and will only be used for credit assessment purposes.</p>
+        <div class="form-actions">
+          <button class="btn-primary" id="confirmConsent">Authorize Access</button>
+          <button class="btn-outline" id="cancelConsent">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/apply.js"></script>
+</body>
+</html>

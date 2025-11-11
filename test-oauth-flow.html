@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Flow Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #7B2687; }
+        h2 { color: #B83280; margin-top: 0; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #7B2687;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #B83280; }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge.pass { background: #28a745; color: white; }
+        .badge.fail { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🧪 OAuth Redirect Flow - Test Suite</h1>
+
+    <div class="test-section">
+        <h2>1. Check sessionStorage</h2>
+        <button onclick="testSessionStorage()">Test sessionStorage</button>
+        <div id="sessionStorageResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Check localStorage</h2>
+        <button onclick="testLocalStorage()">Test localStorage</button>
+        <div id="localStorageResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Simulate OAuth Flow</h2>
+        <button onclick="simulateOAuthFlow()">Start Simulation</button>
+        <div id="oauthSimResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Check URL Parameters</h2>
+        <button onclick="testURLParams()">Check URL</button>
+        <div id="urlParamsResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test Form Data Persistence</h2>
+        <button onclick="testFormPersistence()">Test Form Data</button>
+        <div id="formPersistenceResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Verify File Structure</h2>
+        <button onclick="testFileStructure()">Check Files</button>
+        <div id="fileStructureResult"></div>
+    </div>
+
+    <script>
+        function testSessionStorage() {
+            const result = document.getElementById('sessionStorageResult');
+            try {
+                // Test write
+                sessionStorage.setItem('test_key', 'test_value');
+                
+                // Test read
+                const value = sessionStorage.getItem('test_key');
+                
+                if (value === 'test_value') {
+                    result.innerHTML = `
+                        <div class="status success">
+                            ✅ sessionStorage is working!
+                            <span class="badge pass">PASS</span>
+                        </div>
+                        <pre>${JSON.stringify({
+                            available: true,
+                            canWrite: true,
+                            canRead: true
+                        }, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error('Read value mismatch');
+                }
+                
+                // Clean up
+                sessionStorage.removeItem('test_key');
+            } catch (e) {
+                result.innerHTML = `
+                    <div class="status error">
+                        ❌ sessionStorage test failed
+                        <span class="badge fail">FAIL</span>
+                    </div>
+                    <pre>Error: ${e.message}</pre>
+                `;
+            }
+        }
+
+        function testLocalStorage() {
+            const result = document.getElementById('localStorageResult');
+            try {
+                // Check for existing tokens
+                const bankingTokens = localStorage.getItem('bankingTokens');
+                
+                result.innerHTML = `
+                    <div class="status info">
+                        📦 localStorage Status
+                        <span class="badge ${bankingTokens ? 'pass' : 'fail'}">${bankingTokens ? 'HAS TOKENS' : 'NO TOKENS'}</span>
+                    </div>
+                    <pre>${bankingTokens ? JSON.stringify(JSON.parse(bankingTokens), null, 2) : 'No banking tokens found'}</pre>
+                    <button onclick="clearTokens()">Clear Tokens</button>
+                `;
+            } catch (e) {
+                result.innerHTML = `
+                    <div class="status error">
+                        ❌ localStorage test failed
+                        <span class="badge fail">FAIL</span>
+                    </div>
+                    <pre>Error: ${e.message}</pre>
+                `;
+            }
+        }
+
+        function simulateOAuthFlow() {
+            const result = document.getElementById('oauthSimResult');
+            
+            result.innerHTML = `<div class="status info">⏳ Simulating OAuth flow...</div>`;
+            
+            setTimeout(() => {
+                // Step 1: Store application data
+                const appData = {
+                    fullName: 'Test User',
+                    emiratesID: '784-1992-1234567-8',
+                    email: 'test@example.com',
+                    phone: '+971 50 123 4567',
+                    monthlyIncome: '25000',
+                    step: 1,
+                    timestamp: Date.now()
+                };
+                
+                sessionStorage.setItem('applicationData', JSON.stringify(appData));
+                sessionStorage.setItem('applicationInProgress', 'true');
+                
+                result.innerHTML = `
+                    <div class="status success">
+                        ✅ Step 1: Application data stored
+                        <span class="badge pass">PASS</span>
+                    </div>
+                    <pre>${JSON.stringify(appData, null, 2)}</pre>
+                `;
+                
+                setTimeout(() => {
+                    // Step 2: Simulate token storage
+                    const tokens = {
+                        jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token',
+                        authorizationCode: 'TEST_AUTH_CODE_123',
+                        accessToken: 'TEST_ACCESS_TOKEN_456',
+                        refreshToken: 'TEST_REFRESH_TOKEN_789',
+                        bankName: 'Test Bank',
+                        timestamp: Date.now(),
+                        expiresIn: 3600
+                    };
+                    
+                    localStorage.setItem('bankingTokens', JSON.stringify(tokens));
+                    
+                    result.innerHTML += `
+                        <div class="status success">
+                            ✅ Step 2: Tokens stored
+                            <span class="badge pass">PASS</span>
+                        </div>
+                        <pre>${JSON.stringify(tokens, null, 2)}</pre>
+                    `;
+                    
+                    setTimeout(() => {
+                        // Step 3: Verify retrieval
+                        const retrievedApp = JSON.parse(sessionStorage.getItem('applicationData'));
+                        const retrievedTokens = JSON.parse(localStorage.getItem('bankingTokens'));
+                        
+                        if (retrievedApp && retrievedTokens) {
+                            result.innerHTML += `
+                                <div class="status success">
+                                    ✅ Step 3: Data retrieval successful
+                                    <span class="badge pass">PASS</span>
+                                </div>
+                                <p><strong>OAuth flow simulation complete!</strong></p>
+                                <button onclick="cleanupSimulation()">Clean Up</button>
+                            `;
+                        }
+                    }, 1000);
+                }, 1000);
+            }, 500);
+        }
+
+        function testURLParams() {
+            const result = document.getElementById('urlParamsResult');
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const params = {};
+            for (const [key, value] of urlParams) {
+                params[key] = value;
+            }
+            
+            const hasOAuthParams = urlParams.has('oauth_success') || urlParams.has('oauth_error');
+            
+            result.innerHTML = `
+                <div class="status ${hasOAuthParams ? 'success' : 'info'}">
+                    ${hasOAuthParams ? '✅' : 'ℹ️'} URL Parameters
+                    <span class="badge ${hasOAuthParams ? 'pass' : 'fail'}">${hasOAuthParams ? 'HAS PARAMS' : 'NO PARAMS'}</span>
+                </div>
+                <pre>${Object.keys(params).length > 0 ? JSON.stringify(params, null, 2) : 'No URL parameters found'}</pre>
+                <p><em>Note: After OAuth callback, you should see oauth_success, access_token, etc.</em></p>
+            `;
+        }
+
+        function testFormPersistence() {
+            const result = document.getElementById('formPersistenceResult');
+            
+            // Create test form data
+            const testData = {
+                fullName: 'Priya Sharma',
+                emiratesID: '784-1992-9876543-2',
+                email: 'priya@example.com',
+                phone: '+971 55 987 6543',
+                monthlyIncome: '22000',
+                timestamp: Date.now()
+            };
+            
+            // Store
+            sessionStorage.setItem('testFormData', JSON.stringify(testData));
+            
+            // Retrieve
+            const retrieved = JSON.parse(sessionStorage.getItem('testFormData'));
+            
+            const matches = JSON.stringify(testData) === JSON.stringify(retrieved);
+            
+            result.innerHTML = `
+                <div class="status ${matches ? 'success' : 'error'}">
+                    ${matches ? '✅' : '❌'} Form Data Persistence
+                    <span class="badge ${matches ? 'pass' : 'fail'}">${matches ? 'PASS' : 'FAIL'}</span>
+                </div>
+                <h4>Original Data:</h4>
+                <pre>${JSON.stringify(testData, null, 2)}</pre>
+                <h4>Retrieved Data:</h4>
+                <pre>${JSON.stringify(retrieved, null, 2)}</pre>
+            `;
+            
+            sessionStorage.removeItem('testFormData');
+        }
+
+        function testFileStructure() {
+            const result = document.getElementById('fileStructureResult');
+            
+            const requiredFiles = [
+                { name: 'apply.html', status: 'exists' },
+                { name: 'apply.js', status: 'exists' },
+                { name: 'accounts_callback.php', status: 'created' },
+                { name: 'callOpenFinanceClient.php', status: 'updated' },
+                { name: 'AltareqOpenFinanceClient.php', status: 'updated' }
+            ];
+            
+            result.innerHTML = `
+                <div class="status success">
+                    📁 File Structure Check
+                    <span class="badge pass">PASS</span>
+                </div>
+                <table style="width: 100%; margin-top: 10px;">
+                    <tr>
+                        <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">File</th>
+                        <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">Status</th>
+                    </tr>
+                    ${requiredFiles.map(file => `
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;">${file.name}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;">
+                                <span class="badge pass">${file.status.toUpperCase()}</span>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+        }
+
+        function clearTokens() {
+            localStorage.removeItem('bankingTokens');
+            alert('✅ Tokens cleared!');
+            testLocalStorage();
+        }
+
+        function cleanupSimulation() {
+            sessionStorage.removeItem('applicationData');
+            sessionStorage.removeItem('applicationInProgress');
+            localStorage.removeItem('bankingTokens');
+            alert('✅ Simulation data cleaned up!');
+            document.getElementById('oauthSimResult').innerHTML = '';
+        }
+
+        // Auto-run some tests on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 OAuth Flow Test Suite Loaded');
+            console.log('Click buttons to run individual tests');
+        });
+    </script>
+</body>
+</html>

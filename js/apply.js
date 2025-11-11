@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUserDisplay();
   }
   
+  // Check if returning from OAuth flow or if already connected
+  checkOAuthReturn();
+  
   // Step navigation
   const nextStep1 = document.getElementById('nextStep1');
   const nextStep2 = document.getElementById('nextStep2');
@@ -32,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Bank selection
   const bankCards = document.querySelectorAll('.bank-card');
 
-  // Step 1 -> Open banking popup directly
+  // Step 1 -> Submit form and redirect to banking portal
   if (nextStep1) {
     nextStep1.addEventListener('click', () => {
       const form = document.getElementById('applicationForm');
@@ -49,25 +52,22 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (valid) {
-        // Store application state
-        const applicationData = {
-          fullName: document.getElementById('fullName')?.value,
-          emiratesID: document.getElementById('emiratesID')?.value,
-          email: document.getElementById('email')?.value,
-          phone: document.getElementById('phone')?.value,
-          monthlyIncome: document.getElementById('monthlyIncome')?.value,
-          step: 1
-        };
-        sessionStorage.setItem('applicationData', JSON.stringify(applicationData));
+        speak('Saving your information and connecting to bank...', false);
         
-        // Show loading overlay
-        showLoadingOverlay();
+        // Submit form data to PHP session and redirect to OAuth
+        const formData = new FormData(form);
         
-        speak('Opening Nebras Open Banking portal.', false);
-        
-        // Open banking portal directly
-        const bankingUrl = 'https://testapp.ariticapp.com/mercurypay/callOpenFinanceClient.php';
-        openBankingPopup(bankingUrl);
+        fetch(window.location.href, {
+          method: 'POST',
+          body: formData
+        }).then(() => {
+          // Redirect to banking OAuth flow
+          window.location.href = 'https://mercurypay.ariticapp.com/mercurypay/callOpenFinanceClient.php';
+        }).catch(error => {
+          console.error('Error saving form data:', error);
+          // Fallback: direct redirect
+          window.location.href = 'https://mercurypay.ariticapp.com/mercurypay/callOpenFinanceClient.php';
+        });
       } else {
         speak('Please fill in all required fields.', false);
       }
@@ -304,119 +304,63 @@ const simulateCreditAssessment = async () => {
   console.log('Credit evaluation result:', result);
 };
 
-// Open banking portal in popup window
-const openBankingPopup = (url) => {
-  const width = 900;
-  const height = 700;
-  const left = (window.screen.width - width) / 2;
-  const top = (window.screen.height - height) / 2;
+// Check if returning from OAuth flow
+const checkOAuthReturn = () => {
+  // Use PHP data passed to JavaScript
+  const phpData = window.phpData || {};
   
-  const popup = window.open(
-    url,
-    'BankingPortal',
-    `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,status=no`
-  );
-  
-  if (popup) {
-    speak('Opening banking portal in new window. Please complete bank selection and return here.', false);
+  if (phpData.oauthSuccess) {
+    console.log('Returning from successful OAuth flow');
     
-    // Focus the popup
-    popup.focus();
+    // Application data is already restored from PHP session
+    console.log('Application data restored from PHP session:', phpData.applicationData);
     
-    let tokensReceived = false;
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
     
-    // Listen for messages from popup BEFORE checking if closed
-    const messageHandler = (event) => {
-      handleBankingMessage(event);
-      if (event.data && (event.data.type === 'bankingComplete' || event.data.type === 'bankConnected')) {
-        tokensReceived = true;
-      }
-    };
-    window.addEventListener('message', messageHandler);
-    
-    // Check if popup is closed
-    const checkPopupClosed = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(checkPopupClosed);
-        window.removeEventListener('message', messageHandler);
-        
-        // Hide loading overlay
-        hideLoadingOverlay();
-        
-        // Wait a moment for any pending messages
-        setTimeout(() => {
-          // Check if tokens were received
-          const storedTokens = localStorage.getItem('bankingTokens');
-          
-          if (storedTokens && tokensReceived) {
-            // Tokens received via postMessage - notification already shown
-            console.log('Tokens received via postMessage');
-          } else {
-            // No tokens received - show mock notification for demo
-            console.log('No tokens received - using demo data');
-            const mockTokens = {
-              jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo.token',
-              authorizationCode: 'AUTH_CODE_DEMO_12345',
-              accessToken: 'ACCESS_TOKEN_DEMO_67890',
-              refreshToken: 'REFRESH_TOKEN_DEMO_ABCDE',
-              bankName: 'Demo Bank',
-              timestamp: Date.now(),
-              expiresIn: 3600
-            };
-            
-            // Store mock tokens
-            localStorage.setItem('bankingTokens', JSON.stringify(mockTokens));
-            
-            // Show notification
-            showTokenStorageNotification(mockTokens);
-          }
-        }, 500);
-      }
-    }, 500);
-    
-  } else {
-    hideLoadingOverlay();
-    alert('Popup was blocked. Please allow popups for this site and try again.');
-    speak('Popup was blocked. Please allow popups and try again.', false);
-  }
-};
-
-// Handle banking messages
-const handleBankingMessage = (event) => {
-  // Verify origin for security
-  if (event.origin !== 'https://testapp.ariticapp.com') {
-    console.warn('Received message from untrusted origin:', event.origin);
-    return;
-  }
-  
-  const data = event.data;
-  
-  // Handle banking completion with tokens
-  if (data.type === 'bankingComplete' || (data.type === 'bankConnected' && data.success)) {
-    // Store banking tokens in localStorage
-    const bankingTokens = {
-      jwt: data.jwt || null,
-      authorizationCode: data.authorizationCode || data.code || null,
-      accessToken: data.accessToken || null,
-      refreshToken: data.refreshToken || null,
-      bankName: data.bankName || 'Connected Bank',
-      timestamp: Date.now(),
-      expiresIn: data.expiresIn || 3600
-    };
-    
-    // Save to localStorage
-    localStorage.setItem('bankingTokens', JSON.stringify(bankingTokens));
-    console.log('Banking tokens stored successfully:', bankingTokens);
-    
-    // Mark consent as given and bank as selected
+    // Mark consent as given
     const consentCheckbox = document.getElementById('consentCheckbox');
     if (consentCheckbox) {
       consentCheckbox.checked = true;
     }
-    selectedBank = data.bankName || 'external';
+    selectedBank = 'external';
     
-    // Show token storage notification
-    showTokenStorageNotification(bankingTokens);
+    // Show success notification and proceed
+    showTokenStorageNotification({
+      jwt: 'session_token_received',
+      accessToken: 'session_token_received',
+      bankName: 'Connected Bank'
+    });
+    
+  } else if (phpData.oauthError) {
+    console.error('OAuth error:', phpData.oauthError);
+    
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    // Show error message
+    speak('Bank connection failed. Please try again.', false);
+    alert('Failed to connect to bank: ' + phpData.oauthError);
+    
+    // Stay on step 1
+    goToStep(1);
+  }
+  
+  // If bank is already connected (from PHP session)
+  if (phpData.bankConnected) {
+    console.log('Bank already connected via session');
+    
+    const consentCheckbox = document.getElementById('consentCheckbox');
+    if (consentCheckbox) {
+      consentCheckbox.checked = true;
+    }
+    selectedBank = 'external';
+    
+    // Enable next step button
+    const nextStep2 = document.getElementById('nextStep2');
+    if (nextStep2) {
+      nextStep2.disabled = false;
+    }
   }
 };
 
@@ -584,73 +528,4 @@ const showTokenStorageNotification = (tokens) => {
   speak('Banking credentials securely stored.', false);
 };
 
-// Show loading overlay
-const showLoadingOverlay = () => {
-  let overlay = document.getElementById('loadingOverlay');
-  
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'loadingOverlay';
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(123, 38, 135, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      backdrop-filter: blur(5px);
-    `;
-    
-    overlay.innerHTML = `
-      <div style="text-align: center; color: white;">
-        <div class="spinner" style="
-          width: 60px;
-          height: 60px;
-          border: 6px solid rgba(255, 255, 255, 0.3);
-          border-top-color: white;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin: 0 auto 2rem auto;
-        "></div>
-        <h2 style="font-size: 1.8rem; margin-bottom: 1rem; font-weight: 700;">
-          Connecting to Nebras Banking Portal
-        </h2>
-        <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 0.5rem;">
-          Please complete bank authentication in the popup window
-        </p>
-        <p style="font-size: 0.95rem; opacity: 0.7;">
-          This page will automatically proceed once you're done
-        </p>
-      </div>
-    `;
-    
-    document.body.appendChild(overlay);
-    
-    // Add spin animation if not exists
-    if (!document.getElementById('spinKeyframes')) {
-      const style = document.createElement('style');
-      style.id = 'spinKeyframes';
-      style.textContent = `
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  }
-  
-  overlay.style.display = 'flex';
-};
-
-// Hide loading overlay
-const hideLoadingOverlay = () => {
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay) {
-    overlay.style.display = 'none';
-  }
-};
+// Note: Popup functions removed - using redirect flow instead
