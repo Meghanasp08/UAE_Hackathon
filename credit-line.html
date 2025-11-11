@@ -274,63 +274,76 @@
   <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <!-- Add Rule Modal -->
-  <div id="ruleModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="ruleModalTitle" hidden>
+  <div id="ruleModal" class="modal rule-modal" role="dialog" aria-modal="true" aria-labelledby="ruleModalTitle" hidden>
     <div class="modal-content large">
       <div class="modal-header">
-        <h3 id="ruleModalTitle">Create SmartPay Rule</h3>
+        <h3 id="ruleModalTitle">Add a SmartPay Automation Rule</h3>
         <button class="modal-close" aria-label="Close modal">&times;</button>
       </div>
-      <div class="modal-body">
-        <form id="ruleForm">
-          <div class="form-group">
-            <label for="ruleName">Rule Name *</label>
-            <input type="text" id="ruleName" required placeholder="e.g., Weekend Repayment"/>
-          </div>
+      <div class="modal-body" id="ruleModalBody">
+        <!-- Rule selection view (default) -->
+        <div id="ruleSelectView">
+          <div class="rule-list-grid">
+            <div class="prebuilt-rule-card" data-rule="aiSmartRepay">
+              <div class="rule-icon">🤖</div>
+              <div class="rule-title">AI Smart Repay</div>
+              <div class="rule-meta">AI detects surplus balance</div>
+              <div class="rule-action">Auto-transfer to credit repayment</div>
+              <div class="rule-example">"AI noticed extra funds → repaid AED 2,000 from Smart Credit."</div>
+            </div>
+            <div class="prebuilt-rule-card" data-rule="weekendSweep">
+              <div class="rule-icon">⏰</div>
+              <div class="rule-title">Weekend Sweep</div>
+              <div class="rule-meta">Every Friday 6 PM</div>
+              <div class="rule-action">Move extra balance to credit repayment</div>
+              <div class="rule-example">"Weekend sweep complete — AED 3,000 paid towards your loan."</div>
+            </div>
+            <div class="prebuilt-rule-card" data-rule="dailyRepayRule">
+              <div class="rule-icon">🌙</div>
+              <div class="rule-title">Daily Repay Rule</div>
+              <div class="rule-meta">Every day at 10 PM</div>
+              <div class="rule-action">If balance > AED 10,000 → auto-repay part of credit</div>
+              <div class="rule-example">"SmartRepay transferred AED 1,500 from your account."</div>
+            </div>
+            <div class="prebuilt-rule-card" data-rule="aiSaveBoost">
+              <div class="rule-icon">💡</div>
+              <div class="rule-title">AI Save Boost</div>
+              <div class="rule-meta">AI detects lower spending this week</div>
+              <div class="rule-action">Move part of unused amount to savings</div>
+              <div class="rule-example">"Spending lower than usual — AED 500 saved automatically."</div>
+            </div>
 
-          <div class="form-group">
-            <label>Trigger Condition *</label>
-            <select id="triggerType" required>
-              <option value="">Select trigger type</option>
-              <option value="balance">Account balance threshold</option>
-              <option value="balance">AI Agent</option>
-              <option value="credit">Credit usage threshold</option>
-              <option value="schedule">Scheduled time</option>
-              <option value="transaction">On transaction</option>
-            </select>
           </div>
-
-          <div id="triggerDetails" class="form-group" hidden>
-            <!-- Dynamic based on trigger type -->
+        </div>
+        <!-- Rule details view (hidden by default) -->
+        <div id="ruleDetailView" hidden>
+          <div class="rule-detail-content">
+            <div class="rule-detail-header">
+              <div class="rule-detail-icon" id="detailIcon"></div>
+              <div class="rule-detail-title" id="detailTitle"></div>
+            </div>
+            <div class="rule-detail-section">
+              <div class="section-label">When it triggers:</div>
+              <div class="rule-detail-meta" id="detailMeta"></div>
+            </div>
+            <div class="rule-detail-section">
+              <div class="section-label">What it does:</div>
+              <div class="rule-detail-action" id="detailAction"></div>
+            </div>
+            <div class="rule-detail-section">
+              <div class="section-label">Example scenario:</div>
+              <div class="rule-detail-example" id="detailExample"></div>
+            </div>
+            <div class="rule-detail-benefits" id="detailBenefits">
+              <div class="section-label">Benefits:</div>
+              <div class="benefits-list" id="detailBenefitsList"></div>
+            </div>
           </div>
-
-          <div class="form-group">
-            <label>Action *</label>
-            <select id="actionType" required>
-              <option value="">Select action</option>
-              <option value="repay">Repay credit</option>
-              <option value="transfer">Transfer to savings</option>
-              <option value="limit">Adjust credit limit</option>
-            </select>
+          <div class="rule-detail-actions">
+            <button class="btn-primary" id="confirmRuleBtn">Add This Rule</button>
+            <button class="btn-outline" id="backToRuleListBtn">Back</button>
           </div>
-
-          <div id="actionDetails" class="form-group" hidden>
-            <!-- Dynamic based on action type -->
-          </div>
-
-          <div class="form-group">
-            <label>Priority</label>
-            <select id="rulePriority">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="btn-primary">Create Rule</button>
-            <button type="button" class="btn-outline" id="cancelRule">Cancel</button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   </div>
