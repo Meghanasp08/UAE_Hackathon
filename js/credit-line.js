@@ -1,6 +1,11 @@
 // Credit-line.js - SmartPay rules and credit management
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Rule form (for custom rule creation, if present)
+  const ruleForm = document.getElementById('ruleForm');
+  // Dynamic rule form fields (for custom rule creation, if present)
+  const triggerType = document.getElementById('triggerType');
+  const actionType = document.getElementById('actionType');
   // Check authentication
   if (typeof requireAuth === 'function') {
     requireAuth();
@@ -218,15 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Cancel rule
-  if (cancelRule) {
-    cancelRule.addEventListener('click', () => {
-      if (ruleModal) {
-        ruleModal.setAttribute('hidden', '');
-        ruleForm?.reset();
-      }
-    });
-  }
 
   // Dynamic trigger details
   if (triggerType) {
@@ -628,10 +624,13 @@ const setupTermLoanListeners = () => {
     }
   });
 
-  // Real-time loan amount validation
+  // Real-time loan amount validation and calculation
   if (loanAmount) {
     loanAmount.addEventListener('input', (e) => {
-      validateLoanAmount(e.target.value);
+      const isValid = validateLoanAmount(e.target.value);
+      if (isValid) {
+        calculateTermLoan();
+      }
     });
   }
 };
