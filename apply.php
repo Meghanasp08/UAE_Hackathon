@@ -310,6 +310,93 @@ if ($_POST && !$oauthSuccess) {
           </div>
         </div>
 
+        <!-- Credit Score Breakdown -->
+        <div id="scoreBreakdown" class="score-breakdown" hidden style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0;">
+          <h4 style="margin: 0 0 1rem 0; color: #1e293b; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+            📊 Your Credit Score Breakdown
+          </h4>
+          
+          <!-- Overall Score -->
+          <div style="background: linear-gradient(135deg, #7B2687 0%, #B83280 100%); color: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+            <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Overall Credit Score</div>
+            <div style="font-size: 3rem; font-weight: bold;" id="overallScore">--</div>
+            <div style="font-size: 0.875rem; opacity: 0.9; margin-top: 0.5rem;" id="scoreRating">Calculating...</div>
+          </div>
+          
+          <!-- Score Components -->
+          <div style="display: grid; gap: 1rem; margin-bottom: 1rem;">
+            <!-- Balance Score -->
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-weight: 600; color: #334155; display: flex; align-items: center; gap: 0.5rem;">
+                  💰 Account Balance Score
+                </span>
+                <span style="font-size: 1.5rem; font-weight: bold; color: #7B2687;" id="balanceScoreValue">--</span>
+              </div>
+              <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden;">
+                <div id="balanceScoreBar" style="background: linear-gradient(90deg, #7B2687, #B83280); height: 100%; width: 0%; transition: width 1s ease;"></div>
+              </div>
+              <div style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem;" id="balanceScoreDesc">
+                Based on your total account balance
+              </div>
+            </div>
+            
+            <!-- Transaction Score -->
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-weight: 600; color: #334155; display: flex; align-items: center; gap: 0.5rem;">
+                  📈 Transaction Activity Score
+                </span>
+                <span style="font-size: 1.5rem; font-weight: bold; color: #7B2687;" id="transactionScoreValue">--</span>
+              </div>
+              <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden;">
+                <div id="transactionScoreBar" style="background: linear-gradient(90deg, #7B2687, #B83280); height: 100%; width: 0%; transition: width 1s ease;"></div>
+              </div>
+              <div style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem;" id="transactionScoreDesc">
+                Based on your transaction history
+              </div>
+            </div>
+            
+            <!-- Cash Flow Score -->
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-weight: 600; color: #334155; display: flex; align-items: center; gap: 0.5rem;">
+                  💸 Cash Flow Score
+                </span>
+                <span style="font-size: 1.5rem; font-weight: bold;" id="cashFlowScoreValue" style="color: #7B2687;">--</span>
+              </div>
+              <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden;">
+                <div id="cashFlowScoreBar" style="background: linear-gradient(90deg, #7B2687, #B83280); height: 100%; width: 0%; transition: width 1s ease;"></div>
+              </div>
+              <div style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem;" id="cashFlowScoreDesc">
+                Income vs expenses analysis
+              </div>
+            </div>
+            
+            <!-- Income Multiplier -->
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-weight: 600; color: #334155; display: flex; align-items: center; gap: 0.5rem;">
+                  💼 Income Multiplier
+                </span>
+                <span style="font-size: 1.5rem; font-weight: bold; color: #7B2687;" id="incomeMultiplierValue">--</span>
+              </div>
+              <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden;">
+                <div id="incomeMultiplierBar" style="background: linear-gradient(90deg, #7B2687, #B83280); height: 100%; width: 0%; transition: width 1s ease;"></div>
+              </div>
+              <div style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem;" id="incomeMultiplierDesc">
+                Based on declared monthly income: <span id="monthlyIncomeDisplay">AED --</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Assessment Reason -->
+          <div id="assessmentReason" style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+            <div style="font-size: 0.875rem; font-weight: 600; color: #1e40af; margin-bottom: 0.25rem;">Assessment Summary</div>
+            <div style="font-size: 0.875rem; color: #1e3a8a;" id="assessmentReasonText">Analyzing your profile...</div>
+          </div>
+        </div>
+
         <div id="creditResult" class="credit-result" hidden>
           <div class="result-success">
             <span class="result-icon">✅</span>
@@ -317,15 +404,15 @@ if ($_POST && !$oauthSuccess) {
             <div class="credit-offer">
               <div class="offer-item">
                 <span class="offer-label">Credit Limit</span>
-                <span class="offer-value">AED 15,250</span>
+                <span class="offer-value" id="offerCreditLimit">AED 15,250</span>
               </div>
               <div class="offer-item">
                 <span class="offer-label">APR</span>
-                <span class="offer-value">8.9%</span>
+                <span class="offer-value" id="offerAPR">8.9%</span>
               </div>
               <div class="offer-item">
                 <span class="offer-label">Setup Fee</span>
-                <span class="offer-value">AED 0</span>
+                <span class="offer-value" id="offerSetupFee">AED 0</span>
               </div>
             </div>
           </div>
@@ -347,11 +434,11 @@ if ($_POST && !$oauthSuccess) {
           <div class="credit-summary">
             <div class="summary-item">
               <span class="summary-label">Available Credit</span>
-              <span class="summary-value">AED 15,250</span>
+              <span class="summary-value" id="finalCreditLimit">AED 15,250</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Interest Rate</span>
-              <span class="summary-value">8.9% APR</span>
+              <span class="summary-value" id="finalAPR">8.9% APR</span>
             </div>
           </div>
 

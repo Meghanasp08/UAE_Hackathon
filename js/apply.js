@@ -104,8 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Step 2 -> Step 3 (callback from external URL)
-  // This will be triggered after returning from external bank selection
+  // Step 2 -> Step 3 (Calculate credit score and show offer)
   if (nextStep2) {
     nextStep2.addEventListener('click', async () => {
       if (!consentCheckbox.checked) {
@@ -114,34 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       goToStep(3);
-      speak('Connecting to your bank securely.', false);
+      speak('Analyzing your financial profile.', false);
 
-      // Show connection status
-      const connectionStatus = document.getElementById('connectionStatus');
-      const statusText = document.getElementById('statusText');
-      
-      if (connectionStatus) {
-        connectionStatus.removeAttribute('hidden');
-      }
-
-      // Simulate connection
-      await simulateConnection(statusText);
-
-      // Start credit assessment
-      await simulateCreditAssessment();
-
-      // Show result
-      const creditResult = document.getElementById('creditResult');
-      const acceptOffer = document.getElementById('acceptOffer');
-      
-      if (creditResult) {
-        creditResult.removeAttribute('hidden');
-      }
-      if (acceptOffer) {
-        acceptOffer.disabled = false;
-      }
-
-      speak('Congratulations! You have been pre-approved for a credit line of 15,250 dirhams.');
+      // Start credit assessment with real calculation
+      await performCreditAssessment();
     });
   }
 
@@ -207,8 +182,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Accept offer
   if (acceptOffer) {
     acceptOffer.addEventListener('click', () => {
+      // Copy credit values to Step 4
+      const offerCreditLimit = document.getElementById('offerCreditLimit');
+      const offerAPR = document.getElementById('offerAPR');
+      const finalCreditLimit = document.getElementById('finalCreditLimit');
+      const finalAPR = document.getElementById('finalAPR');
+      
+      if (offerCreditLimit && finalCreditLimit) {
+        finalCreditLimit.textContent = offerCreditLimit.textContent;
+      }
+      if (offerAPR && finalAPR) {
+        finalAPR.textContent = offerAPR.textContent;
+      }
+      
       goToStep(4);
-      speak('Your credit line is now active! You can start using it immediately.');
+      
+      // Extract credit amount for speech
+      const creditText = offerCreditLimit ? offerCreditLimit.textContent : '15,250 dirhams';
+      speak(`Your credit line is now active! You can start using it immediately.`);
 
       // Confetti effect (simple visual feedback)
       setTimeout(() => {
@@ -269,6 +260,327 @@ const simulateConnection = async (statusText) => {
   const consent = await mockAPI.requestConsent();
   consentId = consent.consentId;
   console.log('Consent received:', consentId);
+};
+
+/**
+ * Perform real credit assessment using banking data
+ * Calls the backend API to calculate credit limit and APR
+ */
+const performCreditAssessment = async () => {
+  console.log('💳 Starting credit assessment...');
+  
+  // Animate assessment steps
+  const assessments = [
+    { id: 'assess1', text: 'Verifying account data...', completeText: 'Account data verified ✓', delay: 1000 },
+    { id: 'assess2', text: 'Calculating credit score...', completeText: 'Credit score calculated ✓', delay: 1500 },
+    { id: 'assess3', text: 'Evaluating ESG compatibility...', completeText: 'Assessment complete ✓', delay: 1200 }
+  ];
+
+  // Show progress for each assessment step
+  for (let i = 0; i < assessments.length; i++) {
+    const assessment = assessments[i];
+    const el = document.getElementById(assessment.id);
+    
+    if (el) {
+      // Update text to show in progress
+      const span = el.querySelector('span');
+      if (span) {
+        span.textContent = assessment.text;
+      }
+    }
+    
+    // Wait for this step
+    await new Promise(resolve => setTimeout(resolve, assessment.delay));
+    
+    // Mark as complete
+    if (el) {
+      el.classList.add('complete');
+      const spinner = el.querySelector('.spinner');
+      if (spinner) spinner.style.display = 'none';
+      const span = el.querySelector('span');
+      if (span) {
+        span.textContent = assessment.completeText;
+        span.style.color = '#16a34a';
+        span.style.fontWeight = '600';
+      }
+    }
+  }
+  
+  try {
+    console.log('📡 Calling calculate_credit_score.php...');
+    
+    // Call the credit score calculation API
+    const response = await fetch('api/calculate_credit_score.php', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    });
+    
+    console.log('📥 Credit score response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+    
+    const result = await response.json();
+    console.log('💰 Credit assessment result:', result);
+    console.log('📊 Score details:', {
+      balanceScore: result.details?.balanceScore,
+      transactionScore: result.details?.transactionScore,
+      cashFlowScore: result.details?.cashFlowScore,
+      incomeMultiplier: result.details?.incomeMultiplier,
+      monthlyIncome: result.details?.monthlyIncome,
+      finalScore: result.score
+    });
+    
+    if (result.success) {
+      // Show score breakdown section
+      const scoreBreakdown = document.getElementById('scoreBreakdown');
+      if (scoreBreakdown) {
+        scoreBreakdown.removeAttribute('hidden');
+      }
+      
+      // Populate score breakdown with animated values
+      if (result.details) {
+        const details = result.details;
+        
+        // Overall Score
+        const overallScore = document.getElementById('overallScore');
+        const scoreRating = document.getElementById('scoreRating');
+        if (overallScore) {
+          animateNumber(overallScore, 0, result.score, 1500);
+        }
+        if (scoreRating) {
+          let rating = 'Poor';
+          if (result.score >= 200) rating = 'Excellent';
+          else if (result.score >= 150) rating = 'Very Good';
+          else if (result.score >= 120) rating = 'Good';
+          else if (result.score >= 100) rating = 'Fair';
+          else if (result.score >= 80) rating = 'Below Average';
+          scoreRating.textContent = rating;
+        }
+        
+        // Balance Score (max 100)
+        const balanceScoreValue = document.getElementById('balanceScoreValue');
+        const balanceScoreBar = document.getElementById('balanceScoreBar');
+        const balanceScoreDesc = document.getElementById('balanceScoreDesc');
+        if (balanceScoreValue) {
+          animateNumber(balanceScoreValue, 0, details.balanceScore, 1000);
+        }
+        if (balanceScoreBar) {
+          setTimeout(() => {
+            balanceScoreBar.style.width = `${details.balanceScore}%`;
+          }, 200);
+        }
+        if (balanceScoreDesc && details.balanceScore) {
+          let desc = 'Low account balance';
+          if (details.balanceScore >= 100) desc = 'Excellent balance (AED 50,000+)';
+          else if (details.balanceScore >= 80) desc = 'Very good balance (AED 30,000+)';
+          else if (details.balanceScore >= 65) desc = 'Good balance (AED 20,000+)';
+          else if (details.balanceScore >= 50) desc = 'Fair balance (AED 10,000+)';
+          else if (details.balanceScore >= 35) desc = 'Moderate balance (AED 5,000+)';
+          balanceScoreDesc.textContent = desc;
+        }
+        
+        // Transaction Score (max 20)
+        const transactionScoreValue = document.getElementById('transactionScoreValue');
+        const transactionScoreBar = document.getElementById('transactionScoreBar');
+        const transactionScoreDesc = document.getElementById('transactionScoreDesc');
+        if (transactionScoreValue) {
+          animateNumber(transactionScoreValue, 0, details.transactionScore, 1000);
+        }
+        if (transactionScoreBar) {
+          setTimeout(() => {
+            transactionScoreBar.style.width = `${(details.transactionScore / 20) * 100}%`;
+          }, 400);
+        }
+        if (transactionScoreDesc && details.transactionScore) {
+          let desc = 'Limited transaction history';
+          if (details.transactionScore >= 20) desc = 'Excellent activity (100+ transactions)';
+          else if (details.transactionScore >= 15) desc = 'Very active (50+ transactions)';
+          else if (details.transactionScore >= 10) desc = 'Moderate activity (20+ transactions)';
+          else if (details.transactionScore >= 5) desc = 'Low activity (less than 20 transactions)';
+          transactionScoreDesc.textContent = desc;
+        }
+        
+        // Cash Flow Score (range: -5 to +15, display as 0-20 for visualization)
+        const cashFlowScoreValue = document.getElementById('cashFlowScoreValue');
+        const cashFlowScoreBar = document.getElementById('cashFlowScoreBar');
+        const cashFlowScoreDesc = document.getElementById('cashFlowScoreDesc');
+        if (cashFlowScoreValue) {
+          animateNumber(cashFlowScoreValue, 0, details.cashFlowScore, 1000);
+          // Color code based on positive/negative
+          if (details.cashFlowScore >= 10) {
+            cashFlowScoreValue.style.color = '#15803d';
+          } else if (details.cashFlowScore >= 0) {
+            cashFlowScoreValue.style.color = '#7B2687';
+          } else {
+            cashFlowScoreValue.style.color = '#dc2626';
+          }
+        }
+        if (cashFlowScoreBar) {
+          setTimeout(() => {
+            // Map -5 to 15 range to 0-100% (adjust for negative values)
+            const percentage = ((details.cashFlowScore + 5) / 20) * 100;
+            cashFlowScoreBar.style.width = `${Math.max(0, Math.min(100, percentage))}%`;
+            if (details.cashFlowScore < 0) {
+              cashFlowScoreBar.style.background = '#dc2626';
+            }
+          }, 600);
+        }
+        if (cashFlowScoreDesc && details.cashFlowScore !== undefined) {
+          let desc = 'Negative cash flow (expenses exceed income)';
+          if (details.cashFlowScore >= 15) desc = 'Excellent cash flow (AED 20,000+ surplus)';
+          else if (details.cashFlowScore >= 10) desc = 'Very good cash flow (AED 10,000+ surplus)';
+          else if (details.cashFlowScore >= 5) desc = 'Positive cash flow (income > expenses)';
+          else if (details.cashFlowScore >= 0) desc = 'Balanced cash flow';
+          cashFlowScoreDesc.textContent = desc;
+        }
+        
+        // Income Multiplier (1.0 to 2.5, display as percentage)
+        const incomeMultiplierValue = document.getElementById('incomeMultiplierValue');
+        const incomeMultiplierBar = document.getElementById('incomeMultiplierBar');
+        const incomeMultiplierDesc = document.getElementById('incomeMultiplierDesc');
+        const monthlyIncomeDisplay = document.getElementById('monthlyIncomeDisplay');
+        if (incomeMultiplierValue) {
+          animateNumber(incomeMultiplierValue, 1, details.incomeMultiplier, 1000, 'x');
+        }
+        if (incomeMultiplierBar) {
+          setTimeout(() => {
+            // Map 1.0-2.5 to 0-100%
+            const percentage = ((details.incomeMultiplier - 1) / 1.5) * 100;
+            incomeMultiplierBar.style.width = `${percentage}%`;
+          }, 800);
+        }
+        if (monthlyIncomeDisplay && details.monthlyIncome) {
+          monthlyIncomeDisplay.textContent = `AED ${details.monthlyIncome.toLocaleString()}`;
+        }
+        if (incomeMultiplierDesc && details.incomeMultiplier) {
+          let incomeDesc = '';
+          if (details.incomeMultiplier >= 2.5) incomeDesc = 'Excellent income (AED 50,000+)';
+          else if (details.incomeMultiplier >= 2.0) incomeDesc = 'Very good income (AED 30,000+)';
+          else if (details.incomeMultiplier >= 1.7) incomeDesc = 'Good income (AED 20,000+)';
+          else if (details.incomeMultiplier >= 1.4) incomeDesc = 'Fair income (AED 15,000+)';
+          else if (details.incomeMultiplier >= 1.2) incomeDesc = 'Moderate income (AED 10,000+)';
+          else incomeDesc = 'Basic income level';
+          
+          incomeMultiplierDesc.innerHTML = `Based on declared monthly income: <span id="monthlyIncomeDisplay">AED ${details.monthlyIncome.toLocaleString()}</span> - ${incomeDesc}`;
+        }
+      }
+      
+      // Assessment Reason
+      const assessmentReasonText = document.getElementById('assessmentReasonText');
+      const assessmentReason = document.getElementById('assessmentReason');
+      if (assessmentReasonText && result.reason) {
+        assessmentReasonText.textContent = result.reason;
+        
+        // Color code the reason box based on approval
+        if (assessmentReason) {
+          if (result.approved) {
+            assessmentReason.style.background = '#f0fdf4';
+            assessmentReason.style.borderLeftColor = '#22c55e';
+            assessmentReasonText.style.color = '#15803d';
+            assessmentReason.querySelector('div:first-child').style.color = '#166534';
+          } else {
+            assessmentReason.style.background = '#fef2f2';
+            assessmentReason.style.borderLeftColor = '#ef4444';
+            assessmentReasonText.style.color = '#991b1b';
+            assessmentReason.querySelector('div:first-child').style.color = '#991b1b';
+          }
+        }
+      }
+      
+      // Wait for animations to show
+      await new Promise(resolve => setTimeout(resolve, 1800));
+    }
+    
+    if (result.success && result.approved) {
+      // Update the credit offer UI with real values
+      const creditLimitEl = document.getElementById('offerCreditLimit');
+      const aprEl = document.getElementById('offerAPR');
+      const setupFeeEl = document.getElementById('offerSetupFee');
+      
+      if (creditLimitEl) {
+        creditLimitEl.textContent = `AED ${result.creditLimit.toLocaleString()}`;
+      }
+      if (aprEl) {
+        aprEl.textContent = `${result.apr}%`;
+      }
+      if (setupFeeEl) {
+        setupFeeEl.textContent = `AED ${result.setupFee}`;
+      }
+      
+      // Show the credit result
+      const creditResult = document.getElementById('creditResult');
+      const acceptOffer = document.getElementById('acceptOffer');
+      
+      if (creditResult) {
+        creditResult.removeAttribute('hidden');
+      }
+      if (acceptOffer) {
+        acceptOffer.disabled = false;
+      }
+      
+      // Speak the result
+      speak(`Congratulations! You have been pre-approved for a credit line of ${result.creditLimit} dirhams at ${result.apr}% APR.`);
+      
+      console.log('✅ Credit assessment complete:', {
+        creditLimit: result.creditLimit,
+        apr: result.apr,
+        setupFee: result.setupFee,
+        score: result.score
+      });
+      
+    } else {
+      // Handle rejection - still show score breakdown
+      console.error('❌ Credit application not approved:', result.reason);
+      
+      const creditResult = document.getElementById('creditResult');
+      if (creditResult) {
+        creditResult.innerHTML = `
+          <div class="result-error" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1.5rem;">
+            <span class="result-icon" style="font-size: 3rem;">❌</span>
+            <h4 style="color: #991b1b; margin: 1rem 0;">Application Not Approved</h4>
+            <p style="color: #dc2626; font-size: 1rem; margin: 0.5rem 0;">${result.reason || 'We are unable to approve your application at this time.'}</p>
+            <div style="background: white; border: 1px solid #fecaca; border-radius: 6px; padding: 1rem; margin-top: 1rem; text-align: left;">
+              <div style="font-size: 0.875rem; font-weight: 600; color: #991b1b; margin-bottom: 0.5rem;">📋 How to improve your chances:</div>
+              <ul style="font-size: 0.875rem; color: #64748b; margin: 0; padding-left: 1.5rem;">
+                <li>Maintain a minimum balance of AED 5,000</li>
+                <li>Ensure regular income deposits exceed expenses</li>
+                <li>Build a transaction history with consistent activity</li>
+                <li>Keep your monthly income above AED 10,000</li>
+              </ul>
+            </div>
+            <p style="margin-top: 1rem; font-size: 0.875rem; color: #64748b;">
+              Your score: <strong>${result.score.toFixed(1)}</strong> (Minimum required: 80)
+            </p>
+          </div>
+        `;
+        creditResult.removeAttribute('hidden');
+      }
+      
+      speak('We are unable to approve your credit application at this time.');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error calculating credit score:', error);
+    
+    const creditResult = document.getElementById('creditResult');
+    if (creditResult) {
+      creditResult.innerHTML = `
+        <div class="result-error" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1.5rem;">
+          <span class="result-icon">⚠️</span>
+          <h4>Assessment Error</h4>
+          <p>There was an error processing your credit assessment. Please try again.</p>
+        </div>
+      `;
+      creditResult.removeAttribute('hidden');
+    }
+    
+    speak('There was an error processing your application. Please try again.');
+  }
 };
 
 // Simulate credit assessment
@@ -698,6 +1010,53 @@ const showTokenStorageNotification = (tokens) => {
   }, 10000);
   
   speak('Banking credentials securely stored.', false);
+};
+
+/**
+ * Animate a number from start to end value
+ * @param {HTMLElement} element - Element to update
+ * @param {number} start - Starting value
+ * @param {number} end - Ending value
+ * @param {number} duration - Animation duration in ms
+ * @param {string} suffix - Optional suffix (e.g., 'x', '%')
+ */
+const animateNumber = (element, start, end, duration, suffix = '') => {
+  const range = end - start;
+  const startTime = performance.now();
+  
+  const updateNumber = (currentTime) => {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Easing function (ease-out)
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    const current = start + (range * easeOut);
+    
+    // Format number based on range
+    let displayValue;
+    if (suffix === 'x') {
+      displayValue = current.toFixed(1) + suffix;
+    } else if (Math.abs(end) >= 1) {
+      displayValue = Math.round(current) + suffix;
+    } else {
+      displayValue = current.toFixed(1) + suffix;
+    }
+    
+    element.textContent = displayValue;
+    
+    if (progress < 1) {
+      requestAnimationFrame(updateNumber);
+    } else {
+      // Ensure final value is exact
+      if (suffix === 'x') {
+        element.textContent = end.toFixed(1) + suffix;
+      } else {
+        element.textContent = Math.round(end) + suffix;
+      }
+    }
+  };
+  
+  requestAnimationFrame(updateNumber);
 };
 
 // Note: Popup functions removed - using redirect flow instead
