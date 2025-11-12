@@ -655,43 +655,396 @@ function setupStatementGeneration() {
       generateBtn.disabled = true;
       generateBtn.textContent = 'Generating...';
       
+      const preview = document.getElementById('statementPreview');
+      const actionsDiv = document.getElementById('statementActions');
+      
       try {
-        let url = `api/generate_account_statement.php?format=${format}&range=${period}`;
+        let url = `api/generate_account_statement.php?range=${period}`;
         if (period === 'custom' && startDate && endDate) {
           url += `&start_date=${startDate}&end_date=${endDate}`;
         }
         
-        if (format === 'html') {
-          // Open in new window for HTML preview
-          window.open(url, '_blank', 'width=900,height=700');
-        } else if (format === 'csv') {
-          // Trigger download for CSV
-          window.location.href = url;
-        } else if (format === 'pdf') {
-          // Open PDF in new window (will trigger print dialog)
-          window.open(url, '_blank');
-        }
-        
-        // Show success message
-        const preview = document.getElementById('statementPreview');
-        if (preview && format === 'html') {
-          preview.innerHTML = `
-            <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 2rem; text-align: center;">
-              <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
-              <h4 style="color: #15803d; margin: 0 0 0.5rem 0;">Statement Generated Successfully!</h4>
-              <p style="color: #166534; margin: 0;">Your statement has been opened in a new window.</p>
-            </div>
-          `;
+        // For PDF and CSV, trigger direct download
+        if (format === 'pdf' || format === 'csv') {
+          window.location.href = url + `&format=${format}`;
+          
+          if (preview) {
+            preview.innerHTML = `
+              <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 2rem; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📥</div>
+                <h4 style="color: #1e40af; margin: 0 0 0.5rem 0;">Download Started</h4>
+                <p style="color: #1e3a8a; margin: 0;">Your ${format.toUpperCase()} file should download shortly.</p>
+              </div>
+            `;
+          }
+        } else {
+          // For HTML, fetch and display inline
+          if (preview) {
+            preview.innerHTML = `
+              <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1.5rem; text-align: center;">
+                <div class="spinner" style="margin: 0 auto 1rem;"></div>
+                <p style="color: #0369a1; margin: 0;">Generating your statement...</p>
+              </div>
+            `;
+          }
+          
+          const response = await fetch(url + '&format=inline');
+          const html = await response.text();
+          
+          if (preview) {
+            preview.innerHTML = html;
+            
+            // Show action buttons
+            if (actionsDiv) {
+              actionsDiv.style.display = 'flex';
+            }
+            
+            // Scroll to preview
+            preview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }
         
       } catch (error) {
         console.error('Error generating statement:', error);
-        alert('Failed to generate statement. Please try again.');
+        if (preview) {
+          preview.innerHTML = `
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 2rem; text-align: center;">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+              <h4 style="color: #dc2626; margin: 0 0 0.5rem 0;">Failed to Generate Statement</h4>
+              <p style="color: #991b1b; margin: 0;">${error.message || 'Please try again.'}</p>
+            </div>
+          `;
+        }
       } finally {
         generateBtn.disabled = false;
         generateBtn.textContent = 'Generate Statement';
       }
     });
+  }
+}
+
+/**
+ * Print statement
+ */
+function printStatement() {
+  const statementContent = document.getElementById('statementPreview');
+  if (!statementContent || !statementContent.innerHTML.trim()) {
+    alert('Please generate a statement first');
+    return;
+  }
+  
+  // Create a hidden iframe for printing
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+  
+  const printStyles = `
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      .statement-preview-container { max-width: 100%; }
+      .summary-cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1rem 0; }
+      .summary-card { padding: 1rem; border: 1px solid #ddd; border-radius: 4px; }
+      .summary-label { font-size: 0.875rem; color: #666; }
+      .summary-amount { font-size: 1.25rem; font-weight: bold; margin-top: 0.5rem; }
+      .transactions-table { width: 100%; border-collapse: collapse; }
+      .transactions-table th, .transactions-table td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+      .transactions-table th { background: #7B2687; color: white; }
+      .credit { color: #059669; }
+      .debit { color: #dc2626; }
+      .statement-mobile { display: none; }
+      .statement-table { display: table; }
+      #statementActions, .btn-action, button { display: none !important; }
+      @media print {
+        body { margin: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      }
+    </style>
+  `;
+  
+  const iframeDoc = iframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Account Statement</title>
+      ${printStyles}
+    </head>
+    <body>
+      ${statementContent.innerHTML}
+    </body>
+    </html>
+  `);
+  iframeDoc.close();
+  
+  setTimeout(() => {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      setTimeout(() => document.body.removeChild(iframe), 1000);
+    } catch (error) {
+      console.error('Print failed:', error);
+      document.body.removeChild(iframe);
+      alert('Failed to open print dialog. Please try again.');
+    }
+  }, 250);
+}
+
+/**
+ * Download statement as PDF (using print dialog in hidden iframe)
+ */
+function downloadStatementPDF() {
+  const statementPreview = document.getElementById('statementPreview');
+  
+  if (!statementPreview || !statementPreview.innerHTML.trim()) {
+    alert('Please generate a statement first');
+    return;
+  }
+  
+  // Create a hidden iframe
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+  
+  // Get the statement HTML
+  const statementHTML = statementPreview.innerHTML;
+  
+  // Get print-optimized styles
+  const printStyles = `
+    <style>
+      @page {
+        size: A4;
+        margin: 15mm;
+      }
+      
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .statement-header {
+        border-bottom: 3px solid #7B2687;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+      }
+      
+      .statement-header h1 {
+        color: #7B2687;
+        margin: 0 0 8px 0;
+        font-size: 24px;
+      }
+      
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin: 15px 0;
+      }
+      
+      .info-block {
+        padding: 12px;
+        background: #f8f9fa;
+        border-left: 4px solid #7B2687;
+      }
+      
+      .info-block label {
+        font-weight: bold;
+        color: #666;
+        font-size: 11px;
+        display: block;
+        margin-bottom: 4px;
+      }
+      
+      .info-block .value {
+        font-size: 13px;
+      }
+      
+      .summary-section {
+        background: linear-gradient(135deg, #7B2687 0%, #B83280 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .summary-item h3 {
+        margin: 0 0 4px 0;
+        font-size: 11px;
+        opacity: 0.9;
+      }
+      
+      .summary-item .amount {
+        font-size: 18px;
+        font-weight: bold;
+      }
+      
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 11px;
+      }
+      
+      th {
+        background: #7B2687;
+        color: white;
+        padding: 10px 8px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 11px;
+      }
+      
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      
+      .credit {
+        color: #059669;
+        font-weight: 600;
+      }
+      
+      .debit {
+        color: #dc2626;
+        font-weight: 600;
+      }
+      
+      .text-right {
+        text-align: right;
+      }
+      
+      .section-title {
+        color: #7B2687;
+        border-bottom: 2px solid #7B2687;
+        padding-bottom: 8px;
+        margin: 20px 0 15px 0;
+        font-size: 16px;
+      }
+      
+      .footer {
+        margin-top: 30px;
+        padding-top: 15px;
+        border-top: 2px solid #e0e0e0;
+        text-align: center;
+        color: #666;
+        font-size: 10px;
+      }
+      
+      /* Hide mobile-only elements */
+      .statement-mobile {
+        display: none;
+      }
+      
+      /* Show desktop table */
+      .statement-table {
+        display: table;
+      }
+      
+      /* Hide action buttons */
+      #statementActions,
+      .btn-action,
+      button {
+        display: none !important;
+      }
+      
+      @media print {
+        body {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+      }
+    </style>
+  `;
+  
+  // Write content to iframe
+  const iframeDoc = iframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Account Statement - ${new Date().toISOString().split('T')[0]}</title>
+      ${printStyles}
+    </head>
+    <body>
+      ${statementHTML}
+    </body>
+    </html>
+  `);
+  iframeDoc.close();
+  
+  // Wait for content to load, then trigger print
+  setTimeout(() => {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      
+      // Clean up after printing
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    } catch (error) {
+      console.error('Print failed:', error);
+      document.body.removeChild(iframe);
+      alert('Failed to open print dialog. Please try again.');
+    }
+  }, 250);
+}
+
+/**
+ * Download statement as CSV
+ */
+function downloadStatementCSV() {
+  const period = document.getElementById('statementPeriod')?.value || '30';
+  const startDate = document.getElementById('startDate')?.value;
+  const endDate = document.getElementById('endDate')?.value;
+  
+  let url = `api/generate_account_statement.php?format=csv&range=${period}`;
+  if (period === 'custom' && startDate && endDate) {
+    url += `&start_date=${startDate}&end_date=${endDate}`;
+  }
+  
+  window.location.href = url;
+}
+
+/**
+ * Clear statement preview
+ */
+function clearStatement() {
+  const preview = document.getElementById('statementPreview');
+  const actionsDiv = document.getElementById('statementActions');
+  
+  if (preview) {
+    preview.innerHTML = `
+      <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+        <p>Select period and format, then click "Generate Statement" to view or download your account statement</p>
+      </div>
+    `;
+  }
+  
+  if (actionsDiv) {
+    actionsDiv.style.display = 'none';
   }
 }
 

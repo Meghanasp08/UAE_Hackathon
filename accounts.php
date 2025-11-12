@@ -225,6 +225,7 @@ if (!$bankConnected && !$oauthSuccess) {
       margin-bottom: 1.5rem;
       border-bottom: 2px solid #e2e8f0;
       flex-wrap: wrap;
+      position: relative;
     }
     
     .tab {
@@ -237,6 +238,9 @@ if (!$bankConnected && !$oauthSuccess) {
       cursor: pointer;
       transition: all 0.2s;
       margin-bottom: -2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     
     .tab:hover {
@@ -289,6 +293,462 @@ if (!$bankConnected && !$oauthSuccess) {
       color: #1e293b;
       font-weight: 500;
     }
+    
+    /* ===== Statement Styles ===== */
+    .statement-preview-container {
+      background: white;
+      border-radius: 8px;
+      padding: 0;
+    }
+    
+    .statement-summary {
+      padding: 1.5rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .statement-title {
+      margin: 0 0 0.5rem 0;
+      color: #1e293b;
+      font-size: 1.5rem;
+    }
+    
+    .statement-period {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    
+    .summary-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .summary-card {
+      background: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    
+    .summary-card.highlight {
+      background: linear-gradient(135deg, #7B2687 0%, #B83280 100%);
+      color: white;
+      border: none;
+    }
+    
+    .summary-card.highlight .summary-label,
+    .summary-card.highlight .summary-amount {
+      color: white;
+    }
+    
+    .summary-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .summary-amount {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #1e293b;
+    }
+    
+    .summary-amount.credit {
+      color: #059669;
+    }
+    
+    .summary-amount.debit {
+      color: #dc2626;
+    }
+    
+    .account-info-section {
+      padding: 1rem 1.5rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+    }
+    
+    .info-label {
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    
+    .info-value {
+      color: #1e293b;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    
+    .transactions-section {
+      padding: 1.5rem;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0 0 1rem 0;
+      color: #1e293b;
+    }
+    
+    .transaction-count {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: normal;
+    }
+    
+    .transactions-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .transactions-table th {
+      background: #7B2687;
+      color: white;
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    
+    .transactions-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.875rem;
+    }
+    
+    .transactions-table tr:hover {
+      background: #f8fafc;
+    }
+    
+    .text-right {
+      text-align: right;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .text-muted {
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+    
+    .credit {
+      color: #059669;
+      font-weight: 600;
+    }
+    
+    .debit {
+      color: #dc2626;
+      font-weight: 600;
+    }
+    
+    /* Mobile Transaction Cards */
+    .transaction-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .transaction-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .transaction-card.credit {
+      border-left: 4px solid #059669;
+    }
+    
+    .transaction-card.debit {
+      border-left: 4px solid #dc2626;
+    }
+    
+    .txn-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    
+    .txn-date {
+      font-size: 0.875rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+    
+    .txn-amount {
+      font-size: 1.125rem;
+      font-weight: bold;
+    }
+    
+    .txn-amount.credit {
+      color: #059669;
+    }
+    
+    .txn-amount.debit {
+      color: #dc2626;
+    }
+    
+    .txn-body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .txn-description {
+      font-size: 0.9375rem;
+      color: #1e293b;
+      font-weight: 500;
+    }
+    
+    .txn-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8125rem;
+      color: #64748b;
+    }
+    
+    .txn-reference {
+      font-family: monospace;
+    }
+    
+    .txn-balance {
+      font-weight: 500;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #94a3b8;
+    }
+    
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .additional-section {
+      padding: 1.5rem;
+      border-top: 2px solid #e2e8f0;
+    }
+    
+    .info-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    
+    .info-card {
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .card-row:last-child {
+      border-bottom: none;
+    }
+    
+    .card-label {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+    
+    .card-value {
+      font-size: 0.875rem;
+      color: #1e293b;
+      font-weight: 500;
+      text-align: right;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .badge.active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .statement-footer {
+      padding: 1.5rem;
+      border-top: 2px solid #e2e8f0;
+      text-align: center;
+      color: #64748b;
+    }
+    
+    /* Responsive Design */
+    .mobile-only {
+      display: none;
+    }
+    
+    .desktop-only {
+      display: block;
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-only {
+        display: block;
+      }
+      
+      .desktop-only {
+        display: none !important;
+      }
+      
+      /* Container padding for mobile */
+      .accounts-container {
+        padding: 0 1rem;
+      }
+      
+      /* Mobile tab styles */
+      .tabs {
+        gap: 0.25rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 0.5rem;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      
+      .tabs::-webkit-scrollbar {
+        display: none;
+      }
+      
+      .tab {
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: fit-content;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+      }
+      
+      /* Connection banner mobile */
+      .connection-banner {
+        padding: 1.5rem 1rem;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        border-radius: 0;
+      }
+      
+      /* Data sections mobile */
+      .data-section {
+        padding: 1rem;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        border-radius: 0;
+      }
+      
+      .summary-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+      
+      .summary-card {
+        padding: 1rem;
+      }
+      
+      .summary-label {
+        font-size: 0.7rem;
+      }
+      
+      .summary-amount {
+        font-size: 1.125rem;
+      }
+      
+      .info-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .statement-summary,
+      .transactions-section,
+      .additional-section {
+        padding: 1rem;
+      }
+      
+      .statement-title {
+        font-size: 1.25rem;
+      }
+      
+      #statementActions {
+        flex-direction: column;
+      }
+      
+      .btn-action {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .summary-cards-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .transaction-card {
+        padding: 0.875rem;
+      }
+      
+      .txn-amount {
+        font-size: 1rem;
+      }
+      
+      /* Even smaller tabs on very small screens */
+      .tab {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.813rem;
+        gap: 0.25rem;
+      }
+      
+      /* Make statement controls stack on small screens */
+      .statement-controls > div:first-child {
+        grid-template-columns: 1fr !important;
+      }
+      
+      .statement-controls select,
+      .statement-controls button {
+        width: 100%;
+      }
+    }
+  </style>
+```
   </style>
   <script>
     // Pass PHP variables to JavaScript
@@ -582,6 +1042,26 @@ if (!$bankConnected && !$oauthSuccess) {
                 <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
                 <p>Select period and format, then click "Generate Statement" to view or download your account statement</p>
               </div>
+            </div>
+            
+            <!-- Statement Action Buttons -->
+            <div id="statementActions" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e2e8f0; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+              <button onclick="printStatement()" class="btn-action" style="padding: 0.625rem 1.25rem; background: #7B2687; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span>🖨️</span>
+                <span>Print</span>
+              </button>
+              <button onclick="downloadStatementPDF()" class="btn-action" style="padding: 0.625rem 1.25rem; background: #0891b2; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span>📄</span>
+                <span>Save as PDF</span>
+              </button>
+              <button onclick="downloadStatementCSV()" class="btn-action" style="padding: 0.625rem 1.25rem; background: #059669; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span>📊</span>
+                <span>Export CSV</span>
+              </button>
+              <button onclick="clearStatement()" class="btn-action" style="padding: 0.625rem 1.25rem; background: #64748b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span>✕</span>
+                <span>Clear</span>
+              </button>
             </div>
           </div>
         </div>

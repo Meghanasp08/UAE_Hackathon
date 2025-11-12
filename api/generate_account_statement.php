@@ -535,6 +535,214 @@ function generateHTML($data) {
 }
 
 /**
+ * Generate mobile-friendly in-page HTML
+ */
+function generateMobileFriendlyHTML($data) {
+    $html = '<div class="statement-preview-container">
+    <!-- Summary Cards -->
+    <div class="statement-summary">
+        <h3 class="statement-title">📄 Account Statement</h3>
+        <p class="statement-period">' . htmlspecialchars($data['statement_period']) . '</p>
+        
+        <div class="summary-cards-grid">
+            <div class="summary-card">
+                <div class="summary-label">Opening Balance</div>
+                <div class="summary-amount">' . $data['currency'] . ' ' . number_format($data['opening_balance'], 2) . '</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Credits</div>
+                <div class="summary-amount credit">+' . $data['currency'] . ' ' . number_format($data['total_credits'], 2) . '</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Debits</div>
+                <div class="summary-amount debit">-' . $data['currency'] . ' ' . number_format($data['total_debits'], 2) . '</div>
+            </div>
+            <div class="summary-card highlight">
+                <div class="summary-label">Closing Balance</div>
+                <div class="summary-amount">' . $data['currency'] . ' ' . number_format($data['closing_balance'], 2) . '</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Account Info (Mobile Hidden, Desktop Visible) -->
+    <div class="account-info-section desktop-only">
+        <div class="info-row">
+            <span class="info-label">Account Number:</span>
+            <span class="info-value">' . htmlspecialchars($data['account_id']) . '</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Account Holder:</span>
+            <span class="info-value">' . htmlspecialchars($data['account_holder'] ?: 'N/A') . '</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Account Type:</span>
+            <span class="info-value">' . htmlspecialchars($data['account_type']) . '</span>
+        </div>
+    </div>
+    
+    <!-- Transactions Section -->
+    <div class="transactions-section">
+        <h4 class="section-header">
+            <span>Transactions</span>
+            <span class="transaction-count">' . $data['transaction_count'] . ' total</span>
+        </h4>
+        
+        <!-- Desktop Table View -->
+        <div class="desktop-only">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Reference</th>
+                        <th class="text-right">Debit</th>
+                        <th class="text-right">Credit</th>
+                        <th class="text-right">Balance</th>
+                    </tr>
+                </thead>
+                <tbody>';
+    
+    if (count($data['transactions']) > 0) {
+        foreach ($data['transactions'] as $txn) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($txn['display_date']) . '</td>
+                <td>' . htmlspecialchars($txn['description']) . '</td>
+                <td class="text-muted">' . htmlspecialchars($txn['reference']) . '</td>
+                <td class="text-right debit">' . ($txn['debit'] > 0 ? number_format($txn['debit'], 2) : '-') . '</td>
+                <td class="text-right credit">' . ($txn['credit'] > 0 ? number_format($txn['credit'], 2) : '-') . '</td>
+                <td class="text-right">' . number_format($txn['balance'], 2) . '</td>
+            </tr>';
+        }
+    } else {
+        $html .= '<tr><td colspan="6" class="text-center text-muted">No transactions in selected period</td></tr>';
+    }
+    
+    $html .= '</tbody>
+            </table>
+        </div>
+        
+        <!-- Mobile Card View -->
+        <div class="mobile-only transaction-cards">';
+    
+    if (count($data['transactions']) > 0) {
+        foreach ($data['transactions'] as $txn) {
+            $typeClass = $txn['type'] === 'Credit' ? 'credit' : 'debit';
+            $icon = $txn['type'] === 'Credit' ? '↓' : '↑';
+            
+            $html .= '<div class="transaction-card ' . $typeClass . '">
+                <div class="txn-header">
+                    <span class="txn-date">' . htmlspecialchars($txn['display_date']) . '</span>
+                    <span class="txn-amount ' . $typeClass . '">' . 
+                        ($txn['type'] === 'Credit' ? '+' : '-') . 
+                        $data['currency'] . ' ' . number_format($txn['amount'], 2) . 
+                    '</span>
+                </div>
+                <div class="txn-body">
+                    <div class="txn-description">' . htmlspecialchars($txn['description']) . '</div>
+                    <div class="txn-footer">
+                        <span class="txn-reference">' . htmlspecialchars($txn['reference']) . '</span>
+                        <span class="txn-balance">Balance: ' . $data['currency'] . ' ' . number_format($txn['balance'], 2) . '</span>
+                    </div>
+                </div>
+            </div>';
+        }
+    } else {
+        $html .= '<div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No transactions found in the selected period</p>
+        </div>';
+    }
+    
+    $html .= '</div>
+    </div>';
+    
+    // Standing Orders
+    if (count($data['standing_orders']) > 0) {
+        $html .= '<div class="additional-section">
+            <h4 class="section-header">Standing Orders</h4>
+            <div class="info-cards">';
+        foreach ($data['standing_orders'] as $so) {
+            $html .= '<div class="info-card">
+                <div class="card-row">
+                    <span class="card-label">Reference:</span>
+                    <span class="card-value">' . htmlspecialchars($so['reference']) . '</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Amount:</span>
+                    <span class="card-value">' . $so['currency'] . ' ' . number_format($so['amount'], 2) . '</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Frequency:</span>
+                    <span class="card-value">' . htmlspecialchars($so['frequency']) . '</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Next Payment:</span>
+                    <span class="card-value">' . htmlspecialchars($so['next_payment']) . '</span>
+                </div>
+            </div>';
+        }
+        $html .= '</div></div>';
+    }
+    
+    // Direct Debits
+    if (count($data['direct_debits']) > 0) {
+        $html .= '<div class="additional-section">
+            <h4 class="section-header">Direct Debits</h4>
+            <div class="info-cards">';
+        foreach ($data['direct_debits'] as $dd) {
+            $html .= '<div class="info-card">
+                <div class="card-row">
+                    <span class="card-label">Name:</span>
+                    <span class="card-value">' . htmlspecialchars($dd['name']) . '</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Reference:</span>
+                    <span class="card-value">' . htmlspecialchars($dd['reference']) . '</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Status:</span>
+                    <span class="card-value badge ' . strtolower($dd['status']) . '">' . htmlspecialchars($dd['status']) . '</span>
+                </div>
+            </div>';
+        }
+        $html .= '</div></div>';
+    }
+    
+    // Scheduled Payments
+    if (count($data['scheduled_payments']) > 0) {
+        $html .= '<div class="additional-section">
+            <h4 class="section-header">Scheduled Payments</h4>
+            <div class="info-cards">';
+        foreach ($data['scheduled_payments'] as $sp) {
+            $html .= '<div class="info-card">
+                <div class="card-row">
+                    <span class="card-label">Reference:</span>
+                    <span class="card-value">' . htmlspecialchars($sp['reference']) . '</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Amount:</span>
+                    <span class="card-value">' . $sp['currency'] . ' ' . number_format($sp['amount'], 2) . '</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Scheduled Date:</span>
+                    <span class="card-value">' . htmlspecialchars($sp['scheduled_date']) . '</span>
+                </div>
+            </div>';
+        }
+        $html .= '</div></div>';
+    }
+    
+    // Footer
+    $html .= '<div class="statement-footer">
+        <p><small>Generated on: ' . htmlspecialchars($data['generated_at']) . '</small></p>
+        <p><small>Powered by Nebras Open Banking UAE</small></p>
+    </div>
+</div>';
+    
+    return $html;
+}
+
+/**
  * Generate CSV statement
  */
 function generateCSV($data) {
@@ -606,8 +814,13 @@ try {
             header('Content-Type: application/json');
             echo json_encode([
                 'success' => true,
-                'data' => $statementData
+                'data' => $statementData,
+                'html' => generateMobileFriendlyHTML($statementData)
             ]);
+            break;
+        case 'inline':
+            // Return just the mobile-friendly HTML for in-page display
+            echo generateMobileFriendlyHTML($statementData);
             break;
         case 'html':
         default:
