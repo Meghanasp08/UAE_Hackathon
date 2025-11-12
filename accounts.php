@@ -698,6 +698,101 @@ if (!$bankConnected && !$oauthSuccess) {
         padding: 1rem;
       }
       
+      /* Financial Health Score Breakdown - Mobile */
+      #scoreBreakdown {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+        margin-top: 1.5rem !important;
+      }
+      
+      #scoreBreakdown > div {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 0.5rem;
+        border-radius: 8px;
+      }
+      
+      #scoreBreakdown > div > div:first-child {
+        font-size: 0.7rem !important;
+        margin-bottom: 0.5rem !important;
+      }
+      
+      #scoreBreakdown > div > div:last-child {
+        font-size: 1.25rem !important;
+      }
+      
+      /* Health Score Card - Mobile */
+      .health-score-card {
+        padding: 1.5rem 1rem !important;
+      }
+      
+      .health-score-card #healthScore {
+        font-size: 3rem !important;
+      }
+      
+      .health-score-card #healthRating {
+        font-size: 1rem !important;
+      }
+      
+      /* Charts Section - Mobile (Stack vertically) */
+      .chart-card {
+        padding: 1rem !important;
+      }
+      
+      #analysisResults > div:nth-child(2) {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+      }
+      
+      #spendingChart,
+      #cashFlowChart {
+        max-height: 250px !important;
+      }
+      
+      .chart-card h4 {
+        font-size: 0.95rem !important;
+        margin-bottom: 0.75rem !important;
+      }
+      
+    }
+    
+    /* Extra small mobile devices */
+    @media (max-width: 480px) {
+      .accounts-container {
+        padding: 0 0.5rem;
+      }
+      
+      /* Score Breakdown - Single Column on very small screens */
+      #scoreBreakdown {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+      }
+      
+      #scoreBreakdown > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+      }
+      
+      #scoreBreakdown > div > div:first-child {
+        text-align: left !important;
+        font-size: 0.8rem !important;
+      }
+      
+      #scoreBreakdown > div > div:last-child {
+        text-align: right !important;
+      }
+      
+      .health-score-card {
+        padding: 1rem 0.75rem !important;
+      }
+      
+      .tab {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+      }
+    }
+      
       .statement-title {
         font-size: 1.25rem;
       }
