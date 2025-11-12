@@ -106,6 +106,12 @@ if ($_POST && !$oauthSuccess) {
           <span class="nav-label">Apply</span>
         </div>
       </a>
+      <a href="accounts.php" class="nav-link" title="Accounts" aria-label="Accounts">
+        <div class="nav-item">
+          <img src="assets/nav-transactions.svg" alt="Accounts" style="height:28px;width:28px;"/>
+          <span class="nav-label">Accounts</span>
+        </div>
+      </a>
       <a href="transactions.html" class="nav-link" title="Transactions" aria-label="Transactions">
         <div class="nav-item">
           <img src="assets/nav-transactions.svg" alt="Transactions" style="height:28px;width:28px;"/>
