@@ -374,8 +374,9 @@ const updateCreditDisplay = (amount) => {
     availableCredit.textContent = `AED ${newAvailable.toLocaleString()}`;
     usedCredit.textContent = `AED ${newUsed.toLocaleString()}`;
 
-    // Update circle (15,250 is total limit)
-    const utilizationPercent = (newUsed / 15250) * 100;
+    // Get dynamic credit limit from PHP (passed via window.creditData)
+    const totalCreditLimit = window.creditData?.creditLimit || 15250;
+    const utilizationPercent = (newUsed / totalCreditLimit) * 100;
     const circumference = 565.48;
     const offset = circumference - (utilizationPercent / 100) * circumference;
     

@@ -888,7 +888,7 @@ if (!$bankConnected && !$oauthSuccess) {
           <span class="nav-label">Dashboard</span>
         </div>
       </a>
-      <a href="credit-line.html" class="nav-link" title="Credit Line" aria-label="Credit Line">
+      <a href="credit-line.php" class="nav-link" title="Credit Line" aria-label="Credit Line">
         <div class="nav-item">
           <img src="assets/nav-credit-line.svg" alt="Credit Line" style="height:28px;width:28px;"/>
           <span class="nav-label">Credit Line</span>
