@@ -48,6 +48,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Track active BNPL plans
   let activeBNPLPlans = JSON.parse(localStorage.getItem('activeBNPLPlans') || '[]');
+
+  // Load and display active term loans
+  loadTermLoans();
+  
+  // Check for URL parameters (new loan highlight)
+  const urlParams = new URLSearchParams(window.location.search);
+  const highlightId = urlParams.get('highlight');
+  const isNewLoan = urlParams.get('newloan') === 'true';
+  
+  if (highlightId && isNewLoan) {
+    // Show success message for new loan
+    setTimeout(() => {
+      const loanElement = document.getElementById('loan-' + highlightId);
+      if (loanElement) {
+        loanElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        loanElement.classList.add('highlight-flash');
+        
+        // Remove highlight after animation
+        setTimeout(() => {
+          loanElement.classList.remove('highlight-flash');
+        }, 3000);
+      }
+    }, 500);
+  }
   const MAX_BNPL_PLANS = 3;
 
   // Add demo BNPL plans if none exist to showcase the feature
@@ -726,5 +750,121 @@ const formatDate = (dateStr) => {
     hour: '2-digit',
     minute: '2-digit'
   });
+};
+
+// Term Loan Management Functions
+const loadTermLoans = () => {
+  if (typeof TermLoanManager === 'undefined') {
+    console.warn('TermLoanManager not loaded');
+    return;
+  }
+
+  const activeLoans = TermLoanManager.getActiveTermLoans();
+  const container = document.getElementById('termLoansList');
+  const section = document.getElementById('termLoansSection');
+
+  if (!container || !section) {
+    console.warn('Term loans container not found');
+    return;
+  }
+
+  if (activeLoans.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  // Show section and populate loans
+  section.style.display = 'block';
+  container.innerHTML = '';
+
+  activeLoans.forEach(loan => {
+    const loanCard = createTermLoanCard(loan);
+    container.appendChild(loanCard);
+  });
+
+  console.log('Loaded', activeLoans.length, 'active term loans');
+};
+
+const createTermLoanCard = (loan) => {
+  const card = document.createElement('div');
+  card.className = 'term-loan-card';
+  card.id = 'loan-' + loan.id;
+
+  const progress = ((loan.paymentsMade / loan.termMonths) * 100).toFixed(1);
+  const nextDueDate = new Date(loan.nextDueDate);
+  const daysUntilDue = Math.ceil((nextDueDate - new Date()) / (1000 * 60 * 60 * 24));
+  
+  card.innerHTML = `
+    <div class="loan-card-header">
+      <div class="loan-info">
+        <span class="loan-icon">📊</span>
+        <div class="loan-title-section">
+          <h4>Term Loan - AED ${loan.loanAmount.toLocaleString()}</h4>
+          <span class="loan-id">Loan ID: ${loan.id}</span>
+        </div>
+      </div>
+      <div class="loan-status ${daysUntilDue < 0 ? 'overdue' : 'active'}">
+        ${daysUntilDue < 0 ? 'Overdue' : 'Active'}
+      </div>
+    </div>
+    
+    <div class="loan-card-body">
+      <div class="loan-details-grid">
+        <div class="detail-item">
+          <span class="detail-label">Monthly EMI</span>
+          <span class="detail-value">AED ${loan.emi.toLocaleString()}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Remaining Balance</span>
+          <span class="detail-value highlight">AED ${loan.remainingBalance.toLocaleString()}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Next Payment Due</span>
+          <span class="detail-value ${daysUntilDue <= 3 ? 'urgent' : ''}">${formatDate(loan.nextDueDate)}</span>
+          ${daysUntilDue > 0 ? `<span class="detail-meta">${daysUntilDue} days remaining</span>` : '<span class="detail-meta overdue-text">Payment overdue!</span>'}
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Term Progress</span>
+          <span class="detail-value">${loan.paymentsMade} / ${loan.termMonths} months</span>
+        </div>
+      </div>
+      
+      <div class="loan-progress-bar">
+        <div class="progress-fill" style="width: ${progress}%"></div>
+        <span class="progress-text">${progress}% Complete</span>
+      </div>
+      
+      <div class="loan-actions">
+        <button class="btn-primary small" onclick="makeTermLoanPayment('${loan.id}')">
+          💳 Make Payment
+        </button>
+        <button class="btn-outline small" onclick="viewTermLoanDetails('${loan.id}')">
+          📄 View Details
+        </button>
+      </div>
+    </div>
+  `;
+
+  return card;
+};
+
+const makeTermLoanPayment = (loanId) => {
+  if (typeof speak === 'function') {
+    speak('Redirecting to payment page...', false);
+  }
+  alert('Payment functionality coming soon! Loan ID: ' + loanId);
+  // TODO: Implement payment flow
+};
+
+const viewTermLoanDetails = (loanId) => {
+  const loan = TermLoanManager.getTermLoanById(loanId);
+  if (!loan) {
+    alert('Loan not found');
+    return;
+  }
+
+  // Create a modal or navigate to details page
+  alert(`Loan Details:\n\nLoan Amount: AED ${loan.loanAmount}\nTerm: ${loan.termMonths} months\nEMI: AED ${loan.emi}\nRemaining: AED ${loan.remainingBalance}\nPayments Made: ${loan.paymentsMade}\nStatus: ${loan.status}`);
+  // TODO: Implement detailed view modal
 };
 

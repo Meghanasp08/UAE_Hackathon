@@ -874,13 +874,42 @@ const confirmTermLoan = async () => {
   }
   
   try {
+    // Check if payment consent exists
+    const hasPaymentConsent = await checkPaymentConsent();
+    
+    if (!hasPaymentConsent) {
+      // Need to get payment consent first
+      speak('To confirm your term loan, we need payment authorization for the monthly installments. Redirecting to secure authorization...', false);
+      
+      // Store loan details temporarily in localStorage
+      localStorage.setItem('pendingTermLoan', JSON.stringify(loanCalculation));
+      
+      // Show loading state
+      const confirmBtn = document.getElementById('confirmTermLoan');
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Redirecting...';
+      }
+      
+      // Redirect to payment consent initiation for term loan
+      setTimeout(() => {
+        window.location.href = 'api/initiate_payment_consent.php?type=termloan';
+      }, 2000);
+      
+      return;
+    }
+    
+    // Payment consent exists, create loan directly
     speak('Processing your term loan application. Please wait.', false);
+    
+    // Get user info
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
     
     // Create the term loan
     const termLoan = TermLoanManager.createTermLoan(loanCalculation, {
-      name: 'Meghana', // In real app, get from user profile
-      email: 'meghana@example.com',
-      phone: '+971501234567'
+      name: userInfo.name || 'Priya Sharma',
+      email: userInfo.email || 'priya@example.com',
+      phone: userInfo.phone || '+971501234567'
     });
     
     // Simulate processing time
@@ -890,13 +919,18 @@ const confirmTermLoan = async () => {
     closeTermLoanModal();
     
     // Show success message
-    speak(`Congratulations! Your term loan of ${loanCalculation.loanAmount} dirhams has been approved and disbursed. Your loan ID is ${termLoan.id}.`);
+    speak(`Congratulations! Your term loan of ${loanCalculation.loanAmount} dirhams has been approved and disbursed.`);
     
     // Update credit display (reduce available credit)
     updateCreditDisplay(-loanCalculation.loanAmount);
     
-    // Show success notification
+    // Show success notification and redirect
     showSuccessNotification(termLoan);
+    
+    // Redirect to transactions page after a delay
+    setTimeout(() => {
+      window.location.href = 'transactions.html?highlight=' + termLoan.id + '&newloan=true';
+    }, 3000);
     
   } catch (error) {
     speak('Error processing your loan application. Please try again.', false);

@@ -95,8 +95,11 @@ if (!file_exists($privateSignKeyPath)) {
 }
 
 try {
+    // Get consent type from query parameter (payment or termloan)
+    $consentType = $_GET['type'] ?? 'payment';
+    
     // Set consent type in session for index.php to detect
-    $_SESSION['consent_type'] = 'payment';
+    $_SESSION['consent_type'] = $consentType;
     
     // Set redirect URL to return to credit-line.php after OAuth
     $_SESSION['redirect_after_oauth'] = 'https://mercurypay.ariticapp.com/mercurypay/v1/credit-line.php';

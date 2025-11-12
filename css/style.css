@@ -2502,3 +2502,193 @@ a{text-decoration:none;color:inherit}
     font-size: 0.8rem;
   }
 }
+
+/* Term Loans Section */
+.term-loans-section {
+  margin: 2rem 0;
+}
+
+.term-loans-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.term-loan-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.term-loan-card:hover {
+  box-shadow: 0 4px 16px rgba(123, 38, 135, 0.1);
+  border-color: #A259C6;
+}
+
+.term-loan-card.highlight-flash {
+  animation: highlightPulse 2s ease-in-out;
+  border-color: #7B2687;
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(123, 38, 135, 0.3);
+    transform: scale(1.02);
+  }
+}
+
+.loan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.loan-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.loan-icon {
+  font-size: 2rem;
+}
+
+.loan-title-section h4 {
+  margin: 0;
+  color: #7B2687;
+  font-size: 1.1rem;
+}
+
+.loan-id {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.loan-status {
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.loan-status.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.loan-status.overdue {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.loan-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loan-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3d155f;
+}
+
+.detail-value.highlight {
+  color: #7B2687;
+  font-size: 1.1rem;
+}
+
+.detail-value.urgent {
+  color: #F15A8A;
+}
+
+.detail-meta {
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+.detail-meta.overdue-text {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.loan-progress-bar {
+  position: relative;
+  height: 24px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, #7B2687, #A259C6);
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  line-height: 24px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #3d155f;
+}
+
+.loan-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.loan-actions .btn-primary,
+.loan-actions .btn-outline {
+  flex: 1;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .term-loans-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .loan-details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .loan-actions {
+    flex-direction: column;
+  }
+}

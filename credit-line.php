@@ -5,6 +5,7 @@ session_start();
 $oauthSuccess = isset($_GET['oauth_success']) && $_GET['oauth_success'] == '1';
 $consentType = $_GET['consent_type'] ?? '';
 $paymentConsentSuccess = $oauthSuccess && $consentType === 'payment';
+$termLoanConsentSuccess = $oauthSuccess && $consentType === 'termloan';
 
 // Function to recalculate credit score from current banking data
 function recalculateCreditScore() {
@@ -205,6 +206,56 @@ if ($creditData && isset($creditData['creditLimit'])) {
             setTimeout(() => alert.remove(), 500);
           }
         }, 8000);
+      });
+    </script>
+    <?php endif; ?>
+    
+    <?php if ($termLoanConsentSuccess): ?>
+    <!-- Term Loan Consent Success Alert -->
+    <div class="alert alert-success" id="termLoanConsentAlert" style="margin-bottom: 1.5rem; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724;">
+      <strong>✅ Term Loan Created Successfully!</strong>
+      <p style="margin: 0.5rem 0 0 0;">Your term loan has been approved and activated. Redirecting to transactions...</p>
+    </div>
+    <script>
+      // Process pending term loan after OAuth success
+      document.addEventListener('DOMContentLoaded', () => {
+        const pendingLoan = localStorage.getItem('pendingTermLoan');
+        
+        if (pendingLoan) {
+          try {
+            const loanData = JSON.parse(pendingLoan);
+            
+            // Get user info
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            
+            // Create the term loan
+            if (typeof TermLoanManager !== 'undefined') {
+              const termLoan = TermLoanManager.createTermLoan(loanData, {
+                name: userInfo.name || 'Priya Sharma',
+                email: userInfo.email || 'priya@example.com',
+                phone: userInfo.phone || '+971501234567'
+              });
+              
+              console.log('Term loan created successfully:', termLoan);
+              
+              // Clear pending data
+              localStorage.removeItem('pendingTermLoan');
+              
+              // Redirect to transactions page with highlight
+              setTimeout(() => {
+                window.location.href = 'transactions.html?highlight=' + termLoan.id + '&newloan=true';
+              }, 2500);
+            }
+          } catch (error) {
+            console.error('Error creating term loan:', error);
+            localStorage.removeItem('pendingTermLoan');
+          }
+        } else {
+          // No pending loan, just redirect
+          setTimeout(() => {
+            window.location.href = 'transactions.html';
+          }, 2500);
+        }
       });
     </script>
     <?php endif; ?>
