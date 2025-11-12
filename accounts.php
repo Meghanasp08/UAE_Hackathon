@@ -34,6 +34,7 @@ if (!$bankConnected && !$oauthSuccess) {
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Account Information - Smart Credit</title>
   <link rel="stylesheet" href="css/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     .accounts-container {
       max-width: 1200px;
@@ -454,6 +455,8 @@ if (!$bankConnected && !$oauthSuccess) {
         <button class="tab" data-tab="balance">💰 Balance</button>
         <button class="tab" data-tab="transactions">📊 Transactions</button>
         <button class="tab" data-tab="beneficiaries">👥 Beneficiaries</button>
+        <button class="tab" data-tab="statement">📄 Statement</button>
+        <button class="tab" data-tab="analysis">📈 Analysis</button>
       </div>
 
       <!-- Tab: All Accounts -->
@@ -526,6 +529,140 @@ if (!$bankConnected && !$oauthSuccess) {
           <div class="data-content">
             <div id="beneficiariesData">
               <div class="loading-skeleton"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Statement -->
+      <div class="tab-content" id="tab-statement">
+        <div class="data-section">
+          <div class="data-header" onclick="toggleSection(this)">
+            <h3>📄 Account Statement</h3>
+            <span class="toggle-icon">▼</span>
+          </div>
+          <div class="data-content">
+            <div class="statement-controls" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+              <h4 style="margin: 0 0 1rem 0; color: #1e293b;">Generate Statement</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div>
+                  <label for="statementPeriod" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #475569;">Period</label>
+                  <select id="statementPeriod" style="width: 100%; padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <option value="30">Last 30 Days</option>
+                    <option value="60">Last 60 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="custom">Custom Range</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="statementFormat" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #475569;">Format</label>
+                  <select id="statementFormat" style="width: 100%; padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <option value="html">View Online</option>
+                    <option value="pdf">Download PDF</option>
+                    <option value="csv">Export CSV</option>
+                  </select>
+                </div>
+                <div id="customDateRange" style="display: none;">
+                  <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #475569;">Date Range</label>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <input type="date" id="startDate" style="padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <input type="date" id="endDate" style="padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                  </div>
+                </div>
+                <div>
+                  <button id="generateStatementBtn" class="btn-primary" style="padding: 0.625rem 1.5rem; background: #7B2687; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                    Generate Statement
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div id="statementPreview" style="min-height: 200px;">
+              <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                <p>Select period and format, then click "Generate Statement" to view or download your account statement</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Analysis -->
+      <div class="tab-content" id="tab-analysis">
+        <div class="data-section">
+          <div class="data-header" onclick="toggleSection(this)">
+            <h3>📈 Account Analysis</h3>
+            <span class="toggle-icon">▼</span>
+          </div>
+          <div class="data-content">
+            <div style="text-align: center; padding: 2rem;">
+              <button id="runAnalysisBtn" class="btn-primary" style="padding: 0.875rem 2rem; background: #7B2687; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem;">
+                🔍 Run Financial Analysis
+              </button>
+            </div>
+            
+            <div id="analysisLoading" style="display: none;">
+              <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <div class="spinner"></div>
+                  <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #0369a1;">Analyzing Your Account...</h4>
+                    <p style="margin: 0; color: #0c4a6e; font-size: 0.875rem;">Processing transactions and generating insights</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div id="analysisResults" style="display: none;">
+              <!-- Financial Health Score -->
+              <div class="health-score-card" style="background: linear-gradient(135deg, #7B2687 0%, #B83280 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center;">
+                <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Financial Health Score</div>
+                <div style="font-size: 4rem; font-weight: bold; margin: 1rem 0;" id="healthScore">--</div>
+                <div style="font-size: 1.25rem; opacity: 0.95;" id="healthRating">Calculating...</div>
+                
+                <div id="scoreBreakdown" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; text-align: center;">
+                  <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 0.25rem;">Balance</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;" id="balanceScoreValue">--</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 0.25rem;">Cash Flow</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;" id="cashFlowScoreValue">--</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 0.25rem;">Income Stability</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;" id="incomeStabilityValue">--</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 0.25rem;">Spending Discipline</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;" id="spendingDisciplineValue">--</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Charts Section -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div class="chart-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <h4 style="margin: 0 0 1rem 0; color: #1e293b;">💸 Spending by Category</h4>
+                  <canvas id="spendingChart" style="max-height: 300px;"></canvas>
+                </div>
+                <div class="chart-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <h4 style="margin: 0 0 1rem 0; color: #1e293b;">📈 Income vs Expenses</h4>
+                  <canvas id="cashFlowChart" style="max-height: 300px;"></canvas>
+                </div>
+              </div>
+              
+              <!-- Insights -->
+              <div class="insights-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                <h4 style="margin: 0 0 1rem 0; color: #1e293b;">💡 Smart Insights</h4>
+                <div id="insightsList"></div>
+              </div>
+              
+              <!-- Recommendations -->
+              <div class="recommendations-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h4 style="margin: 0 0 1rem 0; color: #1e293b;">🎯 Personalized Recommendations</h4>
+                <div id="recommendationsList"></div>
+              </div>
             </div>
           </div>
         </div>

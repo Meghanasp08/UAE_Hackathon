@@ -176,6 +176,22 @@ try {
     $result = callOpenBankingAPI($baseUrl . $accountId . "/beneficiaries", $baseHeaders, $certificate_path, $private_key_path);
     $accountData['apis']['beneficiaries'] = formatApiResult($result, 'Beneficiaries');
     
+    // 6. SCHEDULED PAYMENTS - Fetch scheduled payments
+    $result = callOpenBankingAPI($baseUrl . $accountId . "/scheduled-payments", $baseHeaders, $certificate_path, $private_key_path);
+    $accountData['apis']['scheduled_payments'] = formatApiResult($result, 'Scheduled Payments');
+    
+    // 7. STANDING ORDERS - Fetch standing orders
+    $result = callOpenBankingAPI($baseUrl . $accountId . "/standing-orders", $baseHeaders, $certificate_path, $private_key_path);
+    $accountData['apis']['standing_orders'] = formatApiResult($result, 'Standing Orders');
+    
+    // 8. DIRECT DEBITS - Fetch direct debits
+    $result = callOpenBankingAPI($baseUrl . $accountId . "/direct-debits", $baseHeaders, $certificate_path, $private_key_path);
+    $accountData['apis']['direct_debits'] = formatApiResult($result, 'Direct Debits');
+    
+    // 9. PARTIES - Fetch account parties (account holder info)
+    $result = callOpenBankingAPI($baseUrl . $accountId . "/parties", $baseHeaders, $certificate_path, $private_key_path);
+    $accountData['apis']['parties'] = formatApiResult($result, 'Parties');
+    
     // Check if all API calls failed
     $allFailed = true;
     foreach ($accountData['apis'] as $api) {

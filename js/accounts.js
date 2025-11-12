@@ -623,3 +623,344 @@ function setupTabs() {
     });
   });
 }
+
+/**
+ * Setup statement generation
+ */
+function setupStatementGeneration() {
+  const periodSelect = document.getElementById('statementPeriod');
+  const formatSelect = document.getElementById('statementFormat');
+  const generateBtn = document.getElementById('generateStatementBtn');
+  const customDateRange = document.getElementById('customDateRange');
+  
+  if (periodSelect) {
+    periodSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'custom' && customDateRange) {
+        customDateRange.style.display = 'block';
+      } else if (customDateRange) {
+        customDateRange.style.display = 'none';
+      }
+    });
+  }
+  
+  if (generateBtn) {
+    generateBtn.addEventListener('click', async () => {
+      const period = periodSelect?.value || '30';
+      const format = formatSelect?.value || 'html';
+      const startDate = document.getElementById('startDate')?.value;
+      const endDate = document.getElementById('endDate')?.value;
+      
+      console.log('Generating statement:', { period, format, startDate, endDate });
+      
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Generating...';
+      
+      try {
+        let url = `api/generate_account_statement.php?format=${format}&range=${period}`;
+        if (period === 'custom' && startDate && endDate) {
+          url += `&start_date=${startDate}&end_date=${endDate}`;
+        }
+        
+        if (format === 'html') {
+          // Open in new window for HTML preview
+          window.open(url, '_blank', 'width=900,height=700');
+        } else if (format === 'csv') {
+          // Trigger download for CSV
+          window.location.href = url;
+        } else if (format === 'pdf') {
+          // Open PDF in new window (will trigger print dialog)
+          window.open(url, '_blank');
+        }
+        
+        // Show success message
+        const preview = document.getElementById('statementPreview');
+        if (preview && format === 'html') {
+          preview.innerHTML = `
+            <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 2rem; text-align: center;">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+              <h4 style="color: #15803d; margin: 0 0 0.5rem 0;">Statement Generated Successfully!</h4>
+              <p style="color: #166534; margin: 0;">Your statement has been opened in a new window.</p>
+            </div>
+          `;
+        }
+        
+      } catch (error) {
+        console.error('Error generating statement:', error);
+        alert('Failed to generate statement. Please try again.');
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Statement';
+      }
+    });
+  }
+}
+
+/**
+ * Setup account analysis
+ */
+function setupAccountAnalysis() {
+  const runAnalysisBtn = document.getElementById('runAnalysisBtn');
+  
+  if (runAnalysisBtn) {
+    runAnalysisBtn.addEventListener('click', async () => {
+      console.log('Running account analysis...');
+      await runAccountAnalysis();
+    });
+  }
+}
+
+/**
+ * Run account analysis
+ */
+async function runAccountAnalysis() {
+  const loadingDiv = document.getElementById('analysisLoading');
+  const resultsDiv = document.getElementById('analysisResults');
+  const runBtn = document.getElementById('runAnalysisBtn');
+  
+  if (loadingDiv) loadingDiv.style.display = 'block';
+  if (resultsDiv) resultsDiv.style.display = 'none';
+  if (runBtn) runBtn.disabled = true;
+  
+  try {
+    const response = await fetch('api/analyze_account.php');
+    const data = await response.json();
+    
+    console.log('Analysis response:', data);
+    
+    if (data.success) {
+      displayAnalysisResults(data.analysis);
+      if (loadingDiv) loadingDiv.style.display = 'none';
+      if (resultsDiv) resultsDiv.style.display = 'block';
+    } else {
+      throw new Error(data.error || 'Analysis failed');
+    }
+    
+  } catch (error) {
+    console.error('Error running analysis:', error);
+    if (loadingDiv) loadingDiv.style.display = 'none';
+    alert('Failed to run analysis: ' + error.message);
+  } finally {
+    if (runBtn) runBtn.disabled = false;
+  }
+}
+
+/**
+ * Display analysis results
+ */
+function displayAnalysisResults(analysis) {
+  // Financial Health Score
+  const healthScore = document.getElementById('healthScore');
+  const healthRating = document.getElementById('healthRating');
+  const balanceScoreValue = document.getElementById('balanceScoreValue');
+  const cashFlowScoreValue = document.getElementById('cashFlowScoreValue');
+  const incomeStabilityValue = document.getElementById('incomeStabilityValue');
+  const spendingDisciplineValue = document.getElementById('spendingDisciplineValue');
+  
+  if (healthScore) healthScore.textContent = analysis.financial_health.score;
+  if (healthRating) healthRating.textContent = analysis.financial_health.rating;
+  if (balanceScoreValue) balanceScoreValue.textContent = analysis.financial_health.breakdown.balance;
+  if (cashFlowScoreValue) cashFlowScoreValue.textContent = analysis.financial_health.breakdown.cash_flow;
+  if (incomeStabilityValue) incomeStabilityValue.textContent = analysis.financial_health.breakdown.income_stability;
+  if (spendingDisciplineValue) spendingDisciplineValue.textContent = analysis.financial_health.breakdown.spending_discipline;
+  
+  // Spending Chart (Pie)
+  createSpendingChart(analysis.spending_analysis);
+  
+  // Cash Flow Chart (Bar)
+  createCashFlowChart(analysis.cash_flow_analysis);
+  
+  // Insights
+  displayInsights(analysis.insights);
+  
+  // Recommendations
+  displayRecommendations(analysis.recommendations);
+}
+
+/**
+ * Create spending pie chart
+ */
+function createSpendingChart(spendingData) {
+  const canvas = document.getElementById('spendingChart');
+  if (!canvas) return;
+  
+  // Destroy existing chart if it exists
+  if (window.spendingChartInstance) {
+    window.spendingChartInstance.destroy();
+  }
+  
+  const ctx = canvas.getContext('2d');
+  const categories = Object.keys(spendingData.spending_by_category);
+  const amounts = Object.values(spendingData.spending_by_category);
+  
+  const colors = [
+    '#7B2687', '#B83280', '#059669', '#0891b2', '#f59e0b',
+    '#dc2626', '#8b5cf6', '#ec4899', '#10b981', '#3b82f6'
+  ];
+  
+  window.spendingChartInstance = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: categories.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+      datasets: [{
+        data: amounts,
+        backgroundColor: colors,
+        borderWidth: 2,
+        borderColor: '#ffffff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((value / total) * 100).toFixed(1);
+              return `${label}: AED ${value.toFixed(0)} (${percentage}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Create cash flow bar chart
+ */
+function createCashFlowChart(cashFlowData) {
+  const canvas = document.getElementById('cashFlowChart');
+  if (!canvas) return;
+  
+  // Destroy existing chart if it exists
+  if (window.cashFlowChartInstance) {
+    window.cashFlowChartInstance.destroy();
+  }
+  
+  const ctx = canvas.getContext('2d');
+  const months = Object.keys(cashFlowData.monthly_cash_flow);
+  const credits = months.map(m => cashFlowData.monthly_cash_flow[m].credits);
+  const debits = months.map(m => cashFlowData.monthly_cash_flow[m].debits);
+  
+  window.cashFlowChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months.map(m => {
+        const date = new Date(m + '-01');
+        return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      }),
+      datasets: [
+        {
+          label: 'Income',
+          data: credits,
+          backgroundColor: '#059669',
+          borderRadius: 4
+        },
+        {
+          label: 'Expenses',
+          data: debits,
+          backgroundColor: '#dc2626',
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return 'AED ' + value.toLocaleString();
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ': AED ' + context.parsed.y.toFixed(0);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Display insights
+ */
+function displayInsights(insights) {
+  const container = document.getElementById('insightsList');
+  if (!container) return;
+  
+  if (!insights || insights.length === 0) {
+    container.innerHTML = '<p style="color: #94a3b8;">No insights available at this time.</p>';
+    return;
+  }
+  
+  const html = insights.map(insight => {
+    const bgColor = insight.type === 'success' ? '#f0fdf4' :
+                    insight.type === 'warning' ? '#fef3c7' : '#eff6ff';
+    const borderColor = insight.type === 'success' ? '#86efac' :
+                        insight.type === 'warning' ? '#fcd34d' : '#93c5fd';
+    
+    return `
+      <div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 1rem; border-radius: 4px; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 1.25rem;">${insight.icon}</span>
+        <span style="color: #1e293b;">${insight.message}</span>
+      </div>
+    `;
+  }).join('');
+  
+  container.innerHTML = html;
+}
+
+/**
+ * Display recommendations
+ */
+function displayRecommendations(recommendations) {
+  const container = document.getElementById('recommendationsList');
+  if (!container) return;
+  
+  if (!recommendations || recommendations.length === 0) {
+    container.innerHTML = '<p style="color: #94a3b8;">No recommendations available at this time.</p>';
+    return;
+  }
+  
+  const html = recommendations.map(rec => `
+    <div style="background: #f8f9fa; padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #7B2687;">
+      <h5 style="margin: 0 0 0.5rem 0; color: #1e293b;">${rec.title}</h5>
+      <p style="margin: 0; color: #475569; font-size: 0.875rem;">${rec.description}</p>
+      ${rec.data ? `<div style="margin-top: 0.75rem; padding: 0.75rem; background: white; border-radius: 4px; font-size: 0.875rem;">
+        ${JSON.stringify(rec.data, null, 2).replace(/[{}"]/g, '').split('\n').filter(l => l.trim()).join('<br>')}
+      </div>` : ''}
+    </div>
+  `).join('');
+  
+  container.innerHTML = html;
+}
+
+// Initialize statement and analysis features when document is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setupStatementGeneration();
+    setupAccountAnalysis();
+  });
+} else {
+  setupStatementGeneration();
+  setupAccountAnalysis();
+}
+
