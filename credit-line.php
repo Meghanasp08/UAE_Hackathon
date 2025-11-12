@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+// Check for OAuth success callback
+$oauthSuccess = isset($_GET['oauth_success']) && $_GET['oauth_success'] == '1';
+$consentType = $_GET['consent_type'] ?? '';
+$paymentConsentSuccess = $oauthSuccess && $consentType === 'payment';
+
 // Function to recalculate credit score from current banking data
 function recalculateCreditScore() {
     // Check if we have banking data and application data in session
@@ -175,6 +180,49 @@ if ($creditData && isset($creditData['creditLimit'])) {
   </header>
 
   <main class="container">
+    <?php if ($paymentConsentSuccess): ?>
+    <!-- Payment Consent Success Alert -->
+    <div class="alert alert-success" id="paymentConsentAlert" style="margin-bottom: 1.5rem; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724;">
+      <strong>✅ Payment Authorization Successful!</strong>
+      <p style="margin: 0.5rem 0 0 0;">Auto-sweep payment consent has been granted. You can now configure your auto-sweep settings below.</p>
+    </div>
+    <script>
+      // Auto-enable the toggle after payment consent
+      document.addEventListener('DOMContentLoaded', () => {
+        const autoSweepToggle = document.getElementById('autoSweepToggle');
+        if (autoSweepToggle) {
+          autoSweepToggle.checked = true;
+          autoSweepToggle.dispatchEvent(new Event('change'));
+        }
+        
+        // Auto-hide alert after 8 seconds
+        setTimeout(() => {
+          const alert = document.getElementById('paymentConsentAlert');
+          if (alert) {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 500);
+          }
+        }, 8000);
+      });
+    </script>
+    <?php endif; ?>
+    
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'consent_failed'): ?>
+    <!-- Payment Consent Error Alert -->
+    <div class="alert alert-danger" style="margin-bottom: 1.5rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
+      <strong>❌ Payment Authorization Failed</strong>
+      <p style="margin: 0.5rem 0 0 0;">
+        <?php 
+        echo isset($_SESSION['payment_consent_error']) 
+          ? htmlspecialchars($_SESSION['payment_consent_error']) 
+          : 'Unable to complete payment authorization. Please try again.';
+        unset($_SESSION['payment_consent_error']);
+        ?>
+      </p>
+    </div>
+    <?php endif; ?>
+    
     <section class="credit-header">
       <h2>Your Credit Line</h2>
     </section>

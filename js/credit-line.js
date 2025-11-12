@@ -42,8 +42,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Auto-sweep toggle handler
   if (autoSweepToggle) {
-    autoSweepToggle.addEventListener('change', (e) => {
+    autoSweepToggle.addEventListener('change', async (e) => {
       if (e.target.checked) {
+        // Check if payment consent already exists
+        const hasPaymentConsent = await checkPaymentConsent();
+        
+        if (!hasPaymentConsent) {
+          // Need to get payment consent first
+          speak('To enable auto-sweep, we need your authorization for automatic payments. Redirecting to secure authorization...', false);
+          
+          // Show loading state
+          autoSweepToggle.disabled = true;
+          
+          // Redirect to payment consent initiation
+          setTimeout(() => {
+            window.location.href = 'api/initiate_payment_consent.php';
+          }, 1500);
+          
+          return;
+        }
+        
+        // Payment consent exists, enable auto-sweep
         sweepSettings?.removeAttribute('hidden');
         const sweepBenefits = document.getElementById('sweepBenefits');
         if (sweepBenefits) {
@@ -867,5 +886,17 @@ const closeTermLoanModal = () => {
   const acceptTerms = document.getElementById('acceptTerms');
   if (acceptTerms) {
     acceptTerms.checked = false;
+  }
+};
+
+// Helper function to check if payment consent exists
+const checkPaymentConsent = async () => {
+  try {
+    const response = await fetch('api/check_payment_consent.php');
+    const data = await response.json();
+    return data.hasConsent || false;
+  } catch (error) {
+    console.error('Error checking payment consent:', error);
+    return false;
   }
 };

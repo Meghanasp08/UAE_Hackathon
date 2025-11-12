@@ -1,0 +1,252 @@
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                    AUTO-SWEEP PAYMENT CONSENT FLOW                              │
+│                         Quick Reference Diagram                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+PHASE 1: USER INTERACTION
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  User visits: v1/credit-line.php                                               │
+│       ↓                                                                         │
+│  Toggles Auto-Sweep to ON                                                      │
+│       ↓                                                                         │
+│  JavaScript: checkPaymentConsent() → AJAX to check_payment_consent.php        │
+│       ↓                                                                         │
+│  ┌─────────────────────────────┐                                              │
+│  │  Payment Consent Exists?    │                                              │
+│  └──┬────────────────────────┬─┘                                              │
+│     │ NO                     │ YES                                             │
+│     ↓                        ↓                                                 │
+│  Redirect to              Enable Auto-Sweep                                    │
+│  initiate script          Immediately ✓                                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+
+PHASE 2: CONSENT INITIATION (First Time Only)
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  File: v1/api/initiate_payment_consent.php                                    │
+│  ─────────────────────────────────────────────────────────────────            │
+│                                                                                 │
+│  STEP 1: Set Session Variables                                                 │
+│  ├─ $_SESSION['consent_type'] = 'payment'                                     │
+│  ├─ $_SESSION['redirect_after_oauth'] = 'v1/credit-line.php'                 │
+│  ├─ $_SESSION['code_verifier'] = generateCodeVerifier()                       │
+│  └─ $_SESSION['consentId'] = generateGuid()                                   │
+│                                                                                 │
+│  STEP 2: Generate Encrypted PII                                                │
+│  ├─ Prepare creditor details (Shukria Financial Services)                     │
+│  ├─ Sign with private key                                                      │
+│  └─ POST to /o3/v1.0/message-encryption → Get encrypted PII                   │
+│                                                                                 │
+│  STEP 3: Create Request Object JWT                                             │
+│  ├─ Multi-payment subscription parameters:                                     │
+│  │  ├─ Frequency: EvryDay (daily sweeps)                                      │
+│  │  ├─ Duration: 1 year (365 payments)                                        │
+│  │  ├─ Max per payment: AED 5,000                                             │
+│  │  └─ Monthly limit: AED 50,000                                              │
+│  ├─ Include encrypted PII                                                      │
+│  └─ POST to /o3/v1.0/message-signature → Get signed JWT                       │
+│                                                                                 │
+│  STEP 4: Create Client Assertion JWT                                           │
+│  └─ POST to /o3/v1.0/message-signature → Get client assertion                 │
+│                                                                                 │
+│  STEP 5: Call PAR Endpoint                                                     │
+│  ├─ POST to /par with:                                                         │
+│  │  ├─ client_id                                                               │
+│  │  ├─ request (signed JWT from Step 3)                                       │
+│  │  └─ client_assertion (from Step 4)                                         │
+│  └─ Receive: request_uri                                                       │
+│                                                                                 │
+│  STEP 6: Redirect to Authorization                                             │
+│  └─ Redirect to: https://auth1.altareq1.sandbox.../auth?                      │
+│     client_id=...&response_type=code&scope=payments openid&                   │
+│     request_uri=[from PAR]                                                     │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+
+PHASE 3: USER AUTHORIZATION
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Open Finance Authorization Screen                                             │
+│  ──────────────────────────────────────                                        │
+│                                                                                 │
+│  User sees:                                                                     │
+│  ┌─────────────────────────────────────────────┐                              │
+│  │ Shukria Financial Services                  │                              │
+│  │ requests permission to:                     │                              │
+│  │                                             │                              │
+│  │ • Automatically collect payments from      │                              │
+│  │   your account                             │                              │
+│  │ • Up to AED 5,000 per payment              │                              │
+│  │ • Up to AED 50,000 per month               │                              │
+│  │ • Daily frequency                          │                              │
+│  │ • For 1 year                               │                              │
+│  │                                             │                              │
+│  │ [Select Account] [▼]                       │                              │
+│  │                                             │                              │
+│  │ [Cancel]  [Authorize]                      │                              │
+│  └─────────────────────────────────────────────┘                              │
+│                                                                                 │
+│  User clicks [Authorize]                                                       │
+│       ↓                                                                         │
+│  Redirect to: https://mercurypay.ariticapp.com/mercurypay?code=XXXXX          │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+
+PHASE 4: TOKEN EXCHANGE (index.php)
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  File: index.php                                                               │
+│  ────────────────                                                              │
+│                                                                                 │
+│  Receives: ?code=AUTHORIZATION_CODE                                            │
+│       ↓                                                                         │
+│  Check $_SESSION['consent_type']                                              │
+│       ↓                                                                         │
+│  ┌──────────────────────────────────┐                                         │
+│  │ consent_type = 'payment'         │                                         │
+│  └──────────────┬───────────────────┘                                         │
+│                 ↓                                                               │
+│  Call: getAccessTokenFromCode(                                                 │
+│    code: AUTHORIZATION_CODE,                                                   │
+│    redirect_uri: 'https://mercurypay.ariticapp.com/mercurypay',              │
+│    code_verifier: $_SESSION['code_verifier'],                                 │
+│    client_assertion: $_SESSION['clientAssertionJwt'],                         │
+│    scope: 'payments openid'  ← Payment scope                                  │
+│  )                                                                              │
+│       ↓                                                                         │
+│  POST to /token endpoint                                                       │
+│       ↓                                                                         │
+│  Receive:                                                                       │
+│  ├─ access_token                                                               │
+│  ├─ id_token                                                                   │
+│  ├─ refresh_token                                                              │
+│  └─ expires_in                                                                 │
+│       ↓                                                                         │
+│  Store Payment Tokens:                                                         │
+│  ├─ $_SESSION['payment_access_token'] = access_token                          │
+│  ├─ $_SESSION['payment_id_token'] = id_token                                  │
+│  ├─ $_SESSION['payment_refresh_token'] = refresh_token                        │
+│  ├─ $_SESSION['payment_token_expiry'] = time() + expires_in                   │
+│  └─ $_SESSION['payment_consent_id'] = $_SESSION['consentId']                  │
+│       ↓                                                                         │
+│  Clean up:                                                                      │
+│  ├─ unset($_SESSION['consent_type'])                                          │
+│  └─ Get redirect URL from $_SESSION['redirect_after_oauth']                   │
+│       ↓                                                                         │
+│  Redirect to:                                                                   │
+│  v1/credit-line.php?oauth_success=1&consent_type=payment                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+
+PHASE 5: SUCCESS CONFIRMATION
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  File: v1/credit-line.php                                                      │
+│  ─────────────────────────                                                     │
+│                                                                                 │
+│  PHP: Detects oauth_success=1 & consent_type=payment                          │
+│       ↓                                                                         │
+│  Display Success Alert:                                                        │
+│  ┌─────────────────────────────────────────────────────────────┐              │
+│  │ ✅ Payment Authorization Successful!                        │              │
+│  │                                                             │              │
+│  │ Auto-sweep payment consent has been granted.               │              │
+│  │ You can now configure your auto-sweep settings below.      │              │
+│  └─────────────────────────────────────────────────────────────┘              │
+│       ↓                                                                         │
+│  JavaScript: Auto-enable toggle                                                │
+│  ├─ document.getElementById('autoSweepToggle').checked = true                 │
+│  └─ Dispatch 'change' event                                                    │
+│       ↓                                                                         │
+│  Auto-Sweep Settings Panel Opens                                               │
+│  ├─ Threshold input                                                            │
+│  ├─ Schedule dropdown                                                          │
+│  └─ Save settings button                                                       │
+│       ↓                                                                         │
+│  Success alert auto-hides after 8 seconds                                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+
+SUBSEQUENT USES (Payment Consent Already Exists)
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  User toggles Auto-Sweep ON                                                    │
+│       ↓                                                                         │
+│  JavaScript: checkPaymentConsent()                                             │
+│       ↓                                                                         │
+│  AJAX: GET api/check_payment_consent.php                                       │
+│       ↓                                                                         │
+│  Response: { hasConsent: true, consentId: "xxx", ... }                        │
+│       ↓                                                                         │
+│  Enable Auto-Sweep Immediately (NO REDIRECT) ✓                                │
+│  ├─ Show sweep settings panel                                                  │
+│  └─ Initialize benefits calculator                                             │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+
+SESSION DATA STRUCTURE
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Account Consent (Existing)          Payment Consent (New)                    │
+│  ───────────────────────────          ──────────────────────                  │
+│  access_token                         payment_access_token                    │
+│  id_token                             payment_id_token                        │
+│  refresh_token                        payment_refresh_token                   │
+│  access_token_expiry                  payment_token_expiry                    │
+│                                        payment_consent_id                      │
+│                                                                                 │
+│  Routing Variables (Temporary)                                                 │
+│  ──────────────────────────────                                                │
+│  consent_type ('payment' or 'accounts')                                        │
+│  redirect_after_oauth (target URL after OAuth)                                 │
+│  code_verifier (PKCE)                                                          │
+│  consentId (generated consent ID)                                              │
+│  clientAssertionJwt (for token exchange)                                       │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+
+KEY DIFFERENCES: ACCOUNT vs PAYMENT CONSENT
+┌──────────────────────┬─────────────────────────┬──────────────────────────────┐
+│ Aspect               │ Account Consent         │ Payment Consent              │
+├──────────────────────┼─────────────────────────┼──────────────────────────────┤
+│ Scope                │ accounts                │ payments openid              │
+│ Encrypted PII        │ Not required            │ Required (creditor details)  │
+│ Duration             │ 90 days (typical)       │ 365 days (subscription)      │
+│ Consent Type         │ Account Information     │ Multi-Payment VRP            │
+│ Frequency            │ On-demand               │ EvryDay (daily)              │
+│ Payment Limits       │ N/A                     │ Per payment + Monthly limits │
+│ Token Storage        │ access_token            │ payment_access_token         │
+│ Use Case             │ Read account data       │ Execute payments             │
+│ Trigger              │ callOpenFinanceClient   │ initiate_payment_consent     │
+│ Return URL           │ index.php (default)     │ v1/credit-line.php           │
+└──────────────────────┴─────────────────────────┴──────────────────────────────┘
+
+
+TROUBLESHOOTING
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Issue: Toggle doesn't redirect to OAuth                                       │
+│  Fix: Check browser console for AJAX errors, verify check_payment_consent.php │
+│                                                                                 │
+│  Issue: OAuth callback fails                                                   │
+│  Fix: Verify code_verifier in session, check clientAssertionJwt exists        │
+│                                                                                 │
+│  Issue: Tokens not stored                                                      │
+│  Fix: Verify consent_type='payment' in session before callback                │
+│                                                                                 │
+│  Issue: Success alert doesn't appear                                           │
+│  Fix: Check URL for oauth_success=1&consent_type=payment parameters           │
+│                                                                                 │
+│  Issue: Certificate errors                                                     │
+│  Fix: Verify paths to certi2703/*.key and *.pem files are correct             │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
