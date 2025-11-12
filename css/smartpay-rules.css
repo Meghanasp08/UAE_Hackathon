@@ -1,0 +1,277 @@
+/* SmartPay Rules Modal Styles */
+/* Author: AI Assistant */
+/* Date: November 12, 2025 */
+
+/* --- SmartPay Rule Modal & Prebuilt Rule Cards --- */
+.rule-modal .modal-content.large {
+  max-width: 540px;
+  width: 95vw;
+  padding: 0;
+}
+
+.rule-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 0 0;
+}
+
+.prebuilt-rule-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem 1rem 0.75rem 1rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+  position: relative;
+}
+
+.prebuilt-rule-card:hover {
+  border: 2px solid var(--accent);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.prebuilt-rule-card.selected {
+  border: 2px solid var(--accent);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, rgba(123, 38, 135, 0.05), rgba(184, 50, 128, 0.05));
+}
+
+.prebuilt-rule-card .rule-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  align-self: flex-start;
+}
+
+.prebuilt-rule-card .rule-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 0.25rem;
+}
+
+.prebuilt-rule-card .rule-meta {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.prebuilt-rule-card .rule-action {
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.prebuilt-rule-card .rule-example {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: auto;
+  margin-bottom: 0.25rem;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+/* Rule Detail View */
+.rule-detail-content {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  text-align: left;
+}
+
+.rule-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.rule-detail-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.rule-detail-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+}
+
+.rule-detail-section {
+  margin-bottom: 1.25rem;
+}
+
+.section-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rule-detail-meta {
+  font-size: 1.05rem;
+  color: var(--text);
+  font-weight: 500;
+  background: rgba(123, 38, 135, 0.05);
+  padding: 0.75rem;
+  border-radius: var(--radius-small);
+  border-left: 3px solid var(--accent);
+}
+
+.rule-detail-action {
+  font-size: 1.05rem;
+  color: var(--text);
+  line-height: 1.5;
+  background: rgba(15, 110, 243, 0.05);
+  padding: 0.75rem;
+  border-radius: var(--radius-small);
+  border-left: 3px solid #0f6ef3;
+}
+
+.rule-detail-example {
+  font-size: 1rem;
+  color: var(--text);
+  background: rgba(249, 168, 38, 0.1);
+  padding: 0.75rem;
+  border-radius: var(--radius-small);
+  border-left: 3px solid var(--success);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.rule-detail-benefits {
+  background: rgba(16, 185, 129, 0.05);
+  padding: 0.75rem;
+  border-radius: var(--radius-small);
+  border-left: 3px solid #10b981;
+}
+
+.rule-detail-benefits .benefits-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.rule-detail-benefits .benefits-list li {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.rule-detail-benefits .benefits-list li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #10b981;
+  font-weight: bold;
+}
+
+.rule-detail-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .rule-modal .modal-content.large {
+    max-width: 100vw;
+    min-width: 0;
+    border-radius: 0;
+    padding: 0;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  .rule-list-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0 0 0;
+  }
+  
+  .prebuilt-rule-card {
+    min-height: 160px;
+    padding: 1rem;
+  }
+  
+  .prebuilt-rule-card .rule-title {
+    font-size: 1.05rem;
+  }
+  
+  .prebuilt-rule-card .rule-meta {
+    font-size: 0.85rem;
+  }
+  
+  .prebuilt-rule-card .rule-action {
+    font-size: 0.9rem;
+  }
+  
+  .prebuilt-rule-card .rule-example {
+    font-size: 0.8rem;
+  }
+  
+  .rule-detail-content {
+    padding: 1rem;
+  }
+  
+  .rule-detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .rule-detail-title {
+    font-size: 1.25rem;
+  }
+  
+  .rule-detail-actions {
+    padding: 0 1rem 1rem 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .rule-detail-actions button {
+    width: 100%;
+    padding: 0.75rem;
+  }
+}
+
+/* Animation for modal content transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#ruleSelectView,
+#ruleDetailView {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Focus styles for accessibility */
+.prebuilt-rule-card:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.prebuilt-rule-card:focus:not(:focus-visible) {
+  outline: none;
+}
