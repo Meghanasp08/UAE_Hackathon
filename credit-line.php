@@ -586,6 +586,45 @@ if ($creditData && isset($creditData['creditLimit'])) {
           </div>
 
           <div id="loanResults" class="loan-results" hidden>
+            <!-- Tiered Rate Breakdown - Always visible when results are shown -->
+            <div id="tieredRateBreakdown" class="tiered-rate-breakdown">
+              <h5>💡 Interest Rate Breakdown</h5>
+              <div class="tier-info-grid">
+                <div class="tier-row tier-1">
+                  <div class="tier-label">
+                    <span class="tier-icon">💳</span>
+                    <span>Amount within available credit:</span>
+                  </div>
+                  <div class="tier-details">
+                    <span class="tier-amount" id="tier1Amount">AED 0</span>
+                    <span class="tier-rate" id="tier1Rate">8.9% APR</span>
+                  </div>
+                </div>
+                <div class="tier-row tier-2">
+                  <div class="tier-label">
+                    <span class="tier-icon">📈</span>
+                    <span>Amount beyond available credit:</span>
+                  </div>
+                  <div class="tier-details">
+                    <span class="tier-amount" id="tier2Amount">AED 0</span>
+                    <span class="tier-rate" id="tier2Rate">25.0% APR</span>
+                  </div>
+                </div>
+                <div class="tier-row effective-rate">
+                  <div class="tier-label">
+                    <span class="tier-icon">🎯</span>
+                    <span><strong>Blended Effective Rate:</strong></span>
+                  </div>
+                  <div class="tier-details">
+                    <span class="blended-rate" id="blendedAPR">--</span>
+                  </div>
+                </div>
+              </div>
+              <div class="rate-note">
+                <small>ℹ️ The interest rate is calculated based on your available credit limit. Amount up to your available credit uses your current credit line APR (8.9%), while any amount beyond that uses a higher rate (25%).</small>
+              </div>
+            </div>
+
             <div class="results-grid">
               <div class="result-item">
                 <span class="result-label">Monthly Payment (EMI)</span>

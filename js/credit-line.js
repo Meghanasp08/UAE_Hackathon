@@ -442,6 +442,7 @@ const addRuleToList = (rule) => {
 // Term Loan Modal Functionality
 let currentStep = 1;
 let loanCalculation = null;
+let eligibilityData = null; // Store eligibility data for tiered calculations
 
 const openTermLoanModal = () => {
   const modal = document.getElementById('termLoanModal');
@@ -539,10 +540,27 @@ const setupTermLoanListeners = () => {
     }
   });
 
+  // Calculate button
+  if (newCalculateBtn) {
+    newCalculateBtn.addEventListener('click', () => {
+      calculateTermLoan();
+    });
+  }
+
   // Real-time loan amount validation
   if (loanAmount) {
     loanAmount.addEventListener('input', (e) => {
       validateLoanAmount(e.target.value);
+    });
+  }
+  
+  // Loan term selection validation
+  if (loanTerm) {
+    loanTerm.addEventListener('change', () => {
+      const loanAmountValue = document.getElementById('loanAmount')?.value;
+      if (loanAmountValue) {
+        validateLoanAmount(loanAmountValue);
+      }
     });
   }
 };
@@ -619,15 +637,18 @@ const checkEligibility = async () => {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Get current credit data (from page or mock data)
-  const creditLimit = 15250;  // From the page
-  const currentBalance = 2750; // From the page
+  // Get current credit data from window object (passed from PHP)
+  const creditLimit = window.creditData?.creditLimit || 15250;
+  const usedCredit = window.creditData?.usedCredit || 2750;
   
   // Clear old demo term loans for fresh eligibility check
   // In production, this would check actual active loans from the system
   const existingTermLoans = [];
   
-  const eligibility = TermLoanManager.checkEligibility(creditLimit, currentBalance, existingTermLoans);
+  const eligibility = TermLoanManager.checkEligibility(creditLimit, usedCredit, existingTermLoans);
+  
+  // Store eligibility data globally for later use in tiered calculation
+  eligibilityData = eligibility;
   
   if (eligibilityResult) {
     eligibilityResult.innerHTML = `
@@ -751,7 +772,23 @@ const calculateTermLoan = () => {
   }
   
   try {
-    loanCalculation = TermLoanManager.calculateLoan(loanAmount, loanTerm);
+    // Get credit data from window object (passed from PHP) or eligibility data
+    const availableCredit = eligibilityData?.availableCredit || window.creditData?.availableCredit || 12500;
+    const currentAPR = (window.creditData?.apr || 8.9) / 100; // Convert percentage to decimal
+    
+    console.log('Calculating tiered loan with:', {
+      loanAmount,
+      loanTerm,
+      availableCredit,
+      currentAPR,
+      eligibilityData,
+      windowCreditData: window.creditData
+    });
+    
+    // Use tiered calculation
+    loanCalculation = TermLoanManager.calculateTieredLoan(loanAmount, loanTerm, availableCredit, currentAPR);
+    
+    console.log('Loan calculation result:', loanCalculation);
     
     // Update results display
     document.getElementById('monthlyEmi').textContent = `AED ${loanCalculation.emi.toLocaleString()}`;
@@ -759,6 +796,38 @@ const calculateTermLoan = () => {
     document.getElementById('processingFee').textContent = `AED ${loanCalculation.processingFee.toLocaleString()}`;
     document.getElementById('totalCost').textContent = `AED ${loanCalculation.totalCost.toLocaleString()}`;
     document.getElementById('effectiveApr').textContent = `${loanCalculation.effectiveAPR}%`;
+    
+    // Always update and show tiered rate breakdown for transparency
+    const tier1Amount = document.getElementById('tier1Amount');
+    const tier1Rate = document.getElementById('tier1Rate');
+    const tier2Amount = document.getElementById('tier2Amount');
+    const tier2Rate = document.getElementById('tier2Rate');
+    const blendedAPR = document.getElementById('blendedAPR');
+    const tier2Row = document.querySelector('.tier-row.tier-2');
+    
+    if (tier1Amount) tier1Amount.textContent = `AED ${loanCalculation.tier1.amount.toLocaleString()}`;
+    if (tier1Rate) tier1Rate.textContent = `${loanCalculation.tier1.ratePercent}% APR`;
+    if (tier2Amount) tier2Amount.textContent = `AED ${loanCalculation.tier2.amount.toLocaleString()}`;
+    if (tier2Rate) tier2Rate.textContent = `${loanCalculation.tier2.ratePercent}% APR`;
+    if (blendedAPR) blendedAPR.textContent = `${loanCalculation.effectiveAPR}%`;
+    
+    // Show/hide Tier 2 row based on whether it's tiered
+    if (tier2Row) {
+      if (loanCalculation.isTiered && loanCalculation.tier2.amount > 0) {
+        tier2Row.style.display = 'flex';
+      } else {
+        tier2Row.style.display = 'none';
+      }
+    }
+    
+    // Always show tiered breakdown section
+    const tieredBreakdown = document.getElementById('tieredRateBreakdown');
+    if (tieredBreakdown) {
+      tieredBreakdown.removeAttribute('hidden');
+      console.log('Tiered breakdown shown');
+    } else {
+      console.warn('tieredRateBreakdown element not found');
+    }
     
     // Show results
     if (resultsDiv) {

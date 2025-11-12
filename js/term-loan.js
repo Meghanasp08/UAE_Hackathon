@@ -30,13 +30,16 @@ const TermLoanManager = {
                 return total + (loan.remainingBalance || 0);
             }, 0);
             
+            // Calculate available credit (this is used for Tier 1 rate)
+            const availableCredit = creditLimit - currentBalance;
+            
             // Calculate maximum available loan amount
             const maxPossibleLoan = creditLimit * this.config.maxLoanToLimitRatio;
-            const availableAmount = maxPossibleLoan - currentBalance - existingTermLoanDebt;
+            const maxLoanAmount = maxPossibleLoan - currentBalance - existingTermLoanDebt;
             
             // Eligibility criteria - More lenient for good credit profiles
             // Users with low utilization (<50%) can access term loans even with existing debt
-            const isEligible = availableAmount >= this.config.minLoanAmount;
+            const isEligible = maxLoanAmount >= this.config.minLoanAmount;
             const utilizationCheck = currentUtilization <= 90; // Max 90% current utilization (more lenient)
             
             // Good credit behavior allows more flexibility
@@ -44,16 +47,18 @@ const TermLoanManager = {
             
             return {
                 eligible: isEligible && (utilizationCheck || goodCreditProfile),
-                maxLoanAmount: Math.max(0, Math.floor(availableAmount)),
+                maxLoanAmount: Math.max(0, Math.floor(maxLoanAmount)),
+                availableCredit: Math.max(0, Math.floor(availableCredit)),
                 currentUtilization,
                 existingTermLoanDebt,
-                reasons: this._getEligibilityReasons(isEligible, utilizationCheck, availableAmount, goodCreditProfile)
+                reasons: this._getEligibilityReasons(isEligible, utilizationCheck, maxLoanAmount, goodCreditProfile)
             };
         } catch (error) {
             console.error('Error checking term loan eligibility:', error);
             return {
                 eligible: false,
                 maxLoanAmount: 0,
+                availableCredit: 0,
                 currentUtilization: 0,
                 existingTermLoanDebt: 0,
                 reasons: ['System error. Please try again.']
@@ -85,7 +90,79 @@ const TermLoanManager = {
         return reasons;
     },
 
-    // Calculate loan details
+    // Calculate loan details with tiered interest rates
+    calculateTieredLoan(loanAmount, termMonths, availableCredit, baseAPR = 0.089) {
+        try {
+            // Validate inputs
+            if (!loanAmount || loanAmount < this.config.minLoanAmount) {
+                throw new Error(`Minimum loan amount is AED ${this.config.minLoanAmount}`);
+            }
+            
+            if (!termMonths || termMonths <= 0) {
+                throw new Error('Invalid term selected');
+            }
+            
+            // Determine tier amounts
+            const tier1Amount = Math.min(loanAmount, availableCredit);
+            const tier2Amount = Math.max(0, loanAmount - availableCredit);
+            
+            // Define tier rates
+            const tier1Rate = baseAPR;  // Use existing credit line APR (8.9%)
+            const tier2Rate = 0.25;     // 25% for amount beyond available credit
+            
+            // Calculate monthly rates
+            const tier1MonthlyRate = tier1Rate / 12;
+            const tier2MonthlyRate = tier2Rate / 12;
+            
+            // Calculate EMI for each tier
+            const tier1EMI = tier1Amount > 0 ? this._calculateEMI(tier1Amount, tier1MonthlyRate, termMonths) : 0;
+            const tier2EMI = tier2Amount > 0 ? this._calculateEMI(tier2Amount, tier2MonthlyRate, termMonths) : 0;
+            
+            // Total monthly EMI
+            const totalMonthlyEMI = tier1EMI + tier2EMI;
+            
+            // Calculate total amounts
+            const totalPayback = totalMonthlyEMI * termMonths;
+            const totalInterest = totalPayback - loanAmount;
+            const processingFee = loanAmount * this.config.processingFeeRate;
+            const totalCost = totalPayback + processingFee;
+            
+            // Calculate weighted average APR
+            const effectiveAPR = loanAmount > 0 ? 
+                ((tier1Amount * tier1Rate) + (tier2Amount * tier2Rate)) / loanAmount : 0;
+            
+            return {
+                loanAmount,
+                termMonths,
+                tier1: {
+                    amount: Math.round(tier1Amount * 100) / 100,
+                    rate: tier1Rate,
+                    ratePercent: (tier1Rate * 100).toFixed(1),
+                    emi: Math.round(tier1EMI * 100) / 100,
+                    totalInterest: Math.round((tier1EMI * termMonths - tier1Amount) * 100) / 100
+                },
+                tier2: {
+                    amount: Math.round(tier2Amount * 100) / 100,
+                    rate: tier2Rate,
+                    ratePercent: (tier2Rate * 100).toFixed(1),
+                    emi: Math.round(tier2EMI * 100) / 100,
+                    totalInterest: Math.round((tier2EMI * termMonths - tier2Amount) * 100) / 100
+                },
+                emi: Math.round(totalMonthlyEMI * 100) / 100,
+                totalInterest: Math.round(totalInterest * 100) / 100,
+                totalAmount: Math.round(totalPayback * 100) / 100,
+                processingFee: Math.round(processingFee * 100) / 100,
+                totalCost: Math.round(totalCost * 100) / 100,
+                effectiveAPR: Math.round(effectiveAPR * 10000) / 100,
+                isTiered: tier2Amount > 0
+            };
+        } catch (error) {
+            console.error('Error calculating tiered loan:', error);
+            throw error;
+        }
+    },
+
+    // Calculate loan details (legacy method - kept for backward compatibility)
     calculateLoan(loanAmount, termMonths) {
         try {
             // Validate inputs
