@@ -241,9 +241,9 @@ if ($creditData && isset($creditData['creditLimit'])) {
               // Clear pending data
               localStorage.removeItem('pendingTermLoan');
               
-              // Redirect to transactions page with highlight
+              // Redirect to transactions page with highlight and term loans tab
               setTimeout(() => {
-                window.location.href = 'transactions.html?highlight=' + termLoan.id + '&newloan=true';
+                window.location.href = 'transactions.html?tab=termloans&highlight=' + termLoan.id + '&newloan=true';
               }, 2500);
             }
           } catch (error) {
@@ -625,11 +625,11 @@ if ($creditData && isset($creditData['creditLimit'])) {
               <label for="loanTerm">Loan Term</label>
               <select id="loanTerm">
                 <option value="">Select term</option>
-                <option value="12">12 months (8.0% APR)</option>
-                <option value="24">24 months (9.5% APR)</option>
-                <option value="36">36 months (11.0% APR)</option>
-                <option value="48">48 months (12.5% APR)</option>
-                <option value="60">60 months (14.0% APR)</option>
+                <option value="12">12 months (25% APR)</option>
+                <option value="24">24 months (26% APR)</option>
+                <option value="36">36 months (27% APR)</option>
+                <option value="48">48 months (28% APR)</option>
+                <option value="60">60 months (29% APR)</option>
               </select>
             </div>
 

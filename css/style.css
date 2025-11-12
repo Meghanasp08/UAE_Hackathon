@@ -2692,3 +2692,249 @@ a{text-decoration:none;color:inherit}
     flex-direction: column;
   }
 }
+
+/* Tab Navigation Styles */
+.tabs-container {
+  margin: 2rem 0;
+}
+
+.tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  flex: 1;
+  min-width: max-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background: rgba(123, 38, 135, 0.1);
+  color: #7B2687;
+}
+
+.tab-btn.active {
+  background: #fff;
+  color: #7B2687;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background: #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active .tab-badge {
+  background: #7B2687;
+  color: white;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* EMI Payment Styles */
+.emi-payments-section {
+  margin-top: 2rem;
+}
+
+.emi-payments-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.emi-payment-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.emi-payment-card:hover {
+  border-color: #7B2687;
+  box-shadow: 0 4px 12px rgba(123, 38, 135, 0.15);
+}
+
+.emi-payment-card.urgent {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.emi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.emi-type-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.bnpl-badge {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.loan-badge {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.emi-due-date {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  text-align: right;
+}
+
+.days-until {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.urgent-text {
+  color: #dc2626;
+}
+
+.emi-body {
+  margin-bottom: 1rem;
+}
+
+.emi-merchant {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.emi-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #7B2687;
+  margin-bottom: 0.5rem;
+}
+
+.emi-progress {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.emi-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.emi-actions .btn-primary {
+  flex: 1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 2px dashed #d1d5db;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .tabs-nav {
+    gap: 0.25rem;
+  }
+  
+  .tab-btn {
+    flex-direction: column;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .tab-btn span:not(.tab-icon):not(.tab-badge) {
+    display: none;
+  }
+  
+  .emi-payments-list {
+    grid-template-columns: 1fr;
+  }
+}
+

@@ -2,6 +2,10 @@
 
 let allTransactions = [];
 let filteredTransactions = [];
+let currentTab = 'all'; // Track current active tab
+
+console.log('transactions.js loaded');
+console.log('TermLoanManager available:', typeof TermLoanManager !== 'undefined');
 
 // Real transaction data from CSV account statement
 const realTransactions = [
@@ -23,6 +27,12 @@ const realTransactions = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('=== TRANSACTIONS PAGE LOADED ===');
+  console.log('localStorage termLoans:', localStorage.getItem('termLoans'));
+  
+  // Initialize tab navigation
+  initializeTabs();
+  
   // Check authentication
   if (typeof requireAuth === 'function') {
     requireAuth();
@@ -39,23 +49,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update summary cards with real data
   updateSummaryCards();
 
-  // Filter controls
-  const dateFilter = document.getElementById('dateFilter');
-  const categoryFilter = document.getElementById('categoryFilter');
-  const esgFilter = document.getElementById('esgFilter');
-  const searchFilter = document.getElementById('searchFilter');
-  const clearFilters = document.getElementById('clearFilters');
-
   // Track active BNPL plans
   let activeBNPLPlans = JSON.parse(localStorage.getItem('activeBNPLPlans') || '[]');
 
-  // Load and display active term loans
-  loadTermLoans();
+  // Load and display active term loans after a short delay
+  setTimeout(() => {
+    loadTermLoans();
+  }, 200);
   
-  // Check for URL parameters (new loan highlight)
+  // Check for URL parameters (new loan highlight and tab)
   const urlParams = new URLSearchParams(window.location.search);
   const highlightId = urlParams.get('highlight');
   const isNewLoan = urlParams.get('newloan') === 'true';
+  const tabParam = urlParams.get('tab');
+  
+  // Switch to the tab specified in URL parameter
+  if (tabParam && ['all', 'bnpl', 'termloans', 'emi'].includes(tabParam)) {
+    // Delay tab switch to ensure data is loaded
+    setTimeout(() => {
+      switchTab(tabParam);
+    }, 300);
+  }
   
   if (highlightId && isNewLoan) {
     // Show success message for new loan
@@ -70,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
           loanElement.classList.remove('highlight-flash');
         }, 3000);
       }
-    }, 500);
+    }, 800);
   }
   const MAX_BNPL_PLANS = 3;
 
@@ -377,6 +391,9 @@ document.addEventListener('DOMContentLoaded', () => {
         payNextInstallment(planId);
       });
     });
+    
+    // Update badge count
+    updateTabBadges();
   }
   
   // Show plan details modal
@@ -754,14 +771,30 @@ const formatDate = (dateStr) => {
 
 // Term Loan Management Functions
 const loadTermLoans = () => {
+  console.log('loadTermLoans() called');
+  
   if (typeof TermLoanManager === 'undefined') {
-    console.warn('TermLoanManager not loaded');
+    console.error('TermLoanManager not loaded - term-loan.js may not be included');
+    const container = document.getElementById('termLoansList');
+    if (container) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3>Error Loading Term Loans</h3>
+          <p>TermLoanManager is not available. Please refresh the page.</p>
+        </div>
+      `;
+    }
     return;
   }
 
+  const allLoans = TermLoanManager.getAllTermLoans();
   const activeLoans = TermLoanManager.getActiveTermLoans();
   const container = document.getElementById('termLoansList');
   const section = document.getElementById('termLoansSection');
+
+  console.log('All term loans:', allLoans);
+  console.log('Active term loans:', activeLoans);
 
   if (!container || !section) {
     console.warn('Term loans container not found');
@@ -769,20 +802,30 @@ const loadTermLoans = () => {
   }
 
   if (activeLoans.length === 0) {
-    section.style.display = 'none';
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📈</div>
+        <h3>No Active Term Loans</h3>
+        <p>You don't have any active term loans yet.</p>
+        <p><a href="credit-line.php" class="btn-primary" style="display:inline-block;margin-top:1rem;">Apply for Term Loan</a></p>
+      </div>
+    `;
     return;
   }
 
-  // Show section and populate loans
-  section.style.display = 'block';
+  // Populate loans
   container.innerHTML = '';
 
   activeLoans.forEach(loan => {
+    console.log('Creating card for loan:', loan);
     const loanCard = createTermLoanCard(loan);
     container.appendChild(loanCard);
   });
 
-  console.log('Loaded', activeLoans.length, 'active term loans');
+  console.log('✅ Loaded', activeLoans.length, 'active term loans');
+  
+  // Update badge count
+  updateTabBadges();
 };
 
 const createTermLoanCard = (loan) => {
@@ -867,4 +910,224 @@ const viewTermLoanDetails = (loanId) => {
   alert(`Loan Details:\n\nLoan Amount: AED ${loan.loanAmount}\nTerm: ${loan.termMonths} months\nEMI: AED ${loan.emi}\nRemaining: AED ${loan.remainingBalance}\nPayments Made: ${loan.paymentsMade}\nStatus: ${loan.status}`);
   // TODO: Implement detailed view modal
 };
+
+// Tab Navigation Functions
+function initializeTabs() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const tabName = button.dataset.tab;
+      switchTab(tabName);
+    });
+  });
+  
+  // Update badge counts
+  updateTabBadges();
+}
+
+function switchTab(tabName) {
+  currentTab = tabName;
+  
+  // Update button states
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  tabButtons.forEach(btn => {
+    if (btn.dataset.tab === tabName) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  
+  // Update tab content visibility
+  const tabContents = document.querySelectorAll('.tab-content');
+  tabContents.forEach(content => {
+    content.classList.remove('active');
+  });
+  
+  // Show the selected tab
+  const tabMap = {
+    'all': 'allTransactionsTab',
+    'bnpl': 'bnplTab',
+    'termloans': 'termLoansTab',
+    'emi': 'emiTab'
+  };
+  
+  const activeTab = document.getElementById(tabMap[tabName]);
+  if (activeTab) {
+    activeTab.classList.add('active');
+  }
+  
+  // Load tab-specific data
+  loadTabData(tabName);
+}
+
+function loadTabData(tabName) {
+  console.log('loadTabData called for tab:', tabName);
+  
+  switch(tabName) {
+    case 'all':
+      // All transactions are already loaded
+      break;
+    case 'bnpl':
+      displayActiveBNPLPlans();
+      break;
+    case 'termloans':
+      // Add a small delay to ensure localStorage is fully written
+      setTimeout(() => {
+        loadTermLoans();
+      }, 100);
+      break;
+    case 'emi':
+      loadUpcomingEMIs();
+      break;
+  }
+}
+
+function updateTabBadges() {
+  console.log('Updating tab badges...');
+  
+  // Count transactions
+  const transactionCount = allTransactions.length;
+  const allCountEl = document.getElementById('allCount');
+  if (allCountEl) allCountEl.textContent = transactionCount;
+  
+  // Count active BNPL plans
+  const bnplPlans = JSON.parse(localStorage.getItem('activeBNPLPlans') || '[]');
+  const activeBnplCount = bnplPlans.filter(plan => plan.status === 'active').length;
+  const bnplCountEl = document.getElementById('bnplCount');
+  if (bnplCountEl) bnplCountEl.textContent = activeBnplCount;
+  
+  // Count active term loans
+  if (typeof TermLoanManager !== 'undefined') {
+    const termLoans = TermLoanManager.getAllTermLoans();
+    const activeTermLoansCount = termLoans.filter(loan => loan.status === 'active').length;
+    const termLoansCountEl = document.getElementById('termLoansCount');
+    if (termLoansCountEl) termLoansCountEl.textContent = activeTermLoansCount;
+    console.log(`Term Loans Badge: ${activeTermLoansCount} active loans`);
+  } else {
+    console.warn('TermLoanManager not available for badge update');
+  }
+  
+  // Count upcoming EMI payments
+  const upcomingEMIs = getUpcomingEMIs();
+  const emiCountEl = document.getElementById('emiCount');
+  if (emiCountEl) emiCountEl.textContent = upcomingEMIs.length;
+  
+  console.log('Tab badges updated:', {
+    transactions: transactionCount,
+    bnpl: activeBnplCount,
+    termLoans: typeof TermLoanManager !== 'undefined' ? TermLoanManager.getActiveTermLoans().length : 0,
+    emi: upcomingEMIs.length
+  });
+}
+
+function getUpcomingEMIs() {
+  const emis = [];
+  const today = new Date();
+  const next30Days = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
+  
+  // Get BNPL installments
+  const bnplPlans = JSON.parse(localStorage.getItem('activeBNPLPlans') || '[]');
+  bnplPlans.forEach(plan => {
+    if (plan.status === 'active') {
+      plan.installments.forEach(installment => {
+        if (installment.status === 'pending') {
+          const dueDate = new Date(installment.dueDate);
+          if (dueDate >= today && dueDate <= next30Days) {
+            emis.push({
+              type: 'BNPL',
+              merchant: plan.merchant,
+              amount: installment.amount,
+              dueDate: installment.dueDate,
+              installmentNumber: installment.installmentNumber,
+              totalInstallments: plan.installments.length,
+              planId: plan.id
+            });
+          }
+        }
+      });
+    }
+  });
+  
+  // Get Term Loan EMIs
+  const termLoans = TermLoanManager.getAllTermLoans();
+  termLoans.forEach(loan => {
+    if (loan.status === 'active') {
+      const dueDate = new Date(loan.nextDueDate);
+      if (dueDate >= today && dueDate <= next30Days) {
+        emis.push({
+          type: 'Term Loan',
+          merchant: `Term Loan (AED ${loan.loanAmount.toLocaleString()})`,
+          amount: loan.emi,
+          dueDate: loan.nextDueDate,
+          installmentNumber: loan.paymentsMade + 1,
+          totalInstallments: loan.termMonths,
+          loanId: loan.id
+        });
+      }
+    }
+  });
+  
+  // Sort by due date
+  emis.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  
+  return emis;
+}
+
+function loadUpcomingEMIs() {
+  const emiPaymentsList = document.getElementById('emiPaymentsList');
+  if (!emiPaymentsList) return;
+  
+  const upcomingEMIs = getUpcomingEMIs();
+  
+  if (upcomingEMIs.length === 0) {
+    emiPaymentsList.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">💳</div>
+        <h3>No Upcoming EMI Payments</h3>
+        <p>You have no EMI payments due in the next 30 days</p>
+      </div>
+    `;
+    return;
+  }
+  
+  emiPaymentsList.innerHTML = upcomingEMIs.map(emi => {
+    const dueDate = new Date(emi.dueDate);
+    const today = new Date();
+    const daysUntil = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    const isUrgent = daysUntil <= 3;
+    
+    return `
+      <div class="emi-payment-card ${isUrgent ? 'urgent' : ''}">
+        <div class="emi-header">
+          <div class="emi-type-badge ${emi.type === 'BNPL' ? 'bnpl-badge' : 'loan-badge'}">
+            ${emi.type}
+          </div>
+          <div class="emi-due-date ${isUrgent ? 'urgent-text' : ''}">
+            ${isUrgent ? '⚠️ ' : ''}Due ${formatDate(emi.dueDate)}
+            <span class="days-until">${daysUntil > 0 ? `${daysUntil} days` : 'Today'}</span>
+          </div>
+        </div>
+        <div class="emi-body">
+          <div class="emi-merchant">${emi.merchant}</div>
+          <div class="emi-amount">AED ${emi.amount.toLocaleString('en-AE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+          <div class="emi-progress">
+            Installment ${emi.installmentNumber} of ${emi.totalInstallments}
+          </div>
+        </div>
+        <div class="emi-actions">
+          <button class="btn-primary small" onclick="payEMI('${emi.type}', '${emi.planId || emi.loanId}')">
+            Pay Now
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function payEMI(type, id) {
+  alert(`Payment for ${type} (ID: ${id}) - Coming soon!`);
+  // TODO: Implement EMI payment flow
+}
 

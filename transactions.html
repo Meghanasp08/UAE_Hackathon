@@ -97,69 +97,37 @@
       </div>
     </div>
 
-    <!-- Filters -->
-    <section class="filters">
-      <div class="filter-group">
-        <label for="dateFilter">Date Range</label>
-        <select id="dateFilter">
-          <option value="7">Last 7 days</option>
-          <option value="30" selected>Last 30 days</option>
-          <option value="90">Last 3 months</option>
-          <option value="all">All time</option>
-        </select>
+    <!-- Tab Navigation -->
+    <div class="tabs-container">
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="all">
+          <span class="tab-icon">📊</span>
+          <span>All Transactions</span>
+          <span class="tab-badge" id="allCount">0</span>
+        </button>
+        
+        <button class="tab-btn" data-tab="bnpl">
+          <span class="tab-icon">🔄</span>
+          <span>BNPL Plans</span>
+          <span class="tab-badge" id="bnplCount">0</span>
+        </button>
+        
+        <button class="tab-btn" data-tab="termloans">
+          <span class="tab-icon">📈</span>
+          <span>Term Loans</span>
+          <span class="tab-badge" id="termLoansCount">0</span>
+        </button>
+        
+        <button class="tab-btn" data-tab="emi">
+          <span class="tab-icon">💳</span>
+          <span>EMI Payments</span>
+          <span class="tab-badge" id="emiCount">0</span>
+        </button>
       </div>
+    </div>
 
-      <div class="filter-group">
-        <label for="categoryFilter">Category</label>
-        <select id="categoryFilter">
-          <option value="all">All categories</option>
-          <option value="transport">Transport</option>
-          <option value="food">Food & Dining</option>
-          <option value="utilities">Utilities</option>
-          <option value="shopping">Shopping</option>
-          <option value="entertainment">Entertainment</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="esgFilter">ESG Impact</label>
-        <select id="esgFilter">
-          <option value="all">All transactions</option>
-          <option value="low">Low carbon only</option>
-          <option value="medium">Medium impact</option>
-          <option value="high">High impact</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="searchFilter">Search</label>
-        <input type="search" id="searchFilter" placeholder="Search merchant..."/>
-      </div>
-
-      <button class="btn-outline" id="clearFilters">Clear Filters</button>
-    </section>
-
-    <!-- Active BNPL Plans Section -->
-    <section class="bnpl-plans-section" id="bnplPlansSection" style="display: none;">
-      <div class="section-header">
-        <h3>🔄 Active BNPL Plans</h3>
-        <p class="subtitle">Manage your installment payments</p>
-      </div>
-      <div class="bnpl-plans-list" id="bnplPlansList">
-        <!-- BNPL plans will be dynamically generated here -->
-      </div>
-    </section>
-
-    <!-- Active Term Loans Section -->
-    <section class="term-loans-section" id="termLoansSection" style="display: none;">
-      <div class="section-header">
-        <h3>📊 Active Term Loans</h3>
-        <p class="subtitle">Manage your term loan repayments</p>
-      </div>
-      <div class="term-loans-list" id="termLoansList">
-        <!-- Term loans will be dynamically generated here -->
-      </div>
-    </section>
+    <!-- Tab 1: All Transactions -->
+    <div id="allTransactionsTab" class="tab-content active">
 
     <!-- Transactions List -->
     <section class="transactions-list">
@@ -295,6 +263,50 @@
     <div class="load-more">
       <button class="btn-outline" id="loadMore">Load More Transactions</button>
     </div>
+    </div>
+    <!-- End Tab 1: All Transactions -->
+
+    <!-- Tab 2: BNPL Plans -->
+    <div id="bnplTab" class="tab-content">
+      <section class="bnpl-plans-section" id="bnplPlansSection">
+        <div class="section-header">
+          <h3>🔄 Active BNPL Plans</h3>
+          <p class="subtitle">Manage your installment payments</p>
+        </div>
+        <div class="bnpl-plans-list" id="bnplPlansList">
+          <!-- BNPL plans will be dynamically generated here -->
+        </div>
+      </section>
+    </div>
+    <!-- End Tab 2: BNPL Plans -->
+
+    <!-- Tab 3: Term Loans -->
+    <div id="termLoansTab" class="tab-content">
+      <section class="term-loans-section" id="termLoansSection">
+        <div class="section-header">
+          <h3>📈 Active Term Loans</h3>
+          <p class="subtitle">Manage your term loan repayments</p>
+        </div>
+        <div class="term-loans-list" id="termLoansList">
+          <!-- Term loans will be dynamically generated here -->
+        </div>
+      </section>
+    </div>
+    <!-- End Tab 3: Term Loans -->
+
+    <!-- Tab 4: EMI Payments -->
+    <div id="emiTab" class="tab-content">
+      <section class="emi-payments-section" id="emiPaymentsSection">
+        <div class="section-header">
+          <h3>💳 Upcoming EMI Payments</h3>
+          <p class="subtitle">Your payment schedule across all plans</p>
+        </div>
+        <div class="emi-payments-list" id="emiPaymentsList">
+          <!-- EMI payments will be dynamically generated here -->
+        </div>
+      </section>
+    </div>
+    <!-- End Tab 4: EMI Payments -->
   </main>
 
   <!-- Floating voice button -->
@@ -343,6 +355,7 @@
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/term-loan.js"></script>
   <script src="js/transactions.js"></script>
 </body>
 </html>
