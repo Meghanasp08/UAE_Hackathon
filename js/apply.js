@@ -309,8 +309,14 @@ const checkOAuthReturn = () => {
   // Use PHP data passed to JavaScript
   const phpData = window.phpData || {};
   
+  console.log('🔍 checkOAuthReturn() called');
+  console.log('📋 phpData:', phpData);
+  console.log('✅ oauthSuccess:', phpData.oauthSuccess);
+  console.log('❌ oauthError:', phpData.oauthError);
+  console.log('🔐 bankConnected:', phpData.bankConnected);
+  
   if (phpData.oauthSuccess) {
-    console.log('Returning from successful OAuth flow');
+    console.log('✅ Returning from successful OAuth flow - Will fetch banking data!');
     
     // Application data is already restored from PHP session
     console.log('Application data restored from PHP session:', phpData.applicationData);
@@ -325,12 +331,10 @@ const checkOAuthReturn = () => {
     }
     selectedBank = 'external';
     
-    // Show success notification and proceed
-    showTokenStorageNotification({
-      jwt: 'session_token_received',
-      accessToken: 'session_token_received',
-      bankName: 'Connected Bank'
-    });
+    // Go to Step 2 and fetch banking data
+    goToStep(2);
+    console.log('🚀 About to call fetchBankingData()...');
+    fetchBankingData();
     
   } else if (phpData.oauthError) {
     console.error('OAuth error:', phpData.oauthError);
@@ -339,7 +343,9 @@ const checkOAuthReturn = () => {
     window.history.replaceState({}, document.title, window.location.pathname);
     
     // Show error message
-    speak('Bank connection failed. Please try again.', false);
+    if (typeof speak === 'function') {
+      speak('Bank connection failed. Please try again.', false);
+    }
     alert('Failed to connect to bank: ' + phpData.oauthError);
     
     // Stay on step 1
@@ -348,7 +354,7 @@ const checkOAuthReturn = () => {
   
   // If bank is already connected (from PHP session)
   if (phpData.bankConnected) {
-    console.log('Bank already connected via session');
+    console.log('🔐 Bank already connected via session');
     
     const consentCheckbox = document.getElementById('consentCheckbox');
     if (consentCheckbox) {
@@ -363,6 +369,172 @@ const checkOAuthReturn = () => {
     }
   }
 };
+
+/**
+ * Fetch banking data from Open Banking APIs
+ * Shows progress UI and displays summary when complete
+ */
+const fetchBankingData = async () => {
+  console.log('🚀 fetchBankingData() called - Starting to fetch banking data...');
+  
+  // Show fetching progress UI
+  const fetchingProgress = document.getElementById('fetchingDataProgress');
+  const bankingSummary = document.getElementById('bankingDataSummary');
+  const fetchError = document.getElementById('fetchErrorDisplay');
+  const nextBtn = document.getElementById('nextStep2');
+  
+  console.log('UI Elements found:', {
+    fetchingProgress: !!fetchingProgress,
+    bankingSummary: !!bankingSummary,
+    fetchError: !!fetchError,
+    nextBtn: !!nextBtn
+  });
+  
+  if (fetchingProgress) {
+    fetchingProgress.removeAttribute('hidden');
+    console.log('✅ Showing fetching progress UI');
+  }
+  if (bankingSummary) {
+    bankingSummary.setAttribute('hidden', '');
+  }
+  if (fetchError) {
+    fetchError.setAttribute('hidden', '');
+  }
+  
+  // Animate progress steps
+  const steps = ['fetchStep1', 'fetchStep2', 'fetchStep3', 'fetchStep4'];
+  const stepMessages = [
+    'Retrieving accounts... ✓',
+    'Fetching account details... ✓',
+    'Loading balance information... ✓',
+    'Analyzing transactions... ✓'
+  ];
+  
+  // Simulate step-by-step progress with delays
+  let currentStepIndex = 0;
+  const progressInterval = setInterval(() => {
+    if (currentStepIndex < steps.length) {
+      const stepEl = document.getElementById(steps[currentStepIndex]);
+      if (stepEl) {
+        const icon = stepEl.querySelector('.fetch-icon');
+        const text = stepEl.querySelector('span:last-child');
+        if (icon) icon.textContent = '✅';
+        if (text) text.textContent = stepMessages[currentStepIndex];
+        stepEl.style.color = '#15803d';
+        stepEl.style.fontWeight = '600';
+      }
+      currentStepIndex++;
+    }
+  }, 800);
+  
+  try {
+    // Call the API endpoint
+    const apiUrl = 'api/fetch_banking_data.php';
+    console.log('📡 Making AJAX call to:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin' // Include session cookies
+    });
+    
+    console.log('📥 Response received:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+    
+    const data = await response.json();
+    console.log('📦 Response data:', data);
+    
+    // Clear progress interval
+    clearInterval(progressInterval);
+    
+    // Mark all steps as complete
+    steps.forEach((stepId, index) => {
+      const stepEl = document.getElementById(stepId);
+      if (stepEl) {
+        const icon = stepEl.querySelector('.fetch-icon');
+        const text = stepEl.querySelector('span:last-child');
+        if (icon) icon.textContent = '✅';
+        if (text) text.textContent = stepMessages[index];
+        stepEl.style.color = '#15803d';
+        stepEl.style.fontWeight = '600';
+      }
+    });
+    
+    // Wait a moment to show completion
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (data.success) {
+      console.log('✅ Banking data fetched successfully:', data);
+      
+      // Hide fetching progress
+      if (fetchingProgress) {
+        fetchingProgress.setAttribute('hidden', '');
+      }
+      
+      // Show summary
+      if (bankingSummary) {
+        bankingSummary.removeAttribute('hidden');
+      }
+      
+      // Update summary values
+      const accountsCount = document.getElementById('summaryAccountsCount');
+      const balance = document.getElementById('summaryBalance');
+      const transactions = document.getElementById('summaryTransactions');
+      
+      if (accountsCount && data.summary.accounts_count !== undefined) {
+        accountsCount.textContent = data.summary.accounts_count;
+      }
+      if (balance && data.summary.total_balance) {
+        balance.textContent = `${data.summary.currency} ${data.summary.total_balance}`;
+      }
+      if (transactions && data.summary.transactions_count !== undefined) {
+        transactions.textContent = data.summary.transactions_count;
+      }
+      
+      // Enable next button
+      if (nextBtn) {
+        nextBtn.disabled = false;
+      }
+      
+      if (typeof speak === 'function') {
+        speak('Your banking data has been successfully retrieved.', false);
+      }
+      
+    } else {
+      throw new Error(data.error || 'Failed to fetch banking data');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error fetching banking data:', error);
+    
+    // Clear progress interval
+    clearInterval(progressInterval);
+    
+    // Hide fetching progress
+    if (fetchingProgress) {
+      fetchingProgress.setAttribute('hidden', '');
+    }
+    
+    // Show error
+    if (fetchError) {
+      fetchError.removeAttribute('hidden');
+      const errorMsg = document.getElementById('fetchErrorMessage');
+      if (errorMsg) {
+        errorMsg.textContent = error.message || 'Failed to fetch banking data. Please try again.';
+      }
+    }
+    
+    if (typeof speak === 'function') {
+      speak('Failed to retrieve banking data. Please try reconnecting.', false);
+    }
+  }
+};
+
 
 
 

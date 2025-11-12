@@ -222,6 +222,63 @@ if ($_POST && !$oauthSuccess) {
           </label>
         </div>
 
+        <!-- Fetching Banking Data Progress -->
+        <div id="fetchingDataProgress" class="fetching-data-progress" hidden style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+            <div class="spinner"></div>
+            <h4 style="margin: 0; color: #0369a1;">📊 Fetching Your Account Data...</h4>
+          </div>
+          <p style="color: #0c4a6e; margin-bottom: 1rem;">Please wait while we securely retrieve your banking information.</p>
+          <div class="fetch-progress-items" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div id="fetchStep1" class="fetch-step" style="display: flex; align-items: center; gap: 0.5rem; color: #64748b;">
+              <span class="fetch-icon">⏳</span>
+              <span>Retrieving accounts...</span>
+            </div>
+            <div id="fetchStep2" class="fetch-step" style="display: flex; align-items: center; gap: 0.5rem; color: #64748b;">
+              <span class="fetch-icon">⏳</span>
+              <span>Fetching account details...</span>
+            </div>
+            <div id="fetchStep3" class="fetch-step" style="display: flex; align-items: center; gap: 0.5rem; color: #64748b;">
+              <span class="fetch-icon">⏳</span>
+              <span>Loading balance information...</span>
+            </div>
+            <div id="fetchStep4" class="fetch-step" style="display: flex; align-items: center; gap: 0.5rem; color: #64748b;">
+              <span class="fetch-icon">⏳</span>
+              <span>Analyzing transactions...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banking Data Summary (shown after successful fetch) -->
+        <div id="bankingDataSummary" class="banking-data-summary" hidden style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.5rem;">✅</span>
+            <h4 style="margin: 0; color: #15803d;">Account Data Retrieved Successfully!</h4>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #dcfce7;">
+              <div style="font-size: 0.875rem; color: #166534; margin-bottom: 0.25rem;">📂 Accounts Found</div>
+              <div id="summaryAccountsCount" style="font-size: 1.5rem; font-weight: bold; color: #15803d;">-</div>
+            </div>
+            <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #dcfce7;">
+              <div style="font-size: 0.875rem; color: #166534; margin-bottom: 0.25rem;">💰 Total Balance</div>
+              <div id="summaryBalance" style="font-size: 1.5rem; font-weight: bold; color: #15803d;">-</div>
+            </div>
+            <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #dcfce7;">
+              <div style="font-size: 0.875rem; color: #166534; margin-bottom: 0.25rem;">📊 Transactions</div>
+              <div id="summaryTransactions" style="font-size: 1.5rem; font-weight: bold; color: #15803d;">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fetch Error Display -->
+        <div id="fetchErrorDisplay" class="fetch-error-display" hidden style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: #dc2626;">
+            <span style="font-size: 1.2rem;">❌</span>
+            <span id="fetchErrorMessage" style="font-weight: 500;">Failed to fetch banking data. Please try again.</span>
+          </div>
+        </div>
+
         <div id="connectionStatus" class="connection-status" hidden>
           <div class="spinner"></div>
           <p id="statusText">Connecting to your bank...</p>
@@ -343,7 +400,7 @@ if ($_POST && !$oauthSuccess) {
     </div>
   </div>
 
-  <script src="js/main.js"></script>
-  <script src="js/apply.js"></script>
+  <script src="js/main.js?v=<?php echo time(); ?>"></script>
+  <script src="js/apply.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
