@@ -115,7 +115,7 @@ const handleCommand = (command) => {
 
   if (command.includes('credit line') || command.includes('credit control')) {
     speak('Opening credit line controls.');
-    setTimeout(() => window.location.href = 'credit-line.html', 1000);
+    setTimeout(() => window.location.href = 'credit-line.php', 1000);
     return;
   }
 
@@ -165,14 +165,14 @@ const handleCommand = (command) => {
       command.includes('apply for loan') || command.includes('loan application')) {
     speak('Opening term loan application.');
     setTimeout(() => {
-      if (window.location.pathname.includes('credit-line.html')) {
+      if (window.location.pathname.includes('credit-line.php')) {
         // If already on credit line page, open modal
         if (typeof openTermLoanModal === 'function') {
           openTermLoanModal();
         }
       } else {
         // Navigate to credit line page
-        window.location.href = 'credit-line.html?openTermLoan=true';
+        window.location.href = 'credit-line.php?openTermLoan=true';
       }
     }, 1000);
     return;
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (quickAutoSweep) {
     quickAutoSweep.addEventListener('click', () => {
-      window.location.href = 'credit-line.html';
+      window.location.href = 'credit-line.php';
     });
   }
 

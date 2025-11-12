@@ -115,7 +115,7 @@ function setupTermLoanActions() {
   if (applyBtn) {
     applyBtn.addEventListener('click', () => {
       // Redirect to credit line page with term loan modal
-      window.location.href = 'credit-line.html?openTermLoan=true';
+      window.location.href = 'credit-line.php?openTermLoan=true';
     });
   }
   
