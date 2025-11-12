@@ -192,6 +192,10 @@ try {
     $result = callOpenBankingAPI($baseUrl . $accountId . "/parties", $baseHeaders, $certificate_path, $private_key_path);
     $accountData['apis']['parties'] = formatApiResult($result, 'Parties');
     
+    // 10. PRODUCTS - Fetch account product information
+    $result = callOpenBankingAPI($baseUrl . $accountId . "/product", $baseHeaders, $certificate_path, $private_key_path);
+    $accountData['apis']['products'] = formatApiResult($result, 'Products');
+    
     // Check if all API calls failed
     $allFailed = true;
     foreach ($accountData['apis'] as $api) {

@@ -1010,6 +1010,7 @@ if (!$bankConnected && !$oauthSuccess) {
         <button class="tab" data-tab="balance">💰 Balance</button>
         <button class="tab" data-tab="transactions">📊 Transactions</button>
         <button class="tab" data-tab="beneficiaries">👥 Beneficiaries</button>
+        <button class="tab" data-tab="products">🏦 Products</button>
         <button class="tab" data-tab="statement">📄 Statement</button>
         <button class="tab" data-tab="analysis">📈 Analysis</button>
       </div>
@@ -1083,6 +1084,21 @@ if (!$bankConnected && !$oauthSuccess) {
           </div>
           <div class="data-content">
             <div id="beneficiariesData">
+              <div class="loading-skeleton"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Products -->
+      <div class="tab-content" id="tab-products">
+        <div class="data-section">
+          <div class="data-header" onclick="toggleSection(this)">
+            <h3>🏦 Product Information</h3>
+            <span class="toggle-icon">▼</span>
+          </div>
+          <div class="data-content">
+            <div id="productsData">
               <div class="loading-skeleton"></div>
             </div>
           </div>

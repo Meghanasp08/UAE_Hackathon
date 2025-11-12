@@ -189,6 +189,10 @@ function displayAccountData(data) {
     if (data.apis.beneficiaries) {
       displayBeneficiaries(data.apis.beneficiaries);
     }
+    
+    if (data.apis.products) {
+      displayProducts(data.apis.products);
+    }
   }
 }
 
@@ -572,6 +576,272 @@ function displayBeneficiaries(apiData) {
         ` : ''}
       </div>
     `;
+  });
+  
+  html += `
+    <details style="margin-top: 1rem;">
+      <summary style="cursor: pointer; color: #7B2687; font-weight: 600; padding: 0.5rem;">
+        View Raw JSON Data
+      </summary>
+      <div class="json-viewer">${JSON.stringify(apiData.data, null, 2)}</div>
+    </details>
+  `;
+  
+  container.innerHTML = html;
+}
+
+/**
+ * Convert ISO 8601 duration to human-readable format
+ * P1D = Daily, P7D = Weekly, P30D = Monthly, P24W = Every 24 weeks
+ */
+function formatFrequency(duration) {
+  if (!duration) return 'N/A';
+  
+  const regex = /P(\d+)([DWMY])/;
+  const match = duration.match(regex);
+  
+  if (!match) return duration;
+  
+  const value = match[1];
+  const unit = match[2];
+  
+  const units = {
+    'D': value == 1 ? 'Daily' : `Every ${value} days`,
+    'W': value == 1 ? 'Weekly' : `Every ${value} weeks`,
+    'M': value == 1 ? 'Monthly' : `Every ${value} months`,
+    'Y': value == 1 ? 'Yearly' : `Every ${value} years`
+  };
+  
+  return units[unit] || duration;
+}
+
+/**
+ * Display Products data with detailed charges and deposit rates
+ */
+function displayProducts(apiData) {
+  const container = document.getElementById('productsData');
+  if (!container) return;
+  
+  if (!apiData.success) {
+    container.innerHTML = `
+      <div class="error-banner">
+        <span>❌</span>
+        <span>${apiData.error || 'Failed to fetch product information'}</span>
+      </div>
+    `;
+    return;
+  }
+  
+  const productData = apiData.data?.message?.Data?.Product || null;
+  
+  if (!productData || (Array.isArray(productData) && productData.length === 0)) {
+    container.innerHTML = '<p style="color: #64748b;">No product information available.</p>';
+    return;
+  }
+  
+  // Handle both single product object and array of products
+  const products = Array.isArray(productData) ? productData : [productData];
+  
+  let html = '';
+  
+  products.forEach((product, index) => {
+    // Main product card with gradient background
+    html += `
+      <div class="account-item" style="background: linear-gradient(135deg, #7B2687 0%, #B83280 100%); color: white; border: none; margin-bottom: 1.5rem;">
+        <h4 style="color: white; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+          🏦 ${product.ProductName || 'Product ' + (index + 1)}
+          ${product.IsIslamic ? '<span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem; margin-left: 0.5rem;">☪️ Islamic</span>' : ''}
+        </h4>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          ${product.ProductType ? `
+            <div>
+              <div style="font-size: 0.875rem; opacity: 0.9;">Product Type</div>
+              <div style="font-weight: 600; font-size: 1.125rem;">${product.ProductType}</div>
+            </div>
+          ` : ''}
+          
+          ${product.ProductId ? `
+            <div>
+              <div style="font-size: 0.875rem; opacity: 0.9;">Product ID</div>
+              <div style="font-weight: 600; font-size: 1.125rem;">${product.ProductId}</div>
+            </div>
+          ` : ''}
+          
+          ${product.AccountId ? `
+            <div>
+              <div style="font-size: 0.875rem; opacity: 0.9;">Account ID</div>
+              <div style="font-weight: 600; font-size: 1.125rem;">${product.AccountId}</div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+    
+    // Charges Section (Fees)
+    const charges = product.Charges || [];
+    if (charges.length > 0) {
+      html += `
+        <div style="margin-bottom: 1.5rem;">
+          <h5 style="color: #1e293b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            💳 Fees & Charges
+            <span style="background: #fee2e2; color: #dc2626; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">${charges.length} Fee(s)</span>
+          </h5>
+      `;
+      
+      charges.forEach((charge, chargeIndex) => {
+        const amount = charge.Amount || {};
+        html += `
+          <div style="background: #fff3f3; border-left: 4px solid #ef4444; padding: 1rem; margin-bottom: 0.75rem; border-radius: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <div>
+                <strong style="color: #1e293b; font-size: 1rem;">${charge.Name || 'Charge ' + (chargeIndex + 1)}</strong>
+                ${charge.ChargeType ? `<span style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">${charge.ChargeType}</span>` : ''}
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 1.25rem; font-weight: bold; color: #ef4444;">
+                  ${amount.Currency || ''} ${amount.Amount ? parseFloat(amount.Amount).toLocaleString() : 'N/A'}
+                </div>
+              </div>
+            </div>
+            ${charge.Frequency ? `
+              <div style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem;">
+                <strong>Frequency:</strong> ${formatFrequency(charge.Frequency)}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      
+      html += `</div>`;
+    }
+    
+    // Deposit Rates Section (Interest Rates)
+    const depositRates = product.DepositRates || [];
+    if (depositRates.length > 0) {
+      html += `
+        <div style="margin-bottom: 1.5rem;">
+          <h5 style="color: #1e293b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            📊 Interest Rates
+            <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">${depositRates.length} Rate(s)</span>
+          </h5>
+      `;
+      
+      depositRates.forEach((rate, rateIndex) => {
+        html += `
+          <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 1rem; margin-bottom: 0.75rem; border-radius: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <div>
+                <strong style="color: #1e293b; font-size: 1rem;">${rate.DepositRateType || 'Rate ' + (rateIndex + 1)}</strong>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">
+                  ${rate.Rate ? parseFloat(rate.Rate).toFixed(2) : 'N/A'}%
+                </div>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem;">
+              ${rate.CalculationFrequency ? `
+                <div style="font-size: 0.875rem; color: #64748b;">
+                  <strong>Calculation:</strong> ${formatFrequency(rate.CalculationFrequency)}
+                </div>
+              ` : ''}
+              
+              ${rate.ApplicationFrequency ? `
+                <div style="font-size: 0.875rem; color: #64748b;">
+                  <strong>Applied:</strong> ${formatFrequency(rate.ApplicationFrequency)}
+                </div>
+              ` : ''}
+            </div>
+            
+            ${rate.Notes ? `
+              <div style="font-size: 0.875rem; color: #64748b; font-style: italic; margin-top: 0.75rem; padding: 0.5rem; background: rgba(0,0,0,0.05); border-radius: 4px;">
+                📝 ${rate.Notes}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      
+      html += `</div>`;
+    }
+    
+    // Display other product details if available
+    if (product.MarketingStateId || product.SecondaryProductId || product.OtherProductDetails) {
+      html += `
+        <div class="account-item" style="margin-bottom: 1.5rem;">
+          <h5 style="color: #7B2687; margin-bottom: 0.75rem;">Additional Information</h5>
+      `;
+      
+      if (product.MarketingStateId) {
+        html += `
+          <div class="account-detail">
+            <span class="detail-label">Marketing State</span>
+            <span class="detail-value">${product.MarketingStateId}</span>
+          </div>
+        `;
+      }
+      
+      if (product.SecondaryProductId) {
+        html += `
+          <div class="account-detail">
+            <span class="detail-label">Secondary Product ID</span>
+            <span class="detail-value">${product.SecondaryProductId}</span>
+          </div>
+        `;
+      }
+      
+      if (product.OtherProductDetails) {
+        html += `
+          <div class="account-detail">
+            <span class="detail-label">Other Details</span>
+            <span class="detail-value">${product.OtherProductDetails}</span>
+          </div>
+        `;
+      }
+      
+      html += `</div>`;
+    }
+    
+    // Display PCA (Personal Current Account) features if available
+    if (product.PCA) {
+      html += `
+        <div class="account-item" style="margin-bottom: 1.5rem;">
+          <h5 style="color: #7B2687; margin-bottom: 0.75rem;">Account Features</h5>
+      `;
+      
+      if (product.PCA.Overdraft) {
+        const overdraft = product.PCA.Overdraft;
+        html += `
+          <div class="account-detail">
+            <span class="detail-label">Overdraft Available</span>
+            <span class="detail-value">${overdraft.OverdraftEnabled ? 'Yes' : 'No'}</span>
+          </div>
+        `;
+        
+        if (overdraft.OverdraftLimit) {
+          html += `
+            <div class="account-detail">
+              <span class="detail-label">Overdraft Limit</span>
+              <span class="detail-value">${overdraft.OverdraftLimit}</span>
+            </div>
+          `;
+        }
+      }
+      
+      html += `</div>`;
+    }
+    
+    // Display Credit Interest if available
+    if (product.CreditInterest && product.CreditInterest.TierBandSet) {
+      html += `
+        <div class="account-item" style="margin-bottom: 1.5rem;">
+          <h5 style="color: #7B2687; margin-bottom: 0.75rem;">Credit Interest Information</h5>
+          <p style="font-size: 0.875rem; color: #64748b;">Credit interest details available</p>
+        </div>
+      `;
+    }
   });
   
   html += `
