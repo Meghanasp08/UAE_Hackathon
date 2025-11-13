@@ -738,7 +738,7 @@ if (!$bankConnected && !$oauthSuccess) {
         padding: 1rem !important;
       }
       
-      #analysisResults > div:nth-child(2) {
+      .charts-grid {
         grid-template-columns: 1fr !important;
         gap: 1rem !important;
       }
@@ -751,6 +751,19 @@ if (!$bankConnected && !$oauthSuccess) {
       .chart-card h4 {
         font-size: 0.95rem !important;
         margin-bottom: 0.75rem !important;
+      }
+      
+      /* Insights and Recommendations - Mobile */
+      .insights-card,
+      .recommendations-card {
+        padding: 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+      
+      .insights-card h4,
+      .recommendations-card h4 {
+        font-size: 1rem !important;
       }
       
     }
@@ -791,7 +804,6 @@ if (!$bankConnected && !$oauthSuccess) {
         padding: 0.5rem 0.75rem;
         font-size: 0.8rem;
       }
-    }
       
       .statement-title {
         font-size: 1.25rem;
@@ -810,9 +822,7 @@ if (!$bankConnected && !$oauthSuccess) {
         grid-template-columns: 1fr;
         gap: 0.75rem;
       }
-    }
-    
-    @media (max-width: 480px) {
+      
       .summary-cards-grid {
         grid-template-columns: 1fr;
       }
@@ -840,6 +850,21 @@ if (!$bankConnected && !$oauthSuccess) {
       .statement-controls select,
       .statement-controls button {
         width: 100%;
+      }
+      
+      /* Additional mobile optimizations for analysis */
+      .chart-card {
+        padding: 0.75rem !important;
+        margin-bottom: 0.75rem;
+      }
+      
+      .chart-card h4 {
+        font-size: 0.875rem !important;
+      }
+      
+      canvas {
+        max-width: 100% !important;
+        height: auto !important;
       }
     }
   </style>
@@ -1005,18 +1030,79 @@ if (!$bankConnected && !$oauthSuccess) {
     <!-- Tabs -->
     <div id="dataTabs" style="display: none;">
       <div class="tabs">
-        <button class="tab active" data-tab="all-accounts">📂 All Accounts</button>
+        <button class="tab active" data-tab="analysis">📈 Analysis</button>
+        <button class="tab" data-tab="all-accounts">📂 All Accounts</button>
         <button class="tab" data-tab="account-details">📄 Account Details</button>
         <button class="tab" data-tab="balance">💰 Balance</button>
         <button class="tab" data-tab="transactions">📊 Transactions</button>
         <button class="tab" data-tab="beneficiaries">👥 Beneficiaries</button>
         <button class="tab" data-tab="products">🏦 Products</button>
         <button class="tab" data-tab="statement">📄 Statement</button>
-        <button class="tab" data-tab="analysis">📈 Analysis</button>
+      </div>
+
+      <!-- Tab: Analysis -->
+      <div class="tab-content active" id="tab-analysis">
+        <div class="data-section">
+          <div class="data-header" onclick="toggleSection(this)">
+            <h3>📈 Account Analysis</h3>
+            <span class="toggle-icon">▼</span>
+          </div>
+          <div class="data-content">
+            <div id="analysisLoading" style="display: none;">
+              <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <div class="spinner"></div>
+                  <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #0369a1;">Analyzing Your Account...</h4>
+                    <p style="margin: 0; color: #0c4a6e; font-size: 0.875rem;">Processing transactions and generating insights</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div id="analysisResults" style="display: none;">
+              <!-- Financial Health Score -->
+              <div class="health-score-card" style="background: linear-gradient(135deg, #7B2687 0%, #B83280 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center;">
+                <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Financial Health Score</div>
+                <div id="healthScore" style="font-size: 4rem; font-weight: bold; margin: 1rem 0;">--</div>
+                <div id="healthRating" style="font-size: 1.25rem; font-weight: 500;">Calculating...</div>
+                
+                <!-- Score Breakdown -->
+                <div id="scoreBreakdown" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem;">
+                  <!-- Will be populated by JS -->
+                </div>
+              </div>
+              
+              <!-- Charts Section -->
+              <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div class="chart-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <h4 style="margin: 0 0 1rem 0; color: #1e293b;">💸 Spending Categories</h4>
+                  <canvas id="spendingChart"></canvas>
+                </div>
+                <div class="chart-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <h4 style="margin: 0 0 1rem 0; color: #1e293b;">📈 Cash Flow Trend</h4>
+                  <canvas id="cashFlowChart"></canvas>
+                </div>
+              </div>
+              
+              <!-- Insights -->
+              <div class="insights-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                <h4 style="margin: 0 0 1rem 0; color: #1e293b;">💡 Key Insights</h4>
+                <div id="insightsList"></div>
+              </div>
+              
+              <!-- Recommendations -->
+              <div class="recommendations-card" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h4 style="margin: 0 0 1rem 0; color: #1e293b;">🎯 Recommendations</h4>
+                <div id="recommendationsList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Tab: All Accounts -->
-      <div class="tab-content active" id="tab-all-accounts">
+      <div class="tab-content" id="tab-all-accounts">
         <div class="data-section">
           <div class="data-header" onclick="toggleSection(this)">
             <h3>📂 All Accounts</h3>

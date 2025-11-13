@@ -890,6 +890,15 @@ function setupTabs() {
       if (targetContent) {
         targetContent.classList.add('active');
       }
+      
+      // Auto-trigger analysis when Analysis tab is clicked
+      if (targetTab === 'analysis') {
+        const analysisResults = document.getElementById('analysisResults');
+        // Only run analysis if results haven't been generated yet
+        if (analysisResults && analysisResults.style.display === 'none') {
+          runAccountAnalysis();
+        }
+      }
     });
   });
 }
@@ -1322,13 +1331,16 @@ function clearStatement() {
  * Setup account analysis
  */
 function setupAccountAnalysis() {
-  const runAnalysisBtn = document.getElementById('runAnalysisBtn');
+  // Analysis is now auto-triggered when tab is clicked
+  // Check if we should run it on page load (if Analysis tab is active by default)
+  const analysisTab = document.querySelector('.tab[data-tab="analysis"]');
+  const analysisResults = document.getElementById('analysisResults');
   
-  if (runAnalysisBtn) {
-    runAnalysisBtn.addEventListener('click', async () => {
-      console.log('Running account analysis...');
-      await runAccountAnalysis();
-    });
+  if (analysisTab && analysisTab.classList.contains('active')) {
+    // Run analysis on page load if Analysis is the default active tab
+    if (analysisResults && analysisResults.style.display === 'none') {
+      setTimeout(() => runAccountAnalysis(), 500);
+    }
   }
 }
 
@@ -1338,11 +1350,9 @@ function setupAccountAnalysis() {
 async function runAccountAnalysis() {
   const loadingDiv = document.getElementById('analysisLoading');
   const resultsDiv = document.getElementById('analysisResults');
-  const runBtn = document.getElementById('runAnalysisBtn');
   
   if (loadingDiv) loadingDiv.style.display = 'block';
   if (resultsDiv) resultsDiv.style.display = 'none';
-  if (runBtn) runBtn.disabled = true;
   
   try {
     const response = await fetch('api/analyze_account.php');
@@ -1362,8 +1372,6 @@ async function runAccountAnalysis() {
     console.error('Error running analysis:', error);
     if (loadingDiv) loadingDiv.style.display = 'none';
     alert('Failed to run analysis: ' + error.message);
-  } finally {
-    if (runBtn) runBtn.disabled = false;
   }
 }
 
