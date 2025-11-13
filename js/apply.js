@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const voiceApply = document.getElementById('voiceApply');
 
   // Consent modal
-  const consentCheckbox = document.getElementById('consentCheckbox');
   const confirmConsent = document.getElementById('confirmConsent');
   const cancelConsent = document.getElementById('cancelConsent');
   const consentModal = document.getElementById('consentModal');
@@ -85,18 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Consent checkbox - Show modal immediately when checked
-  if (consentCheckbox) {
-    consentCheckbox.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        // Show consent modal immediately
-        if (consentModal) {
-          consentModal.removeAttribute('hidden');
-        }
-      }
-    });
-  }
-
   // Bank selection - Disabled, will redirect to external URL
   bankCards.forEach(card => {
     card.addEventListener('click', function() {
@@ -107,11 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Step 2 -> Step 3 (Calculate credit score and show offer)
   if (nextStep2) {
     nextStep2.addEventListener('click', async () => {
-      if (!consentCheckbox.checked) {
-        speak('Please provide consent to continue.', false);
-        return;
-      }
-
       goToStep(3);
       speak('Analyzing your financial profile.', false);
 
@@ -135,10 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (consentModal) {
         consentModal.setAttribute('hidden', '');
       }
-      // Uncheck the consent checkbox
-      if (consentCheckbox) {
-        consentCheckbox.checked = false;
-      }
       speak('Consent canceled. You can try again when ready.', false);
     });
   }
@@ -152,10 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Restore application data
     const data = JSON.parse(savedData);
     if (data.step === 2) {
-      // Mark consent as given
-      if (consentCheckbox) {
-        consentCheckbox.checked = true;
-      }
       selectedBank = 'external';
       
       // Enable next button
@@ -179,35 +153,22 @@ document.addEventListener('DOMContentLoaded', () => {
     backStep3.addEventListener('click', () => goToStep(2));
   }
 
-  // Accept offer
+  // Accept offer - Open smile capture modal first
   if (acceptOffer) {
     acceptOffer.addEventListener('click', () => {
-      // Copy credit values to Step 4
+      // Store credit values for later use
       const offerCreditLimit = document.getElementById('offerCreditLimit');
       const offerAPR = document.getElementById('offerAPR');
-      const finalCreditLimit = document.getElementById('finalCreditLimit');
-      const finalAPR = document.getElementById('finalAPR');
       
-      if (offerCreditLimit && finalCreditLimit) {
-        finalCreditLimit.textContent = offerCreditLimit.textContent;
+      if (offerCreditLimit) {
+        window.pendingCreditLimit = offerCreditLimit.textContent;
       }
-      if (offerAPR && finalAPR) {
-        finalAPR.textContent = offerAPR.textContent;
+      if (offerAPR) {
+        window.pendingAPR = offerAPR.textContent;
       }
       
-      goToStep(4);
-      
-      // Extract credit amount for speech
-      const creditText = offerCreditLimit ? offerCreditLimit.textContent : '15,250 dirhams';
-      speak(`Your credit line is now active! You can start using it immediately.`);
-
-      // Confetti effect (simple visual feedback)
-      setTimeout(() => {
-        document.body.style.background = 'linear-gradient(135deg, #f6f8fb 0%, #e8f5e9 100%)';
-        setTimeout(() => {
-          document.body.style.background = '';
-        }, 3000);
-      }, 500);
+      // Open smile capture modal
+      openSmileCaptureModal();
     });
   }
 });
@@ -636,11 +597,6 @@ const checkOAuthReturn = () => {
     // Clean URL
     window.history.replaceState({}, document.title, window.location.pathname);
     
-    // Mark consent as given
-    const consentCheckbox = document.getElementById('consentCheckbox');
-    if (consentCheckbox) {
-      consentCheckbox.checked = true;
-    }
     selectedBank = 'external';
     
     // Go to Step 2 and fetch banking data
@@ -668,10 +624,6 @@ const checkOAuthReturn = () => {
   if (phpData.bankConnected) {
     console.log('🔐 Bank already connected via session');
     
-    const consentCheckbox = document.getElementById('consentCheckbox');
-    if (consentCheckbox) {
-      consentCheckbox.checked = true;
-    }
     selectedBank = 'external';
     
     // Enable next step button
@@ -1060,3 +1012,232 @@ const animateNumber = (element, start, end, duration, suffix = '') => {
 };
 
 // Note: Popup functions removed - using redirect flow instead
+
+// ==================== Smile Capture Modal ====================
+
+let cameraStream = null;
+let capturedPhotoDataURL = null;
+
+function openSmileCaptureModal() {
+  const modal = document.getElementById('smileCaptureModal');
+  if (modal) {
+    modal.removeAttribute('hidden');
+    showCameraScreen('permission');
+  }
+}
+
+function closeSmileCaptureModal() {
+  const modal = document.getElementById('smileCaptureModal');
+  if (modal) {
+    modal.setAttribute('hidden', '');
+  }
+  stopCamera();
+  resetCameraModal();
+}
+
+function showCameraScreen(screen) {
+  // Hide all screens
+  const screens = ['cameraPermissionScreen', 'cameraViewScreen', 'photoPreviewScreen', 'cameraErrorScreen'];
+  screens.forEach(id => {
+    const elem = document.getElementById(id);
+    if (elem) {
+      elem.style.display = 'none';
+    }
+  });
+  
+  // Show requested screen (map short names to full IDs)
+  const screenMap = {
+    'permission': 'cameraPermissionScreen',
+    'cameraView': 'cameraViewScreen',
+    'photoPreview': 'photoPreviewScreen',
+    'cameraError': 'cameraErrorScreen'
+  };
+  
+  const targetScreenId = screenMap[screen] || screen + 'Screen';
+  const targetScreen = document.getElementById(targetScreenId);
+  if (targetScreen) {
+    targetScreen.style.display = 'block';
+  }
+}
+
+function resetCameraModal() {
+  capturedPhotoDataURL = null;
+  showCameraScreen('permission');
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  const video = document.getElementById('cameraVideo');
+  if (video) {
+    video.srcObject = null;
+  }
+}
+
+async function startCamera() {
+  try {
+    const video = document.getElementById('cameraVideo');
+    cameraStream = await navigator.mediaDevices.getUserMedia({ 
+      video: { 
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: 'user'
+      } 
+    });
+    
+    video.srcObject = cameraStream;
+    showCameraScreen('cameraView');
+    
+    // Auto-capture after countdown
+    setTimeout(() => startCountdown(), 1000);
+    
+  } catch (error) {
+    console.error('Camera access error:', error);
+    const errorMsg = document.getElementById('cameraErrorMessage');
+    if (errorMsg) {
+      if (error.name === 'NotAllowedError') {
+        errorMsg.textContent = 'Camera permission denied. Please allow camera access in your browser settings.';
+      } else if (error.name === 'NotFoundError') {
+        errorMsg.textContent = 'No camera found on your device.';
+      } else {
+        errorMsg.textContent = 'Unable to access camera: ' + error.message;
+      }
+    }
+    showCameraScreen('cameraError');
+  }
+}
+
+function startCountdown() {
+  const overlay = document.getElementById('countdownOverlay');
+  if (!overlay) return;
+  
+  let count = 3;
+  overlay.style.display = 'block';
+  overlay.textContent = count;
+  
+  const countdownInterval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      overlay.textContent = count;
+    } else {
+      clearInterval(countdownInterval);
+      overlay.textContent = '📸';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        capturePhoto();
+      }, 300);
+    }
+  }, 1000);
+}
+
+function capturePhoto() {
+  const video = document.getElementById('cameraVideo');
+  const canvas = document.getElementById('photoCanvas');
+  
+  if (!video || !canvas) return;
+  
+  // Set canvas size to match video
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  
+  // Draw video frame to canvas
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  // Get image data (but don't store it permanently)
+  capturedPhotoDataURL = canvas.toDataURL('image/jpeg', 0.8);
+  
+  // Stop camera
+  stopCamera();
+  
+  // Show preview
+  showCameraScreen('photoPreview');
+}
+
+function proceedToStep4() {
+  // Copy credit values to Step 4
+  const finalCreditLimit = document.getElementById('finalCreditLimit');
+  const finalAPR = document.getElementById('finalAPR');
+  
+  if (finalCreditLimit && window.pendingCreditLimit) {
+    finalCreditLimit.textContent = window.pendingCreditLimit;
+  }
+  if (finalAPR && window.pendingAPR) {
+    finalAPR.textContent = window.pendingAPR;
+  }
+  
+  // Close modal
+  closeSmileCaptureModal();
+  
+  // Navigate to step 4
+  goToStep(4);
+  
+  // Speech feedback
+  speak('Verification complete! Your credit line is now active!');
+  
+  // Confetti effect
+  setTimeout(() => {
+    document.body.style.background = 'linear-gradient(135deg, #f6f8fb 0%, #e8f5e9 100%)';
+    setTimeout(() => {
+      document.body.style.background = '';
+      // Clear temporary photo data
+      capturedPhotoDataURL = null;
+    }, 3000);
+  }, 500);
+}
+
+// Camera Modal Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+  // Start Camera button
+  const startCameraBtn = document.getElementById('startCameraBtn');
+  if (startCameraBtn) {
+    startCameraBtn.addEventListener('click', startCamera);
+  }
+  
+  // Cancel Camera button
+  const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+  if (cancelCameraBtn) {
+    cancelCameraBtn.addEventListener('click', closeSmileCaptureModal);
+  }
+  
+  // Retake Photo button
+  const retakePhotoBtn = document.getElementById('retakePhotoBtn');
+  if (retakePhotoBtn) {
+    retakePhotoBtn.addEventListener('click', () => {
+      capturedPhotoDataURL = null;
+      showCameraScreen('permission');
+    });
+  }
+  
+  // Confirm Photo button
+  const confirmPhotoBtn = document.getElementById('confirmPhotoBtn');
+  if (confirmPhotoBtn) {
+    confirmPhotoBtn.addEventListener('click', proceedToStep4);
+  }
+  
+  // Close modal button
+  const closeSmileModal = document.getElementById('closeSmileModal');
+  if (closeSmileModal) {
+    closeSmileModal.addEventListener('click', closeSmileCaptureModal);
+  }
+  
+  // Retry Camera button (from error screen)
+  const retryCameraBtn = document.getElementById('retryCameraBtn');
+  if (retryCameraBtn) {
+    retryCameraBtn.addEventListener('click', () => {
+      showCameraScreen('permission');
+    });
+  }
+  
+  // Skip Camera button (from error screen)
+  const skipCameraBtn = document.getElementById('skipCameraBtn');
+  if (skipCameraBtn) {
+    skipCameraBtn.addEventListener('click', () => {
+      // Allow proceeding without photo
+      proceedToStep4();
+    });
+  }
+});
+

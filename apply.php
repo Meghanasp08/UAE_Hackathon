@@ -214,20 +214,6 @@ if ($_POST && !$oauthSuccess) {
         </div>
         <?php endif; ?>
         
-        <div class="consent-box">
-          <h4>Data Consent Required</h4>
-          <p>By connecting your account, you consent to:</p>
-          <ul>
-            <li>Read-only access to account balances</li>
-            <li>Transaction history (last 6 months)</li>
-            <li>Account holder information verification</li>
-          </ul>
-          <label class="checkbox-label">
-            <input type="checkbox" id="consentCheckbox" <?php echo $bankConnected ? 'checked' : ''; ?> required/>
-            <span>I consent to share my account data via Nebras Open Banking</span>
-          </label>
-        </div>
-
         <!-- Fetching Banking Data Progress -->
         <div id="fetchingDataProgress" class="fetching-data-progress" hidden style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
           <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
@@ -488,6 +474,74 @@ if ($_POST && !$oauthSuccess) {
         <div class="form-actions">
           <button class="btn-primary" id="confirmConsent">Authorize Access</button>
           <button class="btn-outline" id="cancelConsent">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smile Capture Modal -->
+  <div id="smileCaptureModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="smileCaptureTitle" hidden>
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="smileCaptureTitle">📸 Verification Photo</h3>
+        <button class="modal-close" id="closeSmileModal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <!-- Camera Permission Request -->
+        <div id="cameraPermissionScreen" style="padding: 2rem;">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">😊</div>
+          <h4 style="margin-bottom: 1rem; color: #7B2687;">Smile for Verification!</h4>
+          <p style="color: #64748b; margin-bottom: 1.5rem;">We need to capture your photo to complete the activation. Please allow camera access when prompted.</p>
+          <button class="btn-primary" id="startCameraBtn" style="padding: 0.75rem 2rem;">
+            📷 Start Camera
+          </button>
+        </div>
+
+        <!-- Camera View -->
+        <div id="cameraViewScreen" hidden>
+          <div style="position: relative; margin-bottom: 1rem;">
+            <video id="cameraVideo" autoplay playsinline style="width: 100%; max-width: 500px; border-radius: 12px; background: #000;"></video>
+            
+            <!-- Countdown Overlay -->
+            <div id="countdownOverlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; font-weight: bold; color: white; text-shadow: 0 0 20px rgba(0,0,0,0.8); display: none;">
+              3
+            </div>
+            
+            <!-- Smile Prompt -->
+            <div style="position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); background: rgba(123, 38, 135, 0.9); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600;">
+              😊 Please smile!
+            </div>
+          </div>
+          <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">Get ready! The photo will be taken automatically in a few seconds.</p>
+          <button class="btn-outline" id="cancelCameraBtn" style="margin-top: 0.5rem;">Cancel</button>
+        </div>
+
+        <!-- Photo Preview -->
+        <div id="photoPreviewScreen" hidden>
+          <div style="margin-bottom: 1.5rem;">
+            <canvas id="photoCanvas" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></canvas>
+          </div>
+          <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center; color: #15803d;">
+              <span style="font-size: 1.5rem;">✅</span>
+              <span style="font-weight: 600;">Photo captured successfully!</span>
+            </div>
+          </div>
+          <div class="form-actions" style="justify-content: center; gap: 1rem;">
+            <button class="btn-outline" id="retakePhotoBtn">🔄 Retake Photo</button>
+            <button class="btn-primary" id="confirmPhotoBtn">✓ Confirm & Continue</button>
+          </div>
+        </div>
+
+        <!-- Error Screen -->
+        <div id="cameraErrorScreen" hidden style="padding: 2rem;">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+          <h4 style="margin-bottom: 1rem; color: #dc2626;">Camera Access Required</h4>
+          <p style="color: #64748b; margin-bottom: 1.5rem;" id="cameraErrorMessage">Unable to access camera. Please ensure you have granted camera permissions.</p>
+          <div class="form-actions" style="justify-content: center; gap: 1rem;">
+            <button class="btn-outline" id="skipCameraBtn">Skip for Now</button>
+            <button class="btn-primary" id="retryCameraBtn">Try Again</button>
+          </div>
         </div>
       </div>
     </div>
