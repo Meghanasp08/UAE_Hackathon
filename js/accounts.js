@@ -569,9 +569,28 @@ function displayBalance(apiData) {
     const amount = balance.Amount || {};
     const creditLine = balance.CreditLine || [];
     
+    // Format the date for the heading
+    let formattedDate = 'N/A';
+    if (balance.DateTime) {
+      try {
+        const date = new Date(balance.DateTime);
+        const options = { 
+          day: '2-digit', 
+          month: 'short', 
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        };
+        formattedDate = date.toLocaleString('en-GB', options);
+      } catch (e) {
+        formattedDate = balance.DateTime;
+      }
+    }
+    
     html += `
       <div class="account-item">
-        <h4>Balance ${index + 1}: ${balance.Type || 'N/A'}</h4>
+        <h4>Balance as of: ${formattedDate}</h4>
         <div class="account-detail">
           <span class="detail-label">Amount</span>
           <span class="detail-value" style="font-size: 1.5rem; font-weight: bold; color: #7B2687;">
@@ -581,10 +600,6 @@ function displayBalance(apiData) {
         <div class="account-detail">
           <span class="detail-label">Credit/Debit Indicator</span>
           <span class="detail-value">${balance.CreditDebitIndicator || 'N/A'}</span>
-        </div>
-        <div class="account-detail">
-          <span class="detail-label">Date & Time</span>
-          <span class="detail-value">${balance.DateTime || 'N/A'}</span>
         </div>
         ${creditLine.length > 0 ? `
           <div class="account-detail">
