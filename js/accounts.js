@@ -2,6 +2,8 @@
 
 let accountDataCache = null;
 let isRefreshing = false;
+let selectedAccountId = null; // Currently selected account ID
+let allAccountsData = {}; // Store all accounts data
 
 document.addEventListener('DOMContentLoaded', () => {
   // Check authentication
@@ -114,6 +116,19 @@ async function fetchAccountData(forceRefresh = false) {
       // Cache the data
       accountDataCache = data;
       
+      // Store accounts data
+      if (data.accounts) {
+        allAccountsData = data.accounts;
+        
+        // Set default selected account (first account)
+        if (data.account_ids && data.account_ids.length > 0) {
+          selectedAccountId = data.account_ids[0];
+          
+          // Save to localStorage for persistence
+          localStorage.setItem('selectedAccountId', selectedAccountId);
+        }
+      }
+      
       // Update loading status
       updateLoadingStatus('Processing account information...');
       
@@ -201,7 +216,8 @@ function displayAccountData(data) {
  */
 function updateQuickSummary(data) {
   let totalAccounts = 0;
-  let totalBalance = 'N/A';
+  let totalBalance = 0;
+  let balanceCurrency = 'AED';
   let totalTransactions = 0;
   let totalBeneficiaries = 0;
   
@@ -210,22 +226,32 @@ function updateQuickSummary(data) {
     totalAccounts = data.apis.multiaccounts.data.message.Data.Account.length;
   }
   
-  // Get balance
-  if (data.apis?.balance?.success && data.apis.balance.data?.message?.Data?.Balance) {
-    const balances = data.apis.balance.data.message.Data.Balance;
-    if (balances.length > 0 && balances[0].Amount) {
-      totalBalance = `${balances[0].Amount.Currency} ${parseFloat(balances[0].Amount.Amount).toLocaleString()}`;
-    }
-  }
-  
-  // Count transactions
-  if (data.apis?.transactions?.success && data.apis.transactions.data?.message?.Data?.Transaction) {
-    totalTransactions = data.apis.transactions.data.message.Data.Transaction.length;
-  }
-  
-  // Count beneficiaries
-  if (data.apis?.beneficiaries?.success && data.apis.beneficiaries.data?.message?.Data?.Beneficiary) {
-    totalBeneficiaries = data.apis.beneficiaries.data.message.Data.Beneficiary.length;
+  // Aggregate balance across all accounts
+  if (data.accounts) {
+    Object.keys(data.accounts).forEach(accountId => {
+      const accountData = data.accounts[accountId];
+      
+      // Sum balances
+      if (accountData.apis?.balance?.success && accountData.apis.balance.data?.message?.Data?.Balance) {
+        const balances = accountData.apis.balance.data.message.Data.Balance;
+        balances.forEach(balance => {
+          if (balance.Amount && balance.Amount.Amount) {
+            totalBalance += parseFloat(balance.Amount.Amount);
+            balanceCurrency = balance.Amount.Currency || balanceCurrency;
+          }
+        });
+      }
+      
+      // Count transactions
+      if (accountData.apis?.transactions?.success && accountData.apis.transactions.data?.message?.Data?.Transaction) {
+        totalTransactions += accountData.apis.transactions.data.message.Data.Transaction.length;
+      }
+      
+      // Count beneficiaries
+      if (accountData.apis?.beneficiaries?.success && accountData.apis.beneficiaries.data?.message?.Data?.Beneficiary) {
+        totalBeneficiaries += accountData.apis.beneficiaries.data.message.Data.Beneficiary.length;
+      }
+    });
   }
   
   // Update DOM
@@ -235,9 +261,148 @@ function updateQuickSummary(data) {
   const totalBeneficiariesEl = document.getElementById('totalBeneficiaries');
   
   if (totalAccountsEl) totalAccountsEl.textContent = totalAccounts;
-  if (totalBalanceEl) totalBalanceEl.textContent = totalBalance;
+  if (totalBalanceEl) totalBalanceEl.textContent = totalBalance > 0 ? `${balanceCurrency} ${totalBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 'N/A';
   if (totalTransactionsEl) totalTransactionsEl.textContent = totalTransactions;
   if (totalBeneficiariesEl) totalBeneficiariesEl.textContent = totalBeneficiaries;
+}
+
+/**
+ * Create account selector for tabs
+ */
+function createAccountSelector(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  // Only show selector if there are multiple accounts
+  if (!accountDataCache || !accountDataCache.accounts || Object.keys(accountDataCache.accounts).length <= 1) {
+    return;
+  }
+  
+  // Get account details from multiaccounts API
+  const accounts = accountDataCache.apis?.multiaccounts?.data?.message?.Data?.Account || [];
+  const accountIds = accountDataCache.account_ids || [];
+  
+  if (accounts.length <= 1) return;
+  
+  // Build account selector HTML
+  let selectorHTML = `
+    <div class="account-selector-bar" id="accountSelectorBar">
+      <div class="selector-content">
+        <div class="selector-label">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+          </svg>
+          <span>Select Account:</span>
+        </div>
+        <select class="account-dropdown" id="accountSelector" onchange="handleAccountChange(this.value)">
+  `;
+  
+  accounts.forEach((account, index) => {
+    const accountId = account.AccountId;
+    const nickname = account.Nickname || `Account ${index + 1}`;
+    const accountType = account.AccountSubType || account.AccountType || '';
+    const currency = account.Currency || 'AED';
+    
+    // Get balance for this account
+    let balance = 'N/A';
+    if (accountDataCache.accounts[accountId]?.apis?.balance?.success) {
+      const balanceData = accountDataCache.accounts[accountId].apis.balance.data?.message?.Data?.Balance;
+      if (balanceData && balanceData.length > 0 && balanceData[0].Amount) {
+        balance = `${balanceData[0].Amount.Currency} ${parseFloat(balanceData[0].Amount.Amount).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+      }
+    }
+    
+    // Mask account number
+    const maskedNumber = accountId.slice(-4);
+    
+    const isSelected = accountId === selectedAccountId;
+    
+    selectorHTML += `
+      <option value="${accountId}" ${isSelected ? 'selected' : ''}>
+        ${nickname} - ${accountType} (${balance}) - ****${maskedNumber}
+      </option>
+    `;
+  });
+  
+  selectorHTML += `
+        </select>
+      </div>
+    </div>
+  `;
+  
+  // Check if selector already exists
+  const existingSelector = container.querySelector('.account-selector-bar');
+  if (existingSelector) {
+    existingSelector.remove();
+  }
+  
+  // Insert at the beginning of container
+  container.insertAdjacentHTML('afterbegin', selectorHTML);
+}
+
+/**
+ * Handle account change
+ */
+function handleAccountChange(accountId) {
+  console.log('🔄 Switching to account:', accountId);
+  
+  selectedAccountId = accountId;
+  
+  // Save to localStorage
+  localStorage.setItem('selectedAccountId', accountId);
+  
+  // Get the current active tab
+  const activeTab = document.querySelector('.tab.active');
+  if (!activeTab) return;
+  
+  const tabName = activeTab.getAttribute('data-tab');
+  
+  // Refresh the content for the selected tab
+  if (tabName && accountDataCache) {
+    const accountData = accountDataCache.accounts[accountId];
+    
+    if (accountData) {
+      // Update the display based on active tab
+      switch(tabName) {
+        case 'account-details':
+          if (accountData.apis.accountinfo) {
+            displayAccountInfo(accountData.apis.accountinfo);
+          }
+          break;
+        case 'balance':
+          if (accountData.apis.balance) {
+            displayBalance(accountData.apis.balance);
+          }
+          break;
+        case 'transactions':
+          if (accountData.apis.transactions) {
+            displayTransactions(accountData.apis.transactions);
+          }
+          break;
+        case 'beneficiaries':
+          if (accountData.apis.beneficiaries) {
+            displayBeneficiaries(accountData.apis.beneficiaries);
+          }
+          break;
+        case 'products':
+          if (accountData.apis.products) {
+            displayProducts(accountData.apis.products);
+          }
+          break;
+      }
+      
+      // Update all selectors to stay in sync
+      document.querySelectorAll('.account-dropdown').forEach(dropdown => {
+        dropdown.value = accountId;
+      });
+      
+      // Clear statement preview if on statement tab
+      if (tabName === 'statement') {
+        clearStatement();
+      }
+    }
+  }
 }
 
 /**
@@ -315,6 +480,9 @@ function displayAccountInfo(apiData) {
   const container = document.getElementById('accountinfoData');
   if (!container) return;
   
+  // Add account selector if multiple accounts exist
+  createAccountSelector('tab-account-details');
+  
   if (!apiData.success) {
     container.innerHTML = `
       <div class="error-banner">
@@ -374,6 +542,9 @@ function displayAccountInfo(apiData) {
 function displayBalance(apiData) {
   const container = document.getElementById('balanceData');
   if (!container) return;
+  
+  // Add account selector if multiple accounts exist
+  createAccountSelector('tab-balance');
   
   if (!apiData.success) {
     container.innerHTML = `
@@ -445,6 +616,9 @@ function displayBalance(apiData) {
 function displayTransactions(apiData) {
   const container = document.getElementById('transactionsData');
   if (!container) return;
+  
+  // Add account selector if multiple accounts exist
+  createAccountSelector('tab-transactions');
   
   if (!apiData.success) {
     container.innerHTML = `
@@ -531,6 +705,9 @@ function displayTransactions(apiData) {
 function displayBeneficiaries(apiData) {
   const container = document.getElementById('beneficiariesData');
   if (!container) return;
+  
+  // Add account selector if multiple accounts exist
+  createAccountSelector('tab-beneficiaries');
   
   if (!apiData.success) {
     container.innerHTML = `
@@ -649,6 +826,9 @@ function formatFrequency(duration) {
 function displayProducts(apiData) {
   const container = document.getElementById('productsData');
   if (!container) return;
+  
+  // Add account selector if multiple accounts exist
+  createAccountSelector('tab-products');
   
   if (!apiData.success) {
     container.innerHTML = `
@@ -919,6 +1099,50 @@ function setupTabs() {
         targetContent.classList.add('active');
       }
       
+      // Handle tab-specific data display with account selection
+      if (accountDataCache && selectedAccountId) {
+        const accountData = accountDataCache.accounts?.[selectedAccountId];
+        
+        if (accountData) {
+          switch(targetTab) {
+            case 'account-details':
+              if (accountData.apis?.accountinfo) {
+                displayAccountInfo(accountData.apis.accountinfo);
+              }
+              break;
+            case 'balance':
+              if (accountData.apis?.balance) {
+                displayBalance(accountData.apis.balance);
+              }
+              break;
+            case 'transactions':
+              if (accountData.apis?.transactions) {
+                displayTransactions(accountData.apis.transactions);
+              }
+              break;
+            case 'beneficiaries':
+              if (accountData.apis?.beneficiaries) {
+                displayBeneficiaries(accountData.apis.beneficiaries);
+              }
+              break;
+            case 'products':
+              if (accountData.apis?.products) {
+                displayProducts(accountData.apis.products);
+              }
+              break;
+            case 'statement':
+              // Add account selector for statement tab
+              createAccountSelector('tab-statement');
+              break;
+          }
+        }
+      }
+      
+      // Handle Statement tab
+      if (targetTab === 'statement') {
+        createAccountSelector('tab-statement');
+      }
+      
       // Auto-trigger analysis when Analysis tab is clicked
       if (targetTab === 'analysis') {
         const analysisResults = document.getElementById('analysisResults');
@@ -965,8 +1189,17 @@ function setupStatementGeneration() {
       const preview = document.getElementById('statementPreview');
       const actionsDiv = document.getElementById('statementActions');
       
+      // Validate account selection
+      if (!selectedAccountId) {
+        alert('Please wait for account data to load');
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Statement';
+        return;
+      }
+      
       try {
-        let url = `api/generate_account_statement.php?range=${period}`;
+        // Include selected account ID in the URL
+        let url = `api/generate_account_statement.php?account_id=${selectedAccountId}&range=${period}`;
         if (period === 'custom' && startDate && endDate) {
           url += `&start_date=${startDate}&end_date=${endDate}`;
         }
@@ -1326,7 +1559,12 @@ function downloadStatementCSV() {
   const startDate = document.getElementById('startDate')?.value;
   const endDate = document.getElementById('endDate')?.value;
   
-  let url = `api/generate_account_statement.php?format=csv&range=${period}`;
+  if (!selectedAccountId) {
+    alert('Please select an account first');
+    return;
+  }
+  
+  let url = `api/generate_account_statement.php?account_id=${selectedAccountId}&format=csv&range=${period}`;
   if (period === 'custom' && startDate && endDate) {
     url += `&start_date=${startDate}&end_date=${endDate}`;
   }

@@ -142,70 +142,111 @@ $accountData = [
     'success' => true,
     'fetched_at' => time(),
     'timestamp' => date('Y-m-d H:i:s'),
-    'account_id' => $accountId,
+    'accounts' => [],
     'apis' => []
 ];
 
 try {
-    // 1. MULTI ACCOUNTS - Fetch all accounts
+    // 1. MULTI ACCOUNTS - Fetch all accounts first
     $result = callOpenBankingAPI($baseUrl, $baseHeaders, $certificate_path, $private_key_path);
     $accountData['apis']['multiaccounts'] = formatApiResult($result, 'Multi Accounts');
     
-    // Try to extract the first valid Account ID from the response
+    // Extract all account IDs from the response
+    $accountIds = [];
     if ($accountData['apis']['multiaccounts']['success']) {
         $multiData = $accountData['apis']['multiaccounts']['data'];
-        if (isset($multiData['message']['Data']['Account'][0]['AccountId'])) {
-            $accountId = $multiData['message']['Data']['Account'][0]['AccountId'];
-            $accountData['account_id'] = $accountId;
+        if (isset($multiData['message']['Data']['Account']) && is_array($multiData['message']['Data']['Account'])) {
+            foreach ($multiData['message']['Data']['Account'] as $account) {
+                if (isset($account['AccountId'])) {
+                    $accountIds[] = $account['AccountId'];
+                }
+            }
         }
     }
     
-    // 2. ACCOUNT INFO - Fetch specific account details
-    $result = callOpenBankingAPI($baseUrl . $accountId, $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['accountinfo'] = formatApiResult($result, 'Account Info');
+    // If no accounts found, use default
+    if (empty($accountIds)) {
+        $accountIds = [$accountId];
+    }
     
-    // 3. BALANCE - Fetch account balance
-    $result = callOpenBankingAPI($baseUrl . $accountId . "/balances", $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['balance'] = formatApiResult($result, 'Balance');
+    // Store total account count
+    $accountData['total_accounts'] = count($accountIds);
+    $accountData['account_ids'] = $accountIds;
     
-    // 4. TRANSACTIONS - Fetch transaction history
-    $result = callOpenBankingAPI($baseUrl . $accountId . "/transactions", $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['transactions'] = formatApiResult($result, 'Transactions');
+    // 2. Fetch data for ALL accounts
+    foreach ($accountIds as $index => $currentAccountId) {
+        error_log("Fetching data for account: $currentAccountId");
+        
+        $accountDetails = [
+            'account_id' => $currentAccountId,
+            'account_index' => $index,
+            'apis' => []
+        ];
+        
+        // ACCOUNT INFO
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId, $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['accountinfo'] = formatApiResult($result, 'Account Info');
+        
+        // BALANCE
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId . "/balances", $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['balance'] = formatApiResult($result, 'Balance');
+        
+        // TRANSACTIONS
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId . "/transactions", $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['transactions'] = formatApiResult($result, 'Transactions');
+        
+        // BENEFICIARIES
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId . "/beneficiaries", $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['beneficiaries'] = formatApiResult($result, 'Beneficiaries');
+        
+        // SCHEDULED PAYMENTS
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId . "/scheduled-payments", $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['scheduled_payments'] = formatApiResult($result, 'Scheduled Payments');
+        
+        // STANDING ORDERS
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId . "/standing-orders", $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['standing_orders'] = formatApiResult($result, 'Standing Orders');
+        
+        // DIRECT DEBITS
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId . "/direct-debits", $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['direct_debits'] = formatApiResult($result, 'Direct Debits');
+        
+        // PARTIES
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId . "/parties", $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['parties'] = formatApiResult($result, 'Parties');
+        
+        // PRODUCTS
+        $result = callOpenBankingAPI($baseUrl . $currentAccountId . "/product", $baseHeaders, $certificate_path, $private_key_path);
+        $accountDetails['apis']['products'] = formatApiResult($result, 'Products');
+        
+        // Store account data
+        $accountData['accounts'][$currentAccountId] = $accountDetails;
+    }
     
-    // 5. BENEFICIARIES - Fetch beneficiaries
-    $result = callOpenBankingAPI($baseUrl . $accountId . "/beneficiaries", $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['beneficiaries'] = formatApiResult($result, 'Beneficiaries');
-    
-    // 6. SCHEDULED PAYMENTS - Fetch scheduled payments
-    $result = callOpenBankingAPI($baseUrl . $accountId . "/scheduled-payments", $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['scheduled_payments'] = formatApiResult($result, 'Scheduled Payments');
-    
-    // 7. STANDING ORDERS - Fetch standing orders
-    $result = callOpenBankingAPI($baseUrl . $accountId . "/standing-orders", $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['standing_orders'] = formatApiResult($result, 'Standing Orders');
-    
-    // 8. DIRECT DEBITS - Fetch direct debits
-    $result = callOpenBankingAPI($baseUrl . $accountId . "/direct-debits", $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['direct_debits'] = formatApiResult($result, 'Direct Debits');
-    
-    // 9. PARTIES - Fetch account parties (account holder info)
-    $result = callOpenBankingAPI($baseUrl . $accountId . "/parties", $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['parties'] = formatApiResult($result, 'Parties');
-    
-    // 10. PRODUCTS - Fetch account product information
-    $result = callOpenBankingAPI($baseUrl . $accountId . "/product", $baseHeaders, $certificate_path, $private_key_path);
-    $accountData['apis']['products'] = formatApiResult($result, 'Products');
+    // For backward compatibility, also set the first account's data in the main 'apis' section
+    if (!empty($accountIds)) {
+        $firstAccountId = $accountIds[0];
+        if (isset($accountData['accounts'][$firstAccountId])) {
+            $accountData['apis'] = array_merge(
+                $accountData['apis'],
+                $accountData['accounts'][$firstAccountId]['apis']
+            );
+            $accountData['account_id'] = $firstAccountId; // Default to first account
+        }
+    }
     
     // Check if all API calls failed
     $allFailed = true;
-    foreach ($accountData['apis'] as $api) {
-        if ($api['success']) {
-            $allFailed = false;
-            break;
+    foreach ($accountData['accounts'] as $accData) {
+        foreach ($accData['apis'] as $api) {
+            if ($api['success']) {
+                $allFailed = false;
+                break 2;
+            }
         }
     }
     
-    if ($allFailed) {
+    if ($allFailed && empty($accountData['apis']['multiaccounts']['success'])) {
         $accountData['success'] = false;
         $accountData['error'] = 'All API calls failed. Please check your connection and try again.';
     }

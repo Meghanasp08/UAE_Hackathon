@@ -17,6 +17,7 @@ $format = $_GET['format'] ?? 'html';
 $dateRange = intval($_GET['range'] ?? 30);
 $startDate = $_GET['start_date'] ?? null;
 $endDate = $_GET['end_date'] ?? null;
+$accountId = $_GET['account_id'] ?? null; // Get account ID from request
 
 // Check if banking data exists in session
 if (!isset($_SESSION['banking_data']) || !isset($_SESSION['access_token'])) {
@@ -33,7 +34,40 @@ if (!isset($_SESSION['banking_data']) || !isset($_SESSION['access_token'])) {
 }
 
 $bankingData = $_SESSION['banking_data'];
-$accountId = $bankingData['account_id'] ?? 'Unknown';
+
+// Determine which account to use
+if ($accountId && isset($bankingData['accounts'][$accountId])) {
+    // Use specific account data
+    $selectedAccountData = $bankingData['accounts'][$accountId];
+    // Merge with multiaccounts for account list
+    $accountBankingData = [
+        'account_id' => $accountId,
+        'apis' => $selectedAccountData['apis']
+    ];
+    // Add multiaccounts if available
+    if (isset($bankingData['apis']['multiaccounts'])) {
+        $accountBankingData['apis']['multiaccounts'] = $bankingData['apis']['multiaccounts'];
+    }
+} else {
+    // Fall back to first account or legacy structure
+    if (isset($bankingData['account_id'])) {
+        $accountId = $bankingData['account_id'];
+        $accountBankingData = $bankingData;
+    } else if (isset($bankingData['account_ids'][0])) {
+        $accountId = $bankingData['account_ids'][0];
+        $selectedAccountData = $bankingData['accounts'][$accountId];
+        $accountBankingData = [
+            'account_id' => $accountId,
+            'apis' => $selectedAccountData['apis']
+        ];
+        if (isset($bankingData['apis']['multiaccounts'])) {
+            $accountBankingData['apis']['multiaccounts'] = $bankingData['apis']['multiaccounts'];
+        }
+    } else {
+        $accountId = 'Unknown';
+        $accountBankingData = $bankingData;
+    }
+}
 
 /**
  * Extract and process data from banking API responses
@@ -42,7 +76,10 @@ function extractStatementData($bankingData, $dateRange, $startDate = null, $endD
     $statementData = [
         'account_id' => $bankingData['account_id'] ?? 'Unknown',
         'account_holder' => '',
+        'account_nickname' => '',
         'account_type' => '',
+        'account_subtype' => '',
+        'masked_account_number' => '',
         'currency' => 'AED',
         'opening_balance' => 0,
         'closing_balance' => 0,
@@ -75,11 +112,18 @@ function extractStatementData($bankingData, $dateRange, $startDate = null, $endD
             $account = $accountInfo['message']['Data']['Account'];
             // Extract account holder name
             $statementData['account_holder'] = $account['AccountHolderName'] ?? ($account['AccountHolderShortName'] ?? '');
+            // Extract account nickname
+            $statementData['account_nickname'] = $account['Nickname'] ?? '';
             // Extract account type
             $statementData['account_type'] = $account['AccountType'] ?? 'Current';
+            $statementData['account_subtype'] = $account['AccountSubType'] ?? '';
             // Extract currency
             if (isset($account['Currency'])) {
                 $statementData['currency'] = $account['Currency'];
+            }
+            // Create masked account number
+            if (isset($statementData['account_id'])) {
+                $statementData['masked_account_number'] = '****' . substr($statementData['account_id'], -4);
             }
         }
     }
@@ -399,6 +443,10 @@ function generateHTML($data) {
         
         <div class="info-grid">
             <div class="info-block">
+                <label>Account Name</label>
+                <div class="value">' . htmlspecialchars($data['account_nickname'] ?: $data['account_type']) . ' (' . htmlspecialchars($data['masked_account_number']) . ')</div>
+            </div>
+            <div class="info-block">
                 <label>Account Number</label>
                 <div class="value">' . htmlspecialchars($data['account_id']) . '</div>
             </div>
@@ -408,11 +456,15 @@ function generateHTML($data) {
             </div>
             <div class="info-block">
                 <label>Account Type</label>
-                <div class="value">' . htmlspecialchars($data['account_type']) . '</div>
+                <div class="value">' . htmlspecialchars($data['account_subtype'] ?: $data['account_type']) . '</div>
             </div>
             <div class="info-block">
                 <label>Statement Period</label>
                 <div class="value">' . htmlspecialchars($data['statement_period']) . '</div>
+            </div>
+            <div class="info-block">
+                <label>Generated On</label>
+                <div class="value">' . htmlspecialchars(date('M d, Y H:i', strtotime($data['generated_at']))) . '</div>
             </div>
         </div>
         
@@ -558,6 +610,9 @@ function generateMobileFriendlyHTML($data) {
     <!-- Summary Cards -->
     <div class="statement-summary">
         <h3 class="statement-title">📄 Account Statement</h3>
+        <p class="statement-period" style="margin: 0.25rem 0 0.5rem 0;">
+            <strong>' . htmlspecialchars($data['account_nickname'] ?: $data['account_type']) . '</strong> (' . htmlspecialchars($data['masked_account_number']) . ')
+        </p>
         <p class="statement-period">' . htmlspecialchars($data['statement_period']) . '</p>
         
         <div class="summary-cards-grid">
@@ -583,6 +638,10 @@ function generateMobileFriendlyHTML($data) {
     <!-- Account Info (Mobile Hidden, Desktop Visible) -->
     <div class="account-info-section desktop-only">
         <div class="info-row">
+            <span class="info-label">Account:</span>
+            <span class="info-value">' . htmlspecialchars($data['account_nickname'] ?: $data['account_type']) . ' (' . htmlspecialchars($data['masked_account_number']) . ')</span>
+        </div>
+        <div class="info-row">
             <span class="info-label">Account Number:</span>
             <span class="info-value">' . htmlspecialchars($data['account_id']) . '</span>
         </div>
@@ -592,7 +651,7 @@ function generateMobileFriendlyHTML($data) {
         </div>
         <div class="info-row">
             <span class="info-label">Account Type:</span>
-            <span class="info-value">' . htmlspecialchars($data['account_type']) . '</span>
+            <span class="info-value">' . htmlspecialchars($data['account_subtype'] ?: $data['account_type']) . '</span>
         </div>
     </div>
     
@@ -817,7 +876,7 @@ function generatePDF($data) {
 
 // Main execution
 try {
-    $statementData = extractStatementData($bankingData, $dateRange, $startDate, $endDate);
+    $statementData = extractStatementData($accountBankingData, $dateRange, $startDate, $endDate);
     
     switch ($format) {
         case 'csv':

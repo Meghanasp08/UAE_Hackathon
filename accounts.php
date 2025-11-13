@@ -294,6 +294,67 @@ if (!$bankConnected && !$oauthSuccess) {
       font-weight: 500;
     }
     
+    /* ===== Account Selector Styles ===== */
+    .account-selector-bar {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 2px solid #7B2687;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(123, 38, 135, 0.1);
+    }
+    
+    .selector-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .selector-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #7B2687;
+      font-weight: 600;
+      font-size: 0.938rem;
+      white-space: nowrap;
+    }
+    
+    .selector-label svg {
+      color: #7B2687;
+    }
+    
+    .account-dropdown {
+      flex: 1;
+      min-width: 300px;
+      padding: 0.75rem 1rem;
+      border: 2px solid #7B2687;
+      border-radius: 8px;
+      background: white;
+      color: #1e293b;
+      font-size: 0.938rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    
+    .account-dropdown:hover {
+      border-color: #B83280;
+      box-shadow: 0 0 0 3px rgba(123, 38, 135, 0.1);
+    }
+    
+    .account-dropdown:focus {
+      border-color: #B83280;
+      box-shadow: 0 0 0 4px rgba(123, 38, 135, 0.15);
+    }
+    
+    .account-dropdown option {
+      padding: 0.5rem;
+      font-size: 0.938rem;
+    }
+    
     /* ===== Statement Styles ===== */
     .statement-preview-container {
       background: white;
@@ -766,6 +827,32 @@ if (!$bankConnected && !$oauthSuccess) {
         font-size: 1rem !important;
       }
       
+      /* Account Selector - Mobile */
+      .account-selector-bar {
+        padding: 0.875rem 1rem;
+        margin-bottom: 1rem;
+        margin-left: 0;
+        margin-right: 0;
+      }
+      
+      .selector-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+      
+      .selector-label {
+        font-size: 0.875rem;
+        justify-content: center;
+      }
+      
+      .account-dropdown {
+        min-width: 100%;
+        width: 100%;
+        font-size: 0.875rem;
+        padding: 0.625rem 0.75rem;
+      }
+      
     }
     
     /* Extra small mobile devices */
@@ -865,6 +952,26 @@ if (!$bankConnected && !$oauthSuccess) {
       canvas {
         max-width: 100% !important;
         height: auto !important;
+      }
+      
+      /* Account Selector - Extra Small Screens */
+      .account-selector-bar {
+        padding: 0.75rem;
+        border-radius: 8px;
+      }
+      
+      .selector-label {
+        font-size: 0.813rem;
+      }
+      
+      .selector-label svg {
+        width: 16px;
+        height: 16px;
+      }
+      
+      .account-dropdown {
+        font-size: 0.813rem;
+        padding: 0.5rem 0.625rem;
       }
     }
   </style>
