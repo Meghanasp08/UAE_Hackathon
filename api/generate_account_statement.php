@@ -68,20 +68,16 @@ function extractStatementData($bankingData, $dateRange, $startDate = null, $endD
         $statementData['statement_period'] = date('M d, Y', $filterStartDate) . ' - ' . date('M d, Y', $filterEndDate);
     }
     
-    // Extract account holder info from parties
-    if (isset($bankingData['apis']['parties']['success']) && $bankingData['apis']['parties']['success']) {
-        $partiesData = $bankingData['apis']['parties']['data'];
-        if (isset($partiesData['message']['Data']['Party'][0]['Name'])) {
-            $statementData['account_holder'] = $partiesData['message']['Data']['Party'][0]['Name'];
-        }
-    }
-    
-    // Extract account info
+    // Extract account info (including holder name and account type)
     if (isset($bankingData['apis']['accountinfo']['success']) && $bankingData['apis']['accountinfo']['success']) {
         $accountInfo = $bankingData['apis']['accountinfo']['data'];
-        if (isset($accountInfo['message']['Data']['Account'][0])) {
-            $account = $accountInfo['message']['Data']['Account'][0];
+        if (isset($accountInfo['message']['Data']['Account'])) {
+            $account = $accountInfo['message']['Data']['Account'];
+            // Extract account holder name
+            $statementData['account_holder'] = $account['AccountHolderName'] ?? ($account['AccountHolderShortName'] ?? '');
+            // Extract account type
             $statementData['account_type'] = $account['AccountType'] ?? 'Current';
+            // Extract currency
             if (isset($account['Currency'])) {
                 $statementData['currency'] = $account['Currency'];
             }
@@ -172,8 +168,18 @@ function extractStatementData($bankingData, $dateRange, $startDate = null, $endD
                 $standingOrders = [$standingOrders];
             }
             foreach ($standingOrders as $so) {
+                // Try to get reference from multiple possible fields
+                $reference = $so['Reference'] ?? $so['StandingOrderId'] ?? '';
+                
+                // If still empty, try to get beneficiary name
+                if (empty($reference) && isset($so['CreditorAccount']['Name'])) {
+                    $reference = $so['CreditorAccount']['Name'];
+                } elseif (empty($reference) && isset($so['CreditorAccount'][0]['Name'])) {
+                    $reference = $so['CreditorAccount'][0]['Name'];
+                }
+                
                 $statementData['standing_orders'][] = [
-                    'reference' => $so['Reference'] ?? '',
+                    'reference' => $reference,
                     'amount' => floatval($so['FirstPaymentAmount']['Amount'] ?? 0),
                     'currency' => $so['FirstPaymentAmount']['Currency'] ?? 'AED',
                     'frequency' => $so['Frequency'] ?? 'Unknown',
@@ -210,8 +216,18 @@ function extractStatementData($bankingData, $dateRange, $startDate = null, $endD
                 $scheduledPayments = [$scheduledPayments];
             }
             foreach ($scheduledPayments as $sp) {
+                // Try to get reference from multiple possible fields
+                $reference = $sp['Reference'] ?? $sp['DebtorReference'] ?? $sp['ScheduledPaymentId'] ?? '';
+                
+                // If still empty, try to get creditor/beneficiary name
+                if (empty($reference) && isset($sp['CreditorAccount']['Name'])) {
+                    $reference = $sp['CreditorAccount']['Name'];
+                } elseif (empty($reference) && isset($sp['CreditorAccount'][0]['Name'])) {
+                    $reference = $sp['CreditorAccount'][0]['Name'];
+                }
+                
                 $statementData['scheduled_payments'][] = [
-                    'reference' => $sp['Reference'] ?? '',
+                    'reference' => $reference,
                     'amount' => floatval($sp['InstructedAmount']['Amount'] ?? 0),
                     'currency' => $sp['InstructedAmount']['Currency'] ?? 'AED',
                     'scheduled_date' => $sp['ScheduledPaymentDateTime'] ?? 'N/A'
