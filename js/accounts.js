@@ -474,7 +474,7 @@ function displayTransactions(apiData) {
     html += `
       <div class="account-item" style="border-left: 4px solid ${isCredit ? '#10b981' : '#ef4444'};">
         <h4 style="display: flex; justify-content: space-between; align-items: center;">
-          <span>Transaction ${index + 1}</span>
+          <span>${txn.TransactionId || 'Transaction ' + (index + 1)}</span>
           <span style="font-size: 1.25rem; font-weight: bold; color: ${isCredit ? '#10b981' : '#ef4444'};">
             ${isCredit ? '+' : '-'} ${amount.Currency || ''} ${amount.Amount ? parseFloat(amount.Amount).toLocaleString() : 'N/A'}
           </span>
