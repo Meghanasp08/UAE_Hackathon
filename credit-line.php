@@ -6,6 +6,7 @@ $oauthSuccess = isset($_GET['oauth_success']) && $_GET['oauth_success'] == '1';
 $consentType = $_GET['consent_type'] ?? '';
 $paymentConsentSuccess = $oauthSuccess && $consentType === 'payment';
 $termLoanConsentSuccess = $oauthSuccess && $consentType === 'termloan';
+$autoSweepConsentSuccess = $oauthSuccess && $consentType === 'autosweep';
 
 // Function to recalculate credit score from current banking data
 function recalculateCreditScore() {
@@ -182,14 +183,14 @@ if ($creditData && isset($creditData['creditLimit'])) {
   </header>
 
   <main class="container">
-    <?php if ($paymentConsentSuccess): ?>
-    <!-- Payment Consent Success Alert -->
-    <div class="alert alert-success" id="paymentConsentAlert" style="margin-bottom: 1.5rem; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724;">
-      <strong>✅ Payment Authorization Successful!</strong>
+    <?php if ($autoSweepConsentSuccess): ?>
+    <!-- Auto-Sweep Consent Success Alert -->
+    <div class="alert alert-success" id="autoSweepConsentAlert" style="margin-bottom: 1.5rem; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724;">
+      <strong>✅ Auto-Sweep Authorization Successful!</strong>
       <p style="margin: 0.5rem 0 0 0;">Auto-sweep payment consent has been granted. You can now configure your auto-sweep settings below.</p>
     </div>
     <script>
-      // Auto-enable the toggle after payment consent
+      // Auto-enable the toggle after auto-sweep consent
       document.addEventListener('DOMContentLoaded', () => {
         const autoSweepToggle = document.getElementById('autoSweepToggle');
         if (autoSweepToggle) {
@@ -199,7 +200,7 @@ if ($creditData && isset($creditData['creditLimit'])) {
         
         // Auto-hide alert after 8 seconds
         setTimeout(() => {
-          const alert = document.getElementById('paymentConsentAlert');
+          const alert = document.getElementById('autoSweepConsentAlert');
           if (alert) {
             alert.style.transition = 'opacity 0.5s';
             alert.style.opacity = '0';
@@ -270,6 +271,21 @@ if ($creditData && isset($creditData['creditLimit'])) {
           ? htmlspecialchars($_SESSION['payment_consent_error']) 
           : 'Unable to complete payment authorization. Please try again.';
         unset($_SESSION['payment_consent_error']);
+        ?>
+      </p>
+    </div>
+    <?php endif; ?>
+    
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'autosweep_consent_failed'): ?>
+    <!-- Auto-Sweep Consent Error Alert -->
+    <div class="alert alert-danger" style="margin-bottom: 1.5rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
+      <strong>❌ Auto-Sweep Authorization Failed</strong>
+      <p style="margin: 0.5rem 0 0 0;">
+        <?php 
+        echo isset($_SESSION['autosweep_consent_error']) 
+          ? htmlspecialchars($_SESSION['autosweep_consent_error']) 
+          : 'Unable to complete auto-sweep authorization. Please try again.';
+        unset($_SESSION['autosweep_consent_error']);
         ?>
       </p>
     </div>

@@ -44,19 +44,19 @@ document.addEventListener('DOMContentLoaded', () => {
   if (autoSweepToggle) {
     autoSweepToggle.addEventListener('change', async (e) => {
       if (e.target.checked) {
-        // Check if payment consent already exists
-        const hasPaymentConsent = await checkPaymentConsent();
+        // Check if auto-sweep payment consent already exists
+        const hasAutoSweepConsent = await checkAutoSweepConsent();
         
-        if (!hasPaymentConsent) {
-          // Need to get payment consent first
+        if (!hasAutoSweepConsent) {
+          // Need to get auto-sweep payment consent first
           speak('To enable auto-sweep, we need your authorization for automatic payments. Redirecting to secure authorization...', false);
           
           // Show loading state
           autoSweepToggle.disabled = true;
           
-          // Redirect to payment consent initiation
+          // Redirect to auto-sweep consent initiation
           setTimeout(() => {
-            window.location.href = 'api/initiate_payment_consent.php';
+            window.location.href = 'api/initiate_autosweep_consent.php';
           }, 1500);
           
           return;
@@ -1000,6 +1000,18 @@ const checkPaymentConsent = async () => {
     return data.hasConsent || false;
   } catch (error) {
     console.error('Error checking payment consent:', error);
+    return false;
+  }
+};
+
+// Helper function to check if auto-sweep consent exists
+const checkAutoSweepConsent = async () => {
+  try {
+    const response = await fetch('api/check_payment_consent.php?type=autosweep');
+    const data = await response.json();
+    return data.hasConsent || false;
+  } catch (error) {
+    console.error('Error checking auto-sweep consent:', error);
     return false;
   }
 };
