@@ -326,13 +326,14 @@ function displayAccountInfo(apiData) {
   }
   
   const accountData = apiData.data?.message?.Data?.Account || {};
+  const accountId = apiData.data?.message?.Data?.AccountId || 'N/A';
   
   let html = `
     <div class="account-item">
       <h4>${accountData.Nickname || 'Account Details'}</h4>
       <div class="account-detail">
         <span class="detail-label">Account ID</span>
-        <span class="detail-value">${accountData.AccountId || 'N/A'}</span>
+        <span class="detail-value">${accountId}</span>
       </div>
       <div class="account-detail">
         <span class="detail-label">Status</span>
@@ -542,13 +543,26 @@ function displayBeneficiaries(apiData) {
   }
   
   const beneficiaries = apiData.data?.message?.Data?.Beneficiary || [];
+  const accountId = apiData.data?.message?.Data?.AccountId || 'N/A';
   
   if (beneficiaries.length === 0) {
     container.innerHTML = '<p style="color: #64748b;">No beneficiaries found.</p>';
     return;
   }
   
-  let html = '';
+  let html = `
+    <div class="account-item" style="background: linear-gradient(135deg, #7B2687 0%, #B83280 100%); color: white; border: none;">
+      <h4 style="color: white; margin: 0 0 0.5rem 0;">🏦 Account Information</h4>
+      <div class="account-detail" style="border-bottom-color: rgba(255,255,255,0.2);">
+        <span class="detail-label" style="color: rgba(255,255,255,0.9);">Account ID</span>
+        <span class="detail-value" style="color: white; font-weight: 600;">${accountId}</span>
+      </div>
+      <div class="account-detail" style="border-bottom: none;">
+        <span class="detail-label" style="color: rgba(255,255,255,0.9);">Total Beneficiaries</span>
+        <span class="detail-value" style="color: white; font-weight: 600;">${beneficiaries.length}</span>
+      </div>
+    </div>
+  `;
   
   beneficiaries.forEach((beneficiary, index) => {
     html += `
@@ -559,8 +573,8 @@ function displayBeneficiaries(apiData) {
           <span class="detail-value">${beneficiary.BeneficiaryId || 'N/A'}</span>
         </div>
         <div class="account-detail">
-          <span class="detail-label">Account ID</span>
-          <span class="detail-value">${beneficiary.AccountId || 'N/A'}</span>
+          <span class="detail-label">Type</span>
+          <span class="detail-value">${beneficiary.BeneficiaryType || 'N/A'}</span>
         </div>
         ${beneficiary.Reference ? `
           <div class="account-detail">
