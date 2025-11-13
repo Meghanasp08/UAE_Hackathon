@@ -574,7 +574,11 @@ function displayBeneficiaries(apiData) {
         </div>
         <div class="account-detail">
           <span class="detail-label">Type</span>
-          <span class="detail-value">${beneficiary.BeneficiaryType || 'N/A'}</span>
+          <span class="detail-value">
+            <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; ${beneficiary.BeneficiaryType === 'Activated' ? 'background: #d1fae5; color: #065f46;' : 'background: #fee2e2; color: #991b1b;'}">
+              ${beneficiary.BeneficiaryType || 'N/A'}
+            </span>
+          </span>
         </div>
         ${beneficiary.Reference ? `
           <div class="account-detail">
@@ -582,10 +586,20 @@ function displayBeneficiaries(apiData) {
             <span class="detail-value">${beneficiary.Reference}</span>
           </div>
         ` : ''}
-        ${beneficiary.CreditorAccount ? `
+        ${beneficiary.CreditorAgent ? `
           <div class="account-detail">
-            <span class="detail-label">Creditor Account</span>
-            <span class="detail-value">${beneficiary.CreditorAccount.Identification || 'N/A'}</span>
+            <span class="detail-label">Bank</span>
+            <span class="detail-value">${beneficiary.CreditorAgent.Name || beneficiary.CreditorAgent.Identification || 'N/A'}</span>
+          </div>
+        ` : ''}
+        ${beneficiary.CreditorAccount && beneficiary.CreditorAccount.length > 0 ? `
+          <div class="account-detail">
+            <span class="detail-label">Creditor Account(s)</span>
+            <span class="detail-value" style="line-height: 1.6;">
+              ${beneficiary.CreditorAccount.map(acc => 
+                `<div style="margin: 0.25rem 0;"><strong>${acc.SchemeName}:</strong> ${acc.Identification}</div>`
+              ).join('')}
+            </span>
           </div>
         ` : ''}
       </div>
