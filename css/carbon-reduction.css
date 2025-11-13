@@ -1,0 +1,650 @@
+/* Carbon Reduction Styling - Points, Tiers, and Reduction Visualizations */
+
+/* Carbon Reduction Widget (Dashboard) */
+.carbon-reduction-widget {
+  background: #8b4fa0;
+  border-radius: 12px;
+  padding: 24px;
+  color: white;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(139, 79, 160, 0.3);
+}
+
+.carbon-reduction-widget h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carbon-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.carbon-stat {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.carbon-stat-label {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.carbon-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  display: block;
+  line-height: 1.2;
+}
+
+.carbon-stat-unit {
+  font-size: 0.875rem;
+  opacity: 0.85;
+  font-weight: 400;
+}
+
+/* Tier Badge */
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.tier-badge.bronze {
+  background: linear-gradient(135deg, #cd7f32 0%, #d4915e 100%);
+  color: white;
+}
+
+.tier-badge.silver {
+  background: linear-gradient(135deg, #c0c0c0 0%, #d9d9d9 100%);
+  color: #333;
+}
+
+.tier-badge.gold {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #333;
+}
+
+.tier-badge.platinum {
+  background: linear-gradient(135deg, #e5e4e2 0%, #f5f5f5 100%);
+  color: #333;
+}
+
+.tier-badge.diamond {
+  background: linear-gradient(135deg, #b9f2ff 0%, #d4f1f4 100%);
+  color: #0e7490;
+}
+
+/* Tier Progress */
+.tier-progress {
+  margin-top: 16px;
+}
+
+.tier-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+}
+
+.tier-progress-bar {
+  background: rgba(255, 255, 255, 0.2);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tier-progress-fill {
+  background: white;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease-out;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+/* Carbon Impact Badge (Transactions) */
+.carbon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.carbon-badge.low {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.carbon-badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.carbon-badge.high {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.carbon-value {
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+/* Reduction Comparison */
+.reduction-comparison {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.comparison-text {
+  font-size: 0.875rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comparison-arrow {
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.comparison-arrow.down {
+  color: #4ade80;
+}
+
+.comparison-arrow.up {
+  color: #fca5a5;
+}
+
+/* Points Display */
+.points-display {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  color: white;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.points-display-value {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.points-display-label {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* Challenge Cards */
+.challenges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.challenge-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.challenge-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);
+}
+
+.challenge-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.challenge-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.challenge-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.challenge-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  flex: 1;
+}
+
+.challenge-difficulty {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.challenge-difficulty.easy {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.challenge-difficulty.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.challenge-difficulty.hard {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.challenge-description {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.challenge-rewards {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.challenge-reward {
+  flex: 1;
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.challenge-reward-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #16a34a;
+  display: block;
+  line-height: 1.2;
+}
+
+.challenge-reward-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  display: block;
+  margin-top: 4px;
+}
+
+.challenge-deadline {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.challenge-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.challenge-actions button {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.challenge-accept {
+  background: #16a34a;
+  color: white;
+}
+
+.challenge-accept:hover {
+  background: #15803d;
+}
+
+.challenge-dismiss {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.challenge-dismiss:hover {
+  background: #e5e7eb;
+}
+
+/* Leaderboard */
+.leaderboard-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-top: 24px;
+}
+
+.leaderboard-section h3 {
+  margin: 0 0 20px 0;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.leaderboard-item:hover {
+  background: #f3f4f6;
+}
+
+.leaderboard-item.current-user {
+  background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+  border: 2px solid #3b82f6;
+}
+
+.leaderboard-rank {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #9ca3af;
+  min-width: 40px;
+  text-align: center;
+}
+
+.leaderboard-rank.top-1 {
+  color: #ffd700;
+}
+
+.leaderboard-rank.top-2 {
+  color: #c0c0c0;
+}
+
+.leaderboard-rank.top-3 {
+  color: #cd7f32;
+}
+
+.leaderboard-user {
+  flex: 1;
+}
+
+.leaderboard-name {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.leaderboard-tier {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.leaderboard-points {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Trend Graph */
+.trend-graph {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-top: 24px;
+}
+
+.trend-graph h3 {
+  margin: 0 0 20px 0;
+  color: #1f2937;
+}
+
+.trend-chart {
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 20px 0;
+  border-bottom: 2px solid #e5e7eb;
+  position: relative;
+}
+
+.trend-bar {
+  flex: 1;
+  background: linear-gradient(180deg, #16a34a 0%, #22c55e 100%);
+  border-radius: 4px 4px 0 0;
+  min-height: 20px;
+  position: relative;
+  transition: all 0.5s ease;
+  cursor: pointer;
+}
+
+.trend-bar:hover {
+  opacity: 0.8;
+}
+
+.trend-bar.negative {
+  background: linear-gradient(180deg, #dc2626 0%, #ef4444 100%);
+}
+
+.trend-bar-label {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.trend-bar-value {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+/* Offset Equivalents */
+.offset-equivalents {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.offset-equivalents h4 {
+  margin: 0 0 16px 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+}
+
+.equivalents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.equivalent-item {
+  text-align: center;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.equivalent-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.equivalent-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #16a34a;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.equivalent-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Personal Best */
+.personal-best {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  margin-top: 24px;
+}
+
+.personal-best-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.personal-best-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.personal-best-label {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.personal-best-date {
+  font-size: 0.875rem;
+  opacity: 0.85;
+  margin-top: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .carbon-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .challenges-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .equivalents-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .points-display-value {
+    font-size: 2.5rem;
+  }
+
+  .personal-best-value {
+    font-size: 2rem;
+  }
+}
+
+/* Animation for new achievements */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(22, 163, 74, 0.6);
+  }
+}
+
+.achievement-unlocked {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Confetti effect for tier upgrades */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: #ffd700;
+  top: -10px;
+  animation: confetti-fall 3s linear forwards;
+  z-index: 9999;
+}

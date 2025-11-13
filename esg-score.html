@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>ESG Scorecard</title>
   <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/carbon-reduction.css"/>
   <script>
     // Redirect to login if not authenticated
     (function() {
@@ -116,6 +117,41 @@
       </div>
     </div>
 
+    <!-- Carbon Reduction Points Display -->
+    <div class="points-display">
+      <div class="points-display-value" id="totalPoints">185</div>
+      <div class="points-display-label">Carbon Reduction Points</div>
+      <div class="tier-badge" id="currentTierBadge" style="margin-top: 12px; font-size: 1.125rem;">
+        🥈 Silver Tier
+      </div>
+    </div>
+
+    <!-- Personal Best -->
+    <div class="personal-best">
+      <div class="personal-best-icon">🏆</div>
+      <div class="personal-best-value" id="personalBestValue">30 kg</div>
+      <div class="personal-best-label">Personal Best Reduction</div>
+      <div class="personal-best-date" id="personalBestDate">October 2025</div>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <section class="leaderboard-section">
+      <h3>🏆 Leaderboard - Top Carbon Reducers</h3>
+      <p style="color: #6b7280; margin-bottom: 16px; font-size: 0.875rem;">See how you compare with other users (anonymized)</p>
+      <div class="leaderboard-list" id="leaderboardList">
+        <!-- Will be populated by JavaScript -->
+      </div>
+    </section>
+
+    <!-- Trend Graph -->
+    <section class="trend-graph">
+      <h3>📈 Your Carbon Reduction Trend</h3>
+      <p style="color: #6b7280; margin-bottom: 20px; font-size: 0.875rem;">Monthly percentage reduction over the past 5 months</p>
+      <div class="trend-chart" id="trendChart">
+        <!-- Will be populated by JavaScript -->
+      </div>
+    </section>
+
     <!-- Carbon Footprint -->
     <section class="carbon-section">
       <h3>🌍 Carbon Footprint</h3>
@@ -218,6 +254,23 @@
             <span class="metric-info">To offset your monthly carbon</span>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Carbon Offset Equivalents -->
+    <div class="offset-equivalents">
+      <h4>🌍 Your Carbon Savings Equal...</h4>
+      <div class="equivalents-grid" id="equivalentsGrid">
+        <!-- Will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Carbon Reduction Challenges -->
+    <section class="recommendations-section" id="challenges">
+      <h3>🎯 Carbon Reduction Challenges</h3>
+      <p>Complete these challenges to earn bonus points and accelerate your tier progress!</p>
+      <div class="challenges-grid" id="challengesGrid">
+        <!-- Will be populated by JavaScript -->
       </div>
     </section>
 
@@ -341,6 +394,7 @@
   <!-- Voice feedback live region -->
   <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
+  <script src="js/carbon-points.js"></script>
   <script src="js/main.js"></script>
   <script src="js/esg-score.js"></script>
 </body>

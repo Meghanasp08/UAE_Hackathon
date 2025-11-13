@@ -92,6 +92,14 @@ const loadESGData = async () => {
     updateBreakdown(data.environmental, data.social, data.governance);
     updateCarbonChart(data.breakdown);
     
+    // Update new carbon reduction features
+    updatePointsDisplay(data);
+    updatePersonalBest(data.personalBest);
+    updateLeaderboard(data.leaderboard);
+    updateTrendGraph(data.monthlyTrend);
+    updateOffsetEquivalents(data.offsetEquivalents);
+    updateChallenges(data.challenges);
+    
   } catch (error) {
     console.error('Error loading ESG data:', error);
   }
@@ -280,6 +288,167 @@ const exportESGReport = async () => {
   
   // In real app, would generate PDF or CSV
   return reportData;
+};
+
+// Update points display
+const updatePointsDisplay = (data) => {
+  const pointsEl = document.getElementById('totalPoints');
+  const tierBadgeEl = document.getElementById('currentTierBadge');
+  
+  if (pointsEl && data.totalPoints) {
+    pointsEl.textContent = data.totalPoints;
+  }
+  
+  if (tierBadgeEl && data.tier) {
+    const tierClass = data.tier.name.toLowerCase();
+    tierBadgeEl.className = `tier-badge ${tierClass}`;
+    tierBadgeEl.style.marginTop = '12px';
+    tierBadgeEl.style.fontSize = '1.125rem';
+    tierBadgeEl.textContent = `${data.tier.icon} ${data.tier.name} Tier`;
+  }
+};
+
+// Update personal best
+const updatePersonalBest = (personalBest) => {
+  if (!personalBest) return;
+  
+  const valueEl = document.getElementById('personalBestValue');
+  const dateEl = document.getElementById('personalBestDate');
+  
+  if (valueEl) {
+    valueEl.textContent = `${personalBest.reduction} kg`;
+  }
+  
+  if (dateEl) {
+    dateEl.textContent = personalBest.month;
+  }
+};
+
+// Update leaderboard
+const updateLeaderboard = (leaderboard) => {
+  const listEl = document.getElementById('leaderboardList');
+  if (!listEl || !leaderboard) return;
+  
+  listEl.innerHTML = leaderboard.map(user => `
+    <div class="leaderboard-item ${user.isCurrentUser ? 'current-user' : ''}">
+      <div class="leaderboard-rank ${user.rank <= 3 ? 'top-' + user.rank : ''}">
+        ${user.rank <= 3 ? ['🥇', '🥈', '🥉'][user.rank - 1] : user.rank}
+      </div>
+      <div class="leaderboard-user">
+        <div class="leaderboard-name">${user.name}</div>
+        <div class="leaderboard-tier">${user.tier} Tier</div>
+      </div>
+      <div class="leaderboard-points">
+        <span>${user.points}</span>
+        <span style="font-size: 0.875rem; color: #6b7280;">pts</span>
+      </div>
+    </div>
+  `).join('');
+};
+
+// Update trend graph
+const updateTrendGraph = (monthlyTrend) => {
+  const chartEl = document.getElementById('trendChart');
+  if (!chartEl || !monthlyTrend) return;
+  
+  const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
+  const maxValue = Math.max(...monthlyTrend.map(Math.abs));
+  
+  chartEl.innerHTML = monthlyTrend.map((value, index) => {
+    const height = maxValue > 0 ? (Math.abs(value) / maxValue) * 100 : 20;
+    const isNegative = value < 0;
+    
+    return `
+      <div class="trend-bar ${isNegative ? 'negative' : ''}" 
+           style="height: ${height}%"
+           title="${months[index]}: ${value}% ${isNegative ? 'increase' : 'reduction'}">
+        <span class="trend-bar-value">${value > 0 ? '+' : ''}${value}%</span>
+        <span class="trend-bar-label">${months[index]}</span>
+      </div>
+    `;
+  }).join('');
+};
+
+// Update offset equivalents
+const updateOffsetEquivalents = (equivalents) => {
+  const gridEl = document.getElementById('equivalentsGrid');
+  if (!gridEl || !equivalents) return;
+  
+  const items = [
+    { icon: '🌳', value: equivalents.trees, label: 'Trees Planted' },
+    { icon: '🚗', value: equivalents.carKm, label: 'km Not Driven' },
+    { icon: '🍔', value: equivalents.meals, label: 'Meals Saved' },
+    { icon: '📱', value: equivalents.phones, label: 'Phones Charged (1yr)' }
+  ];
+  
+  gridEl.innerHTML = items.map(item => `
+    <div class="equivalent-item">
+      <div class="equivalent-icon">${item.icon}</div>
+      <span class="equivalent-value">${item.value}</span>
+      <span class="equivalent-label">${item.label}</span>
+    </div>
+  `).join('');
+};
+
+// Update challenges
+const updateChallenges = (challenges) => {
+  const gridEl = document.getElementById('challengesGrid');
+  if (!gridEl || !challenges) return;
+  
+  gridEl.innerHTML = challenges.map(challenge => `
+    <div class="challenge-card">
+      <div class="challenge-header">
+        <div class="challenge-icon">${challenge.icon}</div>
+        <div style="flex: 1;">
+          <h4 class="challenge-title">${challenge.title}</h4>
+          <span class="challenge-difficulty ${challenge.difficulty}">${challenge.difficulty}</span>
+        </div>
+      </div>
+      <p class="challenge-description">${challenge.description}</p>
+      <div class="challenge-rewards">
+        <div class="challenge-reward">
+          <span class="challenge-reward-value">${challenge.potentialPoints}</span>
+          <span class="challenge-reward-label">Points</span>
+        </div>
+        <div class="challenge-reward">
+          <span class="challenge-reward-value">${challenge.potentialSavings} kg</span>
+          <span class="challenge-reward-label">CO₂ Saved</span>
+        </div>
+      </div>
+      <div class="challenge-deadline">⏰ Due: ${challenge.deadline}</div>
+      <div class="challenge-actions">
+        <button class="challenge-accept" onclick="acceptChallenge('${challenge.id}')">Accept Challenge</button>
+        <button class="challenge-dismiss" onclick="dismissChallenge('${challenge.id}')">Maybe Later</button>
+      </div>
+    </div>
+  `).join('');
+};
+
+// Challenge handlers
+window.acceptChallenge = (challengeId) => {
+  speak('Challenge accepted! Track your progress in the challenges section.', false);
+  console.log('Accepted challenge:', challengeId);
+  
+  // In real app, would save to backend
+  const existingChallenges = JSON.parse(localStorage.getItem('activeChallenges') || '[]');
+  existingChallenges.push({
+    id: challengeId,
+    acceptedAt: new Date().toISOString(),
+    status: 'active'
+  });
+  localStorage.setItem('activeChallenges', JSON.stringify(existingChallenges));
+};
+
+window.dismissChallenge = (challengeId) => {
+  speak('Challenge dismissed.', false);
+  console.log('Dismissed challenge:', challengeId);
+  
+  // Remove challenge from display
+  const card = event.target.closest('.challenge-card');
+  if (card) {
+    card.style.opacity = '0';
+    setTimeout(() => card.remove(), 300);
+  }
 };
 
 // Voice command to read ESG score

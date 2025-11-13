@@ -279,12 +279,72 @@ const handleCommand = (command) => {
   }
 
   if (command.includes('esg score') || command.includes('my score')) {
-    const eligibleEl = document.getElementById('loanEligible');
-    if (eligibleEl) {
-      const eligible = eligibleEl.textContent;
-      speak(`You are eligible for loan offers up to ${eligible}.`);
+    speak('Opening your ESG scorecard.');
+    setTimeout(() => window.location.href = 'esg-score.html', 1000);
+    return;
+  }
+
+  // Carbon reduction commands
+  if (command.includes('carbon points') || command.includes('reduction points') || 
+      command.includes('my points')) {
+    speak('Checking your carbon reduction points.');
+    if (typeof mockAPI !== 'undefined') {
+      mockAPI.getESGData('account_123').then(data => {
+        speak(`You have earned ${data.totalPoints} carbon reduction points and are currently in the ${data.tier.name} tier.`);
+      });
     } else {
-      speak('You are eligible for loan offers.');
+      speak('You have earned 185 carbon reduction points and are currently in the Silver tier.');
+    }
+    return;
+  }
+
+  if (command.includes('carbon saved') || command.includes('how much carbon') || 
+      command.includes('carbon reduction')) {
+    speak('Calculating your carbon savings.');
+    if (typeof mockAPI !== 'undefined') {
+      mockAPI.getESGData('account_123').then(data => {
+        speak(`You have saved ${data.carbonSaved} kilograms of carbon dioxide equivalent this month. That's equal to ${data.offsetEquivalents.trees} trees planted!`);
+      });
+    } else {
+      speak('You have saved 35 kilograms of carbon dioxide equivalent this month.');
+    }
+    return;
+  }
+
+  if (command.includes('my tier') || command.includes('reduction tier') || 
+      command.includes('current tier')) {
+    speak('Checking your tier status.');
+    if (typeof mockAPI !== 'undefined') {
+      mockAPI.getESGData('account_123').then(data => {
+        const pointsToNext = data.tier.pointsToNext;
+        if (pointsToNext > 0) {
+          speak(`You are currently in the ${data.tier.name} tier. You need ${pointsToNext} more points to reach ${data.tier.nextTier.name} tier.`);
+        } else {
+          speak(`Congratulations! You are in the highest tier, ${data.tier.name}.`);
+        }
+      });
+    } else {
+      speak('You are currently in the Silver tier.');
+    }
+    return;
+  }
+
+  if (command.includes('carbon challenge') || command.includes('challenges') || 
+      command.includes('reduction challenge')) {
+    speak('Opening your carbon reduction challenges.');
+    setTimeout(() => window.location.href = 'esg-score.html#challenges', 1000);
+    return;
+  }
+
+  if (command.includes('carbon footprint') || command.includes('my footprint') || 
+      command.includes('emissions')) {
+    speak('Checking your carbon footprint.');
+    if (typeof mockAPI !== 'undefined') {
+      mockAPI.getESGData('account_123').then(data => {
+        speak(`Your current monthly carbon footprint is ${data.carbonFootprint} kilograms. That's ${data.carbonSaved} kilograms less than your baseline.`);
+      });
+    } else {
+      speak('Your current monthly carbon footprint is 245 kilograms of carbon dioxide equivalent.');
     }
     return;
   }
@@ -534,7 +594,143 @@ const mockAPI = {
     });
   },
 
-  // ESG data
+  // ESG data with carbon reduction tracking
+  getESGData: async (accountId) => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        // Mock historical carbon data (last 5 months in kg CO₂e)
+        const historicalCarbon = [280, 265, 255, 250, 245];
+        const currentCarbon = 245;
+        const baseline = 280;
+        
+        // Calculate reduction
+        const reduction = baseline - currentCarbon;
+        const consecutiveMonths = 4;
+        
+        // Calculate points using CarbonPointsSystem if available
+        let pointsData = {
+          reduction: reduction,
+          basePoints: reduction,
+          multiplier: 1.5,
+          totalPoints: Math.round(reduction * 1.5),
+          consecutiveMonths: consecutiveMonths
+        };
+        
+        if (typeof CarbonPointsSystem !== 'undefined') {
+          pointsData = CarbonPointsSystem.calculateReductionPoints(baseline, currentCarbon, consecutiveMonths);
+        }
+        
+        // Total accumulated points
+        const totalPoints = 185;
+        
+        // Get tier information
+        let tierInfo = {
+          name: 'Silver',
+          icon: '🥈',
+          color: '#c0c0c0',
+          currentPoints: totalPoints,
+          progress: 67.5,
+          pointsToNext: 15
+        };
+        
+        if (typeof CarbonPointsSystem !== 'undefined') {
+          tierInfo = CarbonPointsSystem.getTier(totalPoints);
+        }
+        
+        // Carbon breakdown by category
+        const breakdown = {
+          transport: 145,
+          food: 68,
+          energy: 22,
+          shopping: 10
+        };
+        
+        // Monthly trend (percentage reduction)
+        const monthlyTrend = [5.4, 3.8, 2.0, 2.0]; // % reduction each month
+        
+        // Personal best
+        const personalBest = {
+          month: 'October 2025',
+          reduction: 30,
+          points: 45,
+          date: '2025-10-31'
+        };
+        
+        // Leaderboard (anonymized)
+        const leaderboard = [
+          { rank: 1, name: 'User A***', tier: 'Gold', points: 425, isCurrentUser: false },
+          { rank: 2, name: 'User M***', tier: 'Silver', points: 298, isCurrentUser: false },
+          { rank: 3, name: 'User S***', tier: 'Silver', points: 245, isCurrentUser: false },
+          { rank: 4, name: 'You', tier: tierInfo.name, points: totalPoints, isCurrentUser: true },
+          { rank: 5, name: 'User K***', tier: 'Silver', points: 156, isCurrentUser: false }
+        ];
+        
+        // Challenges
+        let challenges = [
+          {
+            id: 'transport_metro',
+            title: 'Metro Commuter',
+            description: 'Use Dubai Metro for 5 trips this week',
+            category: 'transport',
+            potentialSavings: 40,
+            potentialPoints: 40,
+            difficulty: 'easy',
+            icon: '🚇',
+            deadline: '2025-11-17'
+          },
+          {
+            id: 'food_local',
+            title: 'Local Food Champion',
+            description: 'Shop at local organic markets 3 times this month',
+            category: 'food',
+            potentialSavings: 25,
+            potentialPoints: 38,
+            difficulty: 'medium',
+            icon: '🌿',
+            deadline: '2025-11-30'
+          }
+        ];
+        
+        if (typeof CarbonPointsSystem !== 'undefined') {
+          challenges = CarbonPointsSystem.generateChallenges({ breakdown });
+        }
+        
+        resolve({
+          // Original ESG data
+          score: 78,
+          environmental: 75,
+          social: 82,
+          governance: 77,
+          carbonFootprint: currentCarbon,
+          carbonSaved: reduction,
+          breakdown: breakdown,
+          
+          // New carbon reduction data
+          reductionPoints: pointsData.totalPoints,
+          basePoints: pointsData.basePoints,
+          multiplier: pointsData.multiplier,
+          consecutiveMonths: consecutiveMonths,
+          totalPoints: totalPoints,
+          tier: tierInfo,
+          monthlyTrend: monthlyTrend,
+          historicalCarbon: historicalCarbon,
+          baseline: baseline,
+          personalBest: personalBest,
+          leaderboard: leaderboard,
+          challenges: challenges,
+          
+          // Carbon offset equivalents
+          offsetEquivalents: {
+            trees: parseFloat((reduction / 21).toFixed(1)),
+            carKm: parseFloat((reduction / 0.12).toFixed(0)),
+            flights: parseFloat((reduction / 90).toFixed(2)),
+            meals: parseFloat((reduction / 2.5).toFixed(0)),
+            phones: parseFloat((reduction / 0.086).toFixed(0))
+          }
+        });
+      }, 800);
+    });
+  },
 
   // Create SmartPay rule
   createRule: async (rule) => {

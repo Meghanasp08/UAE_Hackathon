@@ -190,15 +190,24 @@ document.addEventListener('DOMContentLoaded', () => {
     realTransactions.forEach(txn => {
       const isEligibleForBNPL = txn.type === 'debit' && Math.abs(txn.amount) > 500 && activeBNPLPlans.length < MAX_BNPL_PLANS;
       
+      // Calculate carbon footprint for transaction
+      let carbonKg = 0;
+      let carbonImpact = { level: 'low', color: '#16a34a', label: 'Low Impact', icon: '🌱' };
+      
+      if (typeof CarbonPointsSystem !== 'undefined' && txn.type === 'debit') {
+        carbonKg = CarbonPointsSystem.calculateTransactionCarbon(txn);
+        carbonImpact = CarbonPointsSystem.getCarbonImpactLevel(carbonKg);
+      }
+      
       // Debug logging
       if (txn.type === 'debit') {
-        console.log(`Transaction ${txn.merchant}: ${Math.abs(txn.amount)} AED - BNPL Eligible: ${isEligibleForBNPL}`);
+        console.log(`Transaction ${txn.merchant}: ${Math.abs(txn.amount)} AED - BNPL Eligible: ${isEligibleForBNPL}, Carbon: ${carbonKg} kg`);
       }
       
       const transactionItem = document.createElement('div');
       transactionItem.className = 'transaction-item';
       transactionItem.dataset.id = txn.id;
-      transactionItem.dataset.carbon = 'medium'; // Default ESG rating
+      transactionItem.dataset.carbon = carbonImpact.level;
       
       transactionItem.innerHTML = `
         <div class="transaction-icon">${txn.icon}</div>
@@ -210,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="transaction-meta">
             <span class="date">${formatTransactionDate(txn.date)}</span>
             <span class="category">${txn.category}</span>
-            <span class="esg-badge medium">Medium Impact</span>
+            ${txn.type === 'debit' && carbonKg > 0 ? `<span class="carbon-badge ${carbonImpact.level}">${carbonImpact.icon} <span class="carbon-value">${carbonKg} kg</span></span>` : ''}
           </div>
         </div>
         ${isEligibleForBNPL ? '<button class="bnpl-btn" data-bnpl="true" style="display: inline-block;">Convert to BNPL</button>' : ''}
@@ -715,6 +724,44 @@ const showTransactionDetail = (transaction) => {
   const isCredit = transaction.type === 'credit';
   const amountColor = isCredit ? '#28a745' : '#dc3545';
 
+  // Calculate carbon footprint
+  let carbonHtml = '';
+  let alternativeHtml = '';
+  
+  if (typeof CarbonPointsSystem !== 'undefined' && transaction.type === 'debit') {
+    const carbonKg = CarbonPointsSystem.calculateTransactionCarbon(transaction);
+    const carbonImpact = CarbonPointsSystem.getCarbonImpactLevel(carbonKg);
+    const alternative = CarbonPointsSystem.getGreenerAlternative(transaction);
+    
+    if (carbonKg > 0) {
+      carbonHtml = `
+        <div class="detail-row">
+          <span>Carbon Footprint</span>
+          <span class="carbon-badge ${carbonImpact.level}">
+            ${carbonImpact.icon} <span class="carbon-value">${carbonKg} kg CO₂e</span>
+          </span>
+        </div>
+      `;
+    }
+    
+    if (alternative) {
+      alternativeHtml = `
+        <div style="margin-top: 1.5rem; padding: 1rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #16a34a;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 1.5rem;">${alternative.icon}</span>
+            <strong style="color: #166534;">Greener Alternative</strong>
+          </div>
+          <p style="margin: 0; color: #15803d; font-size: 0.875rem;">
+            ${alternative.suggestion}
+          </p>
+          <p style="margin: 8px 0 0 0; color: #16a34a; font-weight: 600; font-size: 0.875rem;">
+            💚 Potential savings: ${alternative.potentialSaving.toFixed(1)} kg CO₂e
+          </p>
+        </div>
+      `;
+    }
+  }
+
   const html = `
     <div style="text-align: center; margin-bottom: 1.5rem;">
       <div style="font-size: 3rem;">${transaction.icon}</div>
@@ -734,6 +781,7 @@ const showTransactionDetail = (transaction) => {
       <span>Category</span>
       <strong>${transaction.category}</strong>
     </div>
+    ${carbonHtml}
     <div class="detail-row">
       <span>Transaction ID</span>
       <strong>${transaction.txnId}</strong>
@@ -746,6 +794,7 @@ const showTransactionDetail = (transaction) => {
       <span>Description</span>
       <strong style="text-align: right;">${transaction.description}</strong>
     </div>
+    ${alternativeHtml}
   `;
 
   detailDiv.innerHTML = html;

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Smart Credit - Dashboard</title>
   <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/carbon-reduction.css"/>
   <script>
     // Redirect to login if not authenticated
     (function() {
@@ -145,27 +146,45 @@
       <button class="btn-text" onclick="location.href='transactions.html'">View All Transactions →</button>
     </section>
 
-    <section class="quick-actions">
-      <h2>Quick Actions</h2>
-      <div class="action-grid">
-        <button class="action-card" id="quickWithdraw">
-          <span class="action-icon">💰</span>
-          <span class="action-label">Withdraw</span>
-        </button>
-        <button class="action-card" id="quickRepay">
-          <span class="action-icon">↩️</span>
-          <span class="action-label">Repay</span>
-        </button>
-        <button class="action-card" id="quickTransfer">
-          <span class="action-icon">🔄</span>
-          <span class="action-label">Transfer</span>
-        </button>
-        <button class="action-card" id="quickAutoSweep">
-          <span class="action-icon">⚡</span>
-          <span class="action-label">Auto-Sweep</span>
-        </button>
+    <!-- Carbon Reduction Widget -->
+    <div class="carbon-reduction-widget" id="carbonWidget">
+      <h3>🌱 Carbon Reduction Progress</h3>
+      <div class="carbon-stats-grid">
+        <div class="carbon-stat">
+          <span class="carbon-stat-label">This Month</span>
+          <span class="carbon-stat-value">245<span class="carbon-stat-unit">kg CO₂e</span></span>
+        </div>
+        <div class="carbon-stat">
+          <span class="carbon-stat-label">Saved</span>
+          <span class="carbon-stat-value">35<span class="carbon-stat-unit">kg</span></span>
+        </div>
+        <div class="carbon-stat">
+          <span class="carbon-stat-label">Points Earned</span>
+          <span class="carbon-stat-value" id="dashboardPoints">53</span>
+        </div>
+        <div class="carbon-stat">
+          <span class="carbon-stat-label">Your Tier</span>
+          <span class="tier-badge silver" id="dashboardTier">
+            <span>🥈</span> Silver
+          </span>
+        </div>
       </div>
-    </section>
+      <div class="tier-progress">
+        <div class="tier-progress-label">
+          <span>Progress to Gold</span>
+          <span id="pointsToNext">15 points to go</span>
+        </div>
+        <div class="tier-progress-bar">
+          <div class="tier-progress-fill" id="tierProgressFill" style="width: 67.5%"></div>
+        </div>
+      </div>
+      <div class="reduction-comparison">
+        <div class="comparison-text">
+          <span class="comparison-arrow down">↓</span>
+          <span>12.5% reduction vs last month</span>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Voice feedback live region -->
@@ -185,8 +204,47 @@
   </div>
 
   <script src="js/term-loan.js"></script>
+  <script src="js/carbon-points.js"></script>
   <script src="js/main.js"></script>
   <script>
+    // Load carbon data on dashboard
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (typeof mockAPI !== 'undefined' && mockAPI.getESGData) {
+        try {
+          const esgData = await mockAPI.getESGData('account_123');
+          
+          // Update carbon widget
+          const pointsEl = document.getElementById('dashboardPoints');
+          const tierEl = document.getElementById('dashboardTier');
+          const pointsToNextEl = document.getElementById('pointsToNext');
+          const progressFillEl = document.getElementById('tierProgressFill');
+          
+          if (pointsEl) pointsEl.textContent = esgData.reductionPoints;
+          
+          if (tierEl && esgData.tier) {
+            const tierClass = esgData.tier.name.toLowerCase();
+            tierEl.className = `tier-badge ${tierClass}`;
+            tierEl.innerHTML = `<span>${esgData.tier.icon}</span> ${esgData.tier.name}`;
+          }
+          
+          if (pointsToNextEl && esgData.tier) {
+            if (esgData.tier.pointsToNext > 0) {
+              pointsToNextEl.textContent = `${esgData.tier.pointsToNext} points to go`;
+            } else {
+              pointsToNextEl.textContent = 'Max tier achieved!';
+            }
+          }
+          
+          if (progressFillEl && esgData.tier) {
+            progressFillEl.style.width = `${esgData.tier.progress}%`;
+          }
+          
+        } catch (error) {
+          console.error('Error loading carbon data:', error);
+        }
+      }
+    });
+
     // Accordion functionality
     function toggleAccordion(section) {
       const accordion = document.getElementById(section + 'Accordion');
