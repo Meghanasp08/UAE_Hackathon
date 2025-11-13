@@ -6,6 +6,8 @@
   <title>Smart Credit - Dashboard</title>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/carbon-reduction.css"/>
+  <link rel="stylesheet" href="css/notifications.css"/>
+  <link rel="stylesheet" href="css/journey.css"/>
   <script>
     // Redirect to login if not authenticated
     (function() {
@@ -68,6 +70,22 @@
       </a>
     </nav>
     <div class="user-section">
+      <div class="notification-bell-wrapper" style="position: relative; margin-right: 16px;">
+        <button class="notification-bell" id="notificationBellBtn" onclick="notificationService.toggleNotificationCenter()" title="Notifications" aria-label="Notifications">
+          <span class="notification-bell-icon">🔔</span>
+          <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+        </button>
+        <div class="notification-center" id="notificationCenter" hidden>
+          <div class="notification-header">
+            <h3>Notifications</h3>
+            <div class="notification-header-actions">
+              <button class="notification-header-btn" onclick="notificationService.markAllAsRead()">Mark all read</button>
+              <button class="notification-header-btn" onclick="notificationService.requestPushPermission()">Enable Push</button>
+            </div>
+          </div>
+          <div class="notification-list" id="notificationList"></div>
+        </div>
+      </div>
       <div class="user">Hello, Priya Sharma</div>
       <button class="logout-btn" id="logoutBtn" onclick="if(typeof logout === 'function') logout();" title="Logout">➜]</button>
     </div>
@@ -576,5 +594,15 @@ Status: ${plan.status}
   </script>
   <link rel="stylesheet" href="css/chatbot.css"/>
   <script src="js/ai-chatbot.js"></script>
+  
+  <!-- Notification & Journey System -->
+  <script src="js/notification-service.js"></script>
+  <script src="js/journey-engine.js"></script>
+  
+  <!-- Voice feedback for accessibility -->
+  <div id="voiceFeedback" role="status" aria-live="polite" aria-atomic="true" style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;"></div>
+  
+  <!-- Journey Help Button -->
+  <button class="journey-help-btn" onclick="journeyEngine.startJourney('onboarding')" title="Start Tour" aria-label="Start guided tour">❓</button>
 </body>
 </html>

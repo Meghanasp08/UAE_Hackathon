@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notification & Journey Demo</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/notifications.css"/>
+  <link rel="stylesheet" href="css/journey.css"/>
+  <style>
+    .demo-container {
+      max-width: 800px;
+      margin: 100px auto;
+      padding: 40px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    .demo-section {
+      margin-bottom: 40px;
+    }
+    .demo-section h2 {
+      color: #1f2937;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 8px;
+    }
+    .demo-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .demo-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    .demo-btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .demo-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .demo-btn-success {
+      background: #10b981;
+      color: white;
+    }
+    .demo-btn-error {
+      background: #ef4444;
+      color: white;
+    }
+    .demo-btn-warning {
+      background: #f59e0b;
+      color: white;
+    }
+    .demo-btn-info {
+      background: #3b82f6;
+      color: white;
+    }
+    .demo-code {
+      background: #1f2937;
+      color: #f3f4f6;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/shukria-logo.png" alt="Shukria Logo" class="logo" onerror="this.style.display='none'"/>
+      <h1>Notification & Journey Demo</h1>
+    </div>
+    <div class="user-section">
+      <div class="notification-bell-wrapper" style="position: relative; margin-right: 16px;">
+        <button class="notification-bell" id="notificationBellBtn" onclick="notificationService.toggleNotificationCenter()" title="Notifications">
+          <span class="notification-bell-icon">🔔</span>
+          <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+        </button>
+        <div class="notification-center" id="notificationCenter" hidden>
+          <div class="notification-header">
+            <h3>Notifications</h3>
+            <div class="notification-header-actions">
+              <button class="notification-header-btn" onclick="notificationService.markAllAsRead()">Mark all read</button>
+              <button class="notification-header-btn" onclick="notificationService.requestPushPermission()">Enable Push</button>
+            </div>
+          </div>
+          <div class="notification-list" id="notificationList"></div>
+        </div>
+      </div>
+      <button class="demo-btn demo-btn-primary" onclick="window.location.href='index.html'">Back to Dashboard</button>
+    </div>
+  </header>
+
+  <div class="demo-container">
+    <!-- Toast Notifications -->
+    <div class="demo-section">
+      <h2>🎨 Toast Notifications</h2>
+      <p>Click buttons to see different toast notification types:</p>
+      <div class="demo-buttons">
+        <button class="demo-btn demo-btn-success" onclick="testToast('success')">Success Toast</button>
+        <button class="demo-btn demo-btn-error" onclick="testToast('error')">Error Toast</button>
+        <button class="demo-btn demo-btn-warning" onclick="testToast('warning')">Warning Toast</button>
+        <button class="demo-btn demo-btn-info" onclick="testToast('info')">Info Toast</button>
+        <button class="demo-btn demo-btn-primary" onclick="testToast('achievement')">Achievement Toast</button>
+      </div>
+      <div class="demo-code">
+notificationService.showToast('Title', 'success', 'Message');
+      </div>
+    </div>
+
+    <!-- In-App Notifications -->
+    <div class="demo-section">
+      <h2>🔔 In-App Notifications</h2>
+      <p>Create notifications that appear in the notification center:</p>
+      <div class="demo-buttons">
+        <button class="demo-btn demo-btn-primary" onclick="testNotification('financial')">Financial Alert</button>
+        <button class="demo-btn demo-btn-primary" onclick="testNotification('esg')">ESG Update</button>
+        <button class="demo-btn demo-btn-primary" onclick="testNotification('smartpay')">SmartPay Alert</button>
+        <button class="demo-btn demo-btn-primary" onclick="testNotification('achievement')">Achievement</button>
+      </div>
+      <div class="demo-code">
+notificationService.create({
+  title: 'Payment Successful',
+  message: 'AED 500 credited',
+  type: 'success',
+  category: 'financial',
+  priority: 'normal',
+  actionUrl: 'credit-line.php',
+  actionLabel: 'View Details'
+});
+      </div>
+    </div>
+
+    <!-- Interactive Journeys -->
+    <div class="demo-section">
+      <h2>🚶 Interactive Journeys</h2>
+      <p>Start guided tours with spotlight highlighting:</p>
+      <div class="demo-buttons">
+        <button class="demo-btn demo-btn-primary" onclick="journeyEngine.startJourney('onboarding')">Welcome Tour</button>
+        <button class="demo-btn demo-btn-primary" onclick="journeyEngine.startJourney('credit-line-tour')">Credit Line Tour</button>
+        <button class="demo-btn demo-btn-primary" onclick="journeyEngine.startJourney('esg-tour')">ESG Score Tour</button>
+        <button class="demo-btn demo-btn-warning" onclick="resetJourneys()">Reset All Journeys</button>
+      </div>
+      <div class="demo-code">
+journeyEngine.startJourney('onboarding');
+      </div>
+    </div>
+
+    <!-- Push Notifications -->
+    <div class="demo-section">
+      <h2>📲 Push Notifications</h2>
+      <p>Test browser push notification permissions and service worker:</p>
+      <div class="demo-buttons">
+        <button class="demo-btn demo-btn-primary" onclick="testPushPermission()">Request Push Permission</button>
+        <button class="demo-btn demo-btn-info" onclick="checkServiceWorker()">Check Service Worker</button>
+        <button class="demo-btn demo-btn-success" onclick="testPushNotification()">Test Push (if enabled)</button>
+      </div>
+      <div class="demo-code">
+notificationService.requestPushPermission();
+      </div>
+    </div>
+
+    <!-- Batch Notifications -->
+    <div class="demo-section">
+      <h2>📦 Batch Testing</h2>
+      <p>Test multiple notifications at once:</p>
+      <div class="demo-buttons">
+        <button class="demo-btn demo-btn-primary" onclick="createMockNotifications()">Create 5 Notifications</button>
+        <button class="demo-btn demo-btn-warning" onclick="notificationService.clearAll()">Clear All</button>
+        <button class="demo-btn demo-btn-info" onclick="showStats()">Show Statistics</button>
+      </div>
+    </div>
+
+    <!-- Integration Examples -->
+    <div class="demo-section">
+      <h2>🔗 Integration Examples</h2>
+      <p>Simulate real-world triggers:</p>
+      <div class="demo-buttons">
+        <button class="demo-btn demo-btn-success" onclick="simulatePayment()">Simulate Payment</button>
+        <button class="demo-btn demo-btn-warning" onclick="simulateCreditWarning()">Credit Warning</button>
+        <button class="demo-btn demo-btn-primary" onclick="simulateAchievement()">ESG Achievement</button>
+        <button class="demo-btn demo-btn-info" onclick="simulateAutoSweep()">Auto-Sweep Trigger</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/notification-service.js"></script>
+  <script src="js/journey-engine.js"></script>
+  <div id="voiceFeedback" role="status" aria-live="polite" aria-atomic="true" style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;"></div>
+  <button class="journey-help-btn" onclick="journeyEngine.startJourney('onboarding')" title="Start Tour">❓</button>
+
+  <script>
+    // Toast notification tests
+    function testToast(type) {
+      const messages = {
+        success: { title: 'Success!', msg: 'Operation completed successfully' },
+        error: { title: 'Error Occurred', msg: 'Something went wrong, please try again' },
+        warning: { title: 'Warning', msg: 'Please review before proceeding' },
+        info: { title: 'Information', msg: 'Here is some useful information' },
+        achievement: { title: 'Achievement Unlocked! 🏆', msg: 'You earned a new badge!' }
+      };
+      const data = messages[type];
+      notificationService.showToast(data.title, type, data.msg);
+    }
+
+    // In-app notification tests
+    function testNotification(category) {
+      const notifications = {
+        financial: {
+          title: '💰 Payment Processed',
+          message: 'AED 1,500 has been withdrawn from your credit line.',
+          type: 'success',
+          actionUrl: 'credit-line.php',
+          actionLabel: 'View Details'
+        },
+        esg: {
+          title: '🌱 Carbon Score Improved',
+          message: 'Your carbon footprint decreased by 15% this month!',
+          type: 'achievement',
+          actionUrl: 'esg-score.html',
+          actionLabel: 'See Score'
+        },
+        smartpay: {
+          title: '⚡ SmartPay Rule Triggered',
+          message: 'Auto-repayment of AED 500 executed successfully.',
+          type: 'info',
+          actionUrl: 'credit-line.php',
+          actionLabel: 'View Rules'
+        },
+        achievement: {
+          title: '🏆 Platinum Tier Reached!',
+          message: 'Congratulations! You\'ve achieved Platinum status with 500+ carbon points.',
+          type: 'achievement',
+          icon: '💎',
+          actionUrl: 'esg-score.html',
+          actionLabel: 'Claim Rewards'
+        }
+      };
+      
+      const notif = notifications[category];
+      notificationService.create({
+        ...notif,
+        category: category,
+        priority: 'normal'
+      });
+    }
+
+    // Push notification tests
+    async function testPushPermission() {
+      const result = await notificationService.requestPushPermission();
+      if (result) {
+        alert('Push notifications enabled! You will receive updates even when the app is closed.');
+      }
+    }
+
+    function checkServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(reg => {
+          if (reg) {
+            alert(`✅ Service Worker is registered!\n\nScope: ${reg.scope}\nState: ${reg.active?.state || 'installing'}`);
+          } else {
+            alert('❌ Service Worker not registered. Refresh the page to register it.');
+          }
+        });
+      } else {
+        alert('❌ Service Workers not supported in this browser.');
+      }
+    }
+
+    function testPushNotification() {
+      if (Notification.permission === 'granted') {
+        new Notification('Test Push Notification', {
+          body: 'This is a test browser notification from Shukria!',
+          icon: 'assets/shukria-logo.png',
+          badge: 'assets/shukria-logo.png'
+        });
+      } else {
+        alert('Push permission not granted. Click "Request Push Permission" first.');
+      }
+    }
+
+    // Batch notifications
+    function createMockNotifications() {
+      const mockData = [
+        { title: 'Welcome Back!', message: 'You have 3 new updates', type: 'info', category: 'general' },
+        { title: 'Credit Used', message: 'AED 750 withdrawn', type: 'info', category: 'financial' },
+        { title: 'ESG Score Up', message: 'Your score increased to 82', type: 'achievement', category: 'esg' },
+        { title: 'Auto-Sweep Active', message: 'Next sweep scheduled for tomorrow', type: 'info', category: 'smartpay' },
+        { title: 'Low Balance', message: 'Only AED 200 remaining', type: 'warning', category: 'financial' }
+      ];
+
+      mockData.forEach((data, index) => {
+        setTimeout(() => {
+          notificationService.create({
+            ...data,
+            priority: 'normal',
+            showToast: index === 0 // Only show toast for first one
+          });
+        }, index * 500);
+      });
+    }
+
+    function showStats() {
+      const total = notificationService.notifications.length;
+      const unread = notificationService.unreadCount;
+      const categories = {};
+      
+      notificationService.notifications.forEach(n => {
+        categories[n.category] = (categories[n.category] || 0) + 1;
+      });
+
+      let categoryText = Object.entries(categories)
+        .map(([cat, count]) => `${cat}: ${count}`)
+        .join('\n');
+
+      alert(`📊 Notification Statistics:\n\nTotal: ${total}\nUnread: ${unread}\n\nBy Category:\n${categoryText}`);
+    }
+
+    // Simulations
+    function simulatePayment() {
+      notificationService.create({
+        title: '✅ Payment Successful',
+        message: 'AED 2,000 has been repaid. Your available credit increased!',
+        type: 'success',
+        category: 'financial',
+        priority: 'important',
+        actionUrl: 'credit-line.php',
+        actionLabel: 'View Balance'
+      });
+    }
+
+    function simulateCreditWarning() {
+      notificationService.create({
+        title: '⚠️ High Credit Utilization',
+        message: 'You are using 87% of your credit limit. Consider making a repayment soon.',
+        type: 'warning',
+        category: 'financial',
+        priority: 'important',
+        actionUrl: 'credit-line.php',
+        actionLabel: 'Repay Now'
+      });
+    }
+
+    function simulateAchievement() {
+      notificationService.create({
+        title: '🥇 Gold Tier Unlocked!',
+        message: 'You earned 200 carbon points! Enjoy 0.3% fee discount and exclusive green financing options.',
+        type: 'achievement',
+        category: 'esg',
+        priority: 'normal',
+        icon: '🏆',
+        actionUrl: 'esg-score.html',
+        actionLabel: 'View Rewards'
+      });
+    }
+
+    function simulateAutoSweep() {
+      notificationService.create({
+        title: '⚡ Auto-Sweep Executed',
+        message: 'AED 1,250 automatically transferred to pay off your credit balance.',
+        type: 'success',
+        category: 'smartpay',
+        priority: 'normal',
+        actionUrl: 'credit-line.php',
+        actionLabel: 'View Details'
+      });
+    }
+
+    // Reset journeys
+    function resetJourneys() {
+      localStorage.removeItem('completedJourneys');
+      localStorage.removeItem('hasSeenOnboarding');
+      alert('✅ All journey progress has been reset. You can now restart all tours from the beginning.');
+    }
+
+    // Close notification center when clicking outside
+    document.addEventListener('click', (e) => {
+      const notificationCenter = document.getElementById('notificationCenter');
+      const notificationBellBtn = document.getElementById('notificationBellBtn');
+      
+      if (notificationCenter && !notificationCenter.hasAttribute('hidden')) {
+        if (!notificationCenter.contains(e.target) && !notificationBellBtn.contains(e.target)) {
+          notificationCenter.setAttribute('hidden', '');
+        }
+      }
+    });
+
+    console.log('📱 Notification & Journey Demo loaded!');
+    console.log('💡 Tip: Open the browser console to see detailed logs');
+  </script>
+</body>
+</html>

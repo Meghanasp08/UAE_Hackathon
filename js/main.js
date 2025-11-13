@@ -1050,3 +1050,174 @@ window.handleCommandWithChatbot = (command) => {
     }, 500);
   }
 };
+
+// ========================================
+// NOTIFICATION TRIGGERS - Integration with existing features
+// ========================================
+
+// Demo notification triggers for user actions
+document.addEventListener('DOMContentLoaded', () => {
+  // Welcome back notification for returning users
+  const lastVisit = localStorage.getItem('lastVisitDate');
+  const today = new Date().toDateString();
+  
+  if (lastVisit && lastVisit !== today && typeof notificationService !== 'undefined') {
+    setTimeout(() => {
+      notificationService.create({
+        title: 'Welcome back to Shukria!',
+        message: `You have ${Math.floor(Math.random() * 3 + 1)} new updates since your last visit.`,
+        type: 'info',
+        category: 'general',
+        priority: 'normal',
+        showToast: true
+      });
+    }, 2000);
+  }
+  
+  localStorage.setItem('lastVisitDate', today);
+  
+  // ESG Achievement notification (if score improved)
+  const lastESGScore = localStorage.getItem('lastESGScore');
+  const currentESGScore = 78; // Would be dynamic in production
+  
+  if (lastESGScore && parseInt(lastESGScore) < currentESGScore && typeof notificationService !== 'undefined') {
+    setTimeout(() => {
+      notificationService.create({
+        title: '🌱 ESG Score Improved!',
+        message: `Your ESG score increased to ${currentESGScore}! Keep up the great work.`,
+        type: 'achievement',
+        category: 'esg',
+        priority: 'normal',
+        actionUrl: 'esg-score.html',
+        actionLabel: 'View Score'
+      });
+    }, 3000);
+  }
+  
+  localStorage.setItem('lastESGScore', currentESGScore);
+  
+  // Carbon reduction milestone
+  const carbonPoints = localStorage.getItem('carbonPoints') || 0;
+  if (carbonPoints >= 50 && !localStorage.getItem('silver_tier_notified') && typeof notificationService !== 'undefined') {
+    setTimeout(() => {
+      notificationService.create({
+        title: '🥈 Silver Tier Achieved!',
+        message: 'You\'ve reached Silver tier with 50+ carbon points. Amazing progress!',
+        type: 'achievement',
+        category: 'esg',
+        priority: 'important',
+        actionUrl: 'esg-score.html',
+        actionLabel: 'See Rewards'
+      });
+      localStorage.setItem('silver_tier_notified', 'true');
+    }, 4000);
+  }
+});
+
+// Function to trigger payment notifications
+window.triggerPaymentNotification = (amount, type) => {
+  if (typeof notificationService === 'undefined') return;
+  
+  let message = '';
+  let title = '';
+  
+  if (type === 'withdraw') {
+    title = '💰 Withdrawal Successful';
+    message = `AED ${amount} withdrawn from your credit line.`;
+  } else if (type === 'repay') {
+    title = '✅ Repayment Successful';
+    message = `AED ${amount} repaid. Your available credit increased!`;
+  } else if (type === 'transfer') {
+    title = '↗️ Transfer Complete';
+    message = `AED ${amount} transferred successfully.`;
+  }
+  
+  notificationService.create({
+    title: title,
+    message: message,
+    type: 'success',
+    category: 'financial',
+    priority: 'important',
+    showToast: true
+  });
+};
+
+// Function to trigger auto-sweep notification
+window.triggerAutoSweepNotification = (amount, enabled) => {
+  if (typeof notificationService === 'undefined') return;
+  
+  if (enabled) {
+    notificationService.create({
+      title: '⚡ Auto-Sweep Enabled',
+      message: `Your credit balance will be automatically paid when surplus funds are available.`,
+      type: 'success',
+      category: 'smartpay',
+      priority: 'normal',
+      showToast: true
+    });
+  } else {
+    notificationService.create({
+      title: 'Auto-Sweep Disabled',
+      message: 'Auto-sweep has been turned off.',
+      type: 'info',
+      category: 'smartpay',
+      priority: 'normal',
+      showToast: true
+    });
+  }
+};
+
+// Function to trigger rule created notification
+window.triggerRuleNotification = (ruleName) => {
+  if (typeof notificationService === 'undefined') return;
+  
+  notificationService.create({
+    title: '📋 SmartPay Rule Created',
+    message: `"${ruleName}" rule is now active and monitoring your account.`,
+    type: 'success',
+    category: 'smartpay',
+    priority: 'normal',
+    actionUrl: 'credit-line.php',
+    actionLabel: 'View Rules'
+  });
+};
+
+// Function to trigger credit utilization warning
+window.triggerCreditWarning = (percentage) => {
+  if (typeof notificationService === 'undefined') return;
+  
+  if (percentage >= 90) {
+    notificationService.create({
+      title: '⚠️ Credit Limit Alert',
+      message: `You're using ${percentage}% of your credit limit. Consider making a repayment.`,
+      type: 'warning',
+      category: 'financial',
+      priority: 'critical',
+      actionUrl: 'credit-line.php',
+      actionLabel: 'Repay Now'
+    });
+  } else if (percentage >= 80) {
+    notificationService.create({
+      title: 'High Credit Usage',
+      message: `Your credit utilization is at ${percentage}%. Keep it below 80% for better credit health.`,
+      type: 'warning',
+      category: 'financial',
+      priority: 'important',
+      actionUrl: 'credit-line.php',
+      actionLabel: 'Manage Credit'
+    });
+  }
+};
+
+// Close notification center when clicking outside
+document.addEventListener('click', (e) => {
+  const notificationCenter = document.getElementById('notificationCenter');
+  const notificationBellBtn = document.getElementById('notificationBellBtn');
+  
+  if (notificationCenter && !notificationCenter.hasAttribute('hidden')) {
+    if (!notificationCenter.contains(e.target) && !notificationBellBtn.contains(e.target)) {
+      notificationCenter.setAttribute('hidden', '');
+    }
+  }
+});
+
