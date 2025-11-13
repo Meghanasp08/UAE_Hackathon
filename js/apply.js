@@ -1,8 +1,9 @@
 // Apply.js - Application flow with progress steps and consent
 
-let currentStep = 1;
+let currentStep = 0; // Start at 0 for type selection
 let consentId = null;
 let selectedBank = null;
+let applicationType = 'personal'; // Default to personal
 
 document.addEventListener('DOMContentLoaded', () => {
   // Check authentication
@@ -15,11 +16,23 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUserDisplay();
   }
   
+  // Initialize application type from PHP data
+  if (window.phpData && window.phpData.applicationType) {
+    applicationType = window.phpData.applicationType;
+  }
+  
   // Check if returning from OAuth flow or if already connected
   checkOAuthReturn();
   
+  // Application type selection
+  const selectPersonal = document.getElementById('selectPersonal');
+  const selectCorporate = document.getElementById('selectCorporate');
+  const backToSelector = document.getElementById('backToSelector');
+  const backToSelectorCorp = document.getElementById('backToSelectorCorp');
+  
   // Step navigation
   const nextStep1 = document.getElementById('nextStep1');
+  const nextStepCorporate = document.getElementById('nextStepCorporate');
   const nextStep2 = document.getElementById('nextStep2');
   const backStep2 = document.getElementById('backStep2');
   const backStep3 = document.getElementById('backStep3');
@@ -33,6 +46,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Bank selection
   const bankCards = document.querySelectorAll('.bank-card');
+  
+  // Application Type Selection Handlers
+  if (selectPersonal) {
+    selectPersonal.addEventListener('click', () => {
+      applicationType = 'personal';
+      localStorage.setItem('applicationType', 'personal');
+      
+      // Update progress label
+      const step1Label = document.getElementById('step1Label');
+      if (step1Label) {
+        step1Label.textContent = 'Personal Info';
+      }
+      
+      // Hide selector, show personal form
+      document.getElementById('step0').classList.remove('active');
+      document.getElementById('step1').classList.add('active');
+      
+      speak('Starting personal credit application.', false);
+    });
+  }
+  
+  if (selectCorporate) {
+    selectCorporate.addEventListener('click', () => {
+      applicationType = 'corporate';
+      localStorage.setItem('applicationType', 'corporate');
+      
+      // Update progress label
+      const step1Label = document.getElementById('step1Label');
+      if (step1Label) {
+        step1Label.textContent = 'Corporate Info';
+      }
+      
+      // Hide selector, show corporate form
+      document.getElementById('step0').classList.remove('active');
+      document.getElementById('step1-corporate').classList.add('active');
+      
+      speak('Starting corporate credit application.', false);
+    });
+  }
+  
+  // Back to selector buttons
+  if (backToSelector) {
+    backToSelector.addEventListener('click', () => {
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step0').classList.add('active');
+    });
+  }
+  
+  if (backToSelectorCorp) {
+    backToSelectorCorp.addEventListener('click', () => {
+      document.getElementById('step1-corporate').classList.remove('active');
+      document.getElementById('step0').classList.add('active');
+    });
+  }
 
   // Step 1 -> Submit form and redirect to banking portal
   if (nextStep1) {
@@ -69,6 +136,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       } else {
         speak('Please fill in all required fields.', false);
+      }
+    });
+  }
+  
+  // Corporate Step -> Submit form and redirect to banking portal
+  if (nextStepCorporate) {
+    nextStepCorporate.addEventListener('click', () => {
+      const form = document.getElementById('applicationForm');
+      const corporateInputs = document.querySelectorAll('#step1-corporate input[required]');
+      let valid = true;
+
+      corporateInputs.forEach(input => {
+        if (!input.value) {
+          valid = false;
+          input.style.borderColor = '#dc2626';
+        } else {
+          input.style.borderColor = '';
+        }
+      });
+
+      if (valid) {
+        speak('Saving your corporate information and connecting to bank...', false);
+        
+        // Submit form data to PHP session and redirect to OAuth
+        const formData = new FormData(form);
+        
+        fetch(window.location.href, {
+          method: 'POST',
+          body: formData
+        }).then(() => {
+          // Redirect to banking OAuth flow
+          window.location.href = 'https://mercurypay.ariticapp.com/mercurypay/callOpenFinanceClient.php';
+        }).catch(error => {
+          console.error('Error saving form data:', error);
+          // Fallback: direct redirect
+          window.location.href = 'https://mercurypay.ariticapp.com/mercurypay/callOpenFinanceClient.php';
+        });
+      } else {
+        speak('Please fill in all required corporate fields.', false);
       }
     });
   }
@@ -269,9 +375,10 @@ const performCreditAssessment = async () => {
   
   try {
     console.log('📡 Calling calculate_credit_score.php...');
+    console.log('🏢 Application Type:', applicationType);
     
-    // Call the credit score calculation API
-    const response = await fetch('api/calculate_credit_score.php', {
+    // Call the credit score calculation API with application type
+    const response = await fetch(`api/calculate_credit_score.php?application_type=${applicationType}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -427,7 +534,12 @@ const performCreditAssessment = async () => {
           else if (details.incomeMultiplier >= 1.2) incomeDesc = 'Moderate income (AED 10,000+)';
           else incomeDesc = 'Basic income level';
           
-          incomeMultiplierDesc.innerHTML = `Based on declared monthly income: <span id="monthlyIncomeDisplay">AED ${details.monthlyIncome.toLocaleString()}</span> - ${incomeDesc}`;
+          // Use different label for corporate vs personal
+          const incomeLabel = applicationType === 'corporate' 
+            ? 'Based on declared annual turnover (monthly avg): ' 
+            : 'Based on declared monthly income: ';
+          
+          incomeMultiplierDesc.innerHTML = `${incomeLabel}<span id="monthlyIncomeDisplay">AED ${details.monthlyIncome.toLocaleString()}</span> - ${incomeDesc}`;
         }
       }
       
@@ -587,12 +699,26 @@ const checkOAuthReturn = () => {
   console.log('✅ oauthSuccess:', phpData.oauthSuccess);
   console.log('❌ oauthError:', phpData.oauthError);
   console.log('🔐 bankConnected:', phpData.bankConnected);
+  console.log('🏢 applicationType:', phpData.applicationType);
+  
+  // Set application type from PHP data
+  if (phpData.applicationType) {
+    applicationType = phpData.applicationType;
+    localStorage.setItem('applicationType', applicationType);
+    
+    // Update progress label
+    const step1Label = document.getElementById('step1Label');
+    if (step1Label) {
+      step1Label.textContent = applicationType === 'corporate' ? 'Corporate Info' : 'Personal Info';
+    }
+  }
   
   if (phpData.oauthSuccess) {
     console.log('✅ Returning from successful OAuth flow - Will fetch banking data!');
     
     // Application data is already restored from PHP session
     console.log('Application data restored from PHP session:', phpData.applicationData);
+    console.log('Corporate data restored from PHP session:', phpData.corporateData);
     
     // Clean URL
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -616,8 +742,31 @@ const checkOAuthReturn = () => {
     }
     alert('Failed to connect to bank: ' + phpData.oauthError);
     
-    // Stay on step 1
-    goToStep(1);
+    // Return to appropriate step 1 based on application type
+    if (applicationType === 'corporate') {
+      document.getElementById('step0')?.classList.remove('active');
+      document.getElementById('step1')?.classList.remove('active');
+      document.getElementById('step1-corporate')?.classList.add('active');
+    } else {
+      document.getElementById('step0')?.classList.remove('active');
+      document.getElementById('step1')?.classList.add('active');
+      document.getElementById('step1-corporate')?.classList.remove('active');
+    }
+  } else {
+    // Check if we have existing application data (not returning from OAuth)
+    if (phpData.applicationData && Object.keys(phpData.applicationData).length > 0) {
+      // Has personal application data - show personal form
+      applicationType = 'personal';
+      document.getElementById('step0')?.classList.remove('active');
+      document.getElementById('step1')?.classList.add('active');
+      document.getElementById('step1-corporate')?.classList.remove('active');
+    } else if (phpData.corporateData && Object.keys(phpData.corporateData).length > 0) {
+      // Has corporate application data - show corporate form
+      applicationType = 'corporate';
+      document.getElementById('step0')?.classList.remove('active');
+      document.getElementById('step1')?.classList.remove('active');
+      document.getElementById('step1-corporate')?.classList.add('active');
+    }
   }
   
   // If bank is already connected (from PHP session)

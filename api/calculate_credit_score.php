@@ -2,6 +2,9 @@
 session_start();
 header('Content-Type: application/json');
 
+// Get application type from query parameter
+$applicationType = $_GET['application_type'] ?? 'personal';
+
 // Check if user is authenticated
 if (!isset($_SESSION['access_token']) || !isset($_SESSION['open_banking_data'])) {
     echo json_encode([
@@ -12,16 +15,30 @@ if (!isset($_SESSION['access_token']) || !isset($_SESSION['open_banking_data']))
 }
 
 $bankingData = $_SESSION['open_banking_data'];
-$applicationData = $_SESSION['application_data'] ?? [];
+
+// Get appropriate application data based on type
+if ($applicationType === 'corporate') {
+    $applicationData = $_SESSION['corporate_application_data'] ?? [];
+} else {
+    $applicationData = $_SESSION['application_data'] ?? [];
+}
 
 // Log the banking data for debugging
 error_log('=== CREDIT SCORE CALCULATION DEBUG ===');
+error_log('Application Type: ' . $applicationType);
 error_log('Banking Data Structure: ' . print_r($bankingData, true));
 error_log('Application Data: ' . print_r($applicationData, true));
 
-// Extract monthly income from application data
-$monthlyIncome = floatval($applicationData['monthlyIncome'] ?? 0);
-error_log('Monthly Income: ' . $monthlyIncome);
+// Extract income/turnover based on application type
+if ($applicationType === 'corporate') {
+    $monthlyIncome = floatval($applicationData['annualTurnover'] ?? 0) / 12; // Convert annual to monthly
+    $avgMonthlyBalance = floatval($applicationData['avgMonthlyBalance'] ?? 0);
+    error_log('Annual Turnover (converted to monthly): ' . $monthlyIncome);
+    error_log('Average Monthly Balance: ' . $avgMonthlyBalance);
+} else {
+    $monthlyIncome = floatval($applicationData['monthlyIncome'] ?? 0);
+    error_log('Monthly Income: ' . $monthlyIncome);
+}
 
 // Initialize scoring variables
 $balanceScore = 0;
@@ -197,12 +214,17 @@ error_log("=========================");
 
 // 6. DETERMINE CREDIT LIMIT
 // Base credit limit calculation: 30% of monthly income + score-based bonus
+// (Same formula for both personal and corporate - corporate just uses annual turnover / 12)
 $baseLimit = $monthlyIncome * 0.3;
 $scoreBonusMultiplier = 1 + ($finalScore / 100); // e.g., score 150 = 2.5x multiplier
 $creditLimit = round($baseLimit * $scoreBonusMultiplier / 100) * 100; // Round to nearest 100
 
-// Minimum and maximum limits
-$creditLimit = max(5000, min($creditLimit, 100000));
+// Minimum and maximum limits based on application type
+if ($applicationType === 'corporate') {
+    $creditLimit = max(50000, min($creditLimit, 500000));
+} else {
+    $creditLimit = max(5000, min($creditLimit, 100000));
+}
 
 // 7. DETERMINE APR
 // Better scores get lower APR
@@ -224,16 +246,29 @@ if ($finalScore >= 200) {
 $approved = true;
 $reason = 'Strong financial profile with positive cash flow';
 
-// Rejection criteria
-if ($finalScore < 50) {
-    $approved = false;
-    $reason = 'Insufficient financial activity or low account balance';
-} elseif ($cashFlowScore < -5) {
-    $approved = false;
-    $reason = 'Negative cash flow indicates potential repayment risk';
-} elseif ($monthlyIncome < 5000) {
-    $approved = false;
-    $reason = 'Monthly income below minimum requirement (AED 5,000)';
+// Rejection criteria - different for corporate vs personal
+if ($applicationType === 'corporate') {
+    if ($finalScore < 50) {
+        $approved = false;
+        $reason = 'Insufficient financial activity or low account balance';
+    } elseif ($cashFlowScore < -5) {
+        $approved = false;
+        $reason = 'Negative cash flow indicates potential repayment risk';
+    } elseif ($monthlyIncome * 12 < 500000) { // Annual turnover less than 500k
+        $approved = false;
+        $reason = 'Annual turnover below minimum requirement (AED 500,000)';
+    }
+} else {
+    if ($finalScore < 50) {
+        $approved = false;
+        $reason = 'Insufficient financial activity or low account balance';
+    } elseif ($cashFlowScore < -5) {
+        $approved = false;
+        $reason = 'Negative cash flow indicates potential repayment risk';
+    } elseif ($monthlyIncome < 5000) {
+        $approved = false;
+        $reason = 'Monthly income below minimum requirement (AED 5,000)';
+    }
 }
 
 // 9. SETUP FEE CALCULATION
@@ -257,6 +292,7 @@ $_SESSION['credit_assessment'] = [
     'cashFlowScore' => $cashFlowScore,
     'incomeMultiplier' => $incomeMultiplier,
     'reason' => $reason,
+    'applicationType' => $applicationType,
     'timestamp' => time()
 ];
 

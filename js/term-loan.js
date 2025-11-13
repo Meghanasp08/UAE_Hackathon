@@ -6,9 +6,12 @@
 const TermLoanManager = {
     // Configuration
     config: {
-        maxLoanToLimitRatio: 2.4,  // Up to 240% of credit limit
         minLoanAmount: 1000,       // Minimum AED 1,000
         maxTermMonths: 60,         // Maximum 60 months
+        termLoanTenure: 48,        // Fixed 48 months for term loan calculation
+        termLoanAPR: 0.08,         // Fixed 8% per annum for term loan
+        repaymentCapabilityRate: 0.05, // 5% repayment capability rate
+        roundingAmount: 500,       // Round to nearest 500 AED
         interestRates: {
             12: 0.08,   // 8% for 12 months
             24: 0.095,  // 9.5% for 24 months
@@ -33,13 +36,27 @@ const TermLoanManager = {
             // Calculate available credit (this is used for Tier 1 rate)
             const availableCredit = creditLimit - currentBalance;
             
-            // Calculate maximum available loan amount
-            const maxPossibleLoan = creditLimit * this.config.maxLoanToLimitRatio;
-            const maxLoanAmount = maxPossibleLoan - currentBalance - existingTermLoanDebt;
+            // NEW LOGIC: Calculate based on Repayment Capability
+            // Step 1: Calculate Remaining Repayment Capability
+            const remainingRepaymentCapability = creditLimit - currentBalance - existingTermLoanDebt;
+            
+            // Step 2: Calculate EMI as 5% OF Remaining Repayment Capability
+            const emi = remainingRepaymentCapability * this.config.repaymentCapabilityRate;
+            
+            // Step 3: Reverse calculate Loan Amount from EMI
+            // Using fixed 48 months tenure and 8% per annum rate
+            const maxLoanAmount = this._reverseLoanAmountFromEMI(
+                emi, 
+                this.config.termLoanTenure, 
+                this.config.termLoanAPR
+            );
+            
+            // Round down to nearest 500 AED
+            const maxLoanAmountRounded = Math.floor(maxLoanAmount / this.config.roundingAmount) * this.config.roundingAmount;
             
             // Eligibility criteria - More lenient for good credit profiles
             // Users with low utilization (<50%) can access term loans even with existing debt
-            const isEligible = maxLoanAmount >= this.config.minLoanAmount;
+            const isEligible = maxLoanAmountRounded >= this.config.minLoanAmount;
             const utilizationCheck = currentUtilization <= 90; // Max 90% current utilization (more lenient)
             
             // Good credit behavior allows more flexibility
@@ -47,11 +64,13 @@ const TermLoanManager = {
             
             return {
                 eligible: isEligible && (utilizationCheck || goodCreditProfile),
-                maxLoanAmount: Math.max(0, Math.floor(maxLoanAmount)),
+                maxLoanAmount: Math.max(0, maxLoanAmountRounded),
                 availableCredit: Math.max(0, Math.floor(availableCredit)),
                 currentUtilization,
                 existingTermLoanDebt,
-                reasons: this._getEligibilityReasons(isEligible, utilizationCheck, maxLoanAmount, goodCreditProfile)
+                remainingRepaymentCapability: Math.max(0, remainingRepaymentCapability),
+                calculatedEMI: Math.max(0, emi),
+                reasons: this._getEligibilityReasons(isEligible, utilizationCheck, maxLoanAmountRounded, goodCreditProfile)
             };
         } catch (error) {
             console.error('Error checking term loan eligibility:', error);
@@ -212,6 +231,26 @@ const TermLoanManager = {
         
         const numerator = principal * monthlyRate * Math.pow(1 + monthlyRate, termMonths);
         const denominator = Math.pow(1 + monthlyRate, termMonths) - 1;
+        
+        return numerator / denominator;
+    },
+
+    // Reverse calculate Loan Amount from EMI
+    // Formula: P = EMI × ((1 + r)^n - 1) / (r × (1 + r)^n)
+    _reverseLoanAmountFromEMI(emi, termMonths, annualRate) {
+        if (emi <= 0) {
+            return 0;
+        }
+        
+        const monthlyRate = annualRate / 12;
+        
+        if (monthlyRate === 0) {
+            return emi * termMonths;
+        }
+        
+        const powerTerm = Math.pow(1 + monthlyRate, termMonths);
+        const numerator = emi * (powerTerm - 1);
+        const denominator = monthlyRate * powerTerm;
         
         return numerator / denominator;
     },

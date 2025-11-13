@@ -24,23 +24,48 @@ if (isset($_SESSION['access_token']) &&
 
 // Handle application state restoration
 $applicationData = [];
+$corporateData = [];
+$applicationType = $_SESSION['application_type'] ?? 'personal';
+
 if (isset($_SESSION['application_data'])) {
   $applicationData = $_SESSION['application_data'];
 }
 
+if (isset($_SESSION['corporate_application_data'])) {
+  $corporateData = $_SESSION['corporate_application_data'];
+}
+
 // Store application data if submitted via POST
 if ($_POST && !$oauthSuccess) {
-  $_SESSION['application_data'] = [
-    'fullName' => $_POST['fullName'] ?? '',
-    'emiratesID' => $_POST['emiratesID'] ?? '',
-    'email' => $_POST['email'] ?? '',
-    'phone' => $_POST['phone'] ?? '',
-    'monthlyIncome' => $_POST['monthlyIncome'] ?? '',
-    'timestamp' => time()
-  ];
+  // Check if corporate application
+  if (isset($_POST['corporationName'])) {
+    $_SESSION['application_type'] = 'corporate';
+    $_SESSION['corporate_application_data'] = [
+      'corporationName' => $_POST['corporationName'] ?? '',
+      'emiratesID' => $_POST['emiratesIDCorp'] ?? '',
+      'vatCertificate' => $_POST['vatCertificate'] ?? '',
+      'annualTurnover' => $_POST['annualTurnover'] ?? '',
+      'avgMonthlyBalance' => $_POST['avgMonthlyBalance'] ?? '',
+      'tradeLicense' => $_POST['tradeLicense'] ?? '',
+      'timestamp' => time()
+    ];
+    $corporateData = $_SESSION['corporate_application_data'];
+    $applicationType = 'corporate';
+  } else {
+    // Personal application
+    $_SESSION['application_type'] = 'personal';
+    $_SESSION['application_data'] = [
+      'fullName' => $_POST['fullName'] ?? '',
+      'emiratesID' => $_POST['emiratesID'] ?? '',
+      'email' => $_POST['email'] ?? '',
+      'phone' => $_POST['phone'] ?? '',
+      'monthlyIncome' => $_POST['monthlyIncome'] ?? '',
+      'timestamp' => time()
+    ];
+    $applicationData = $_SESSION['application_data'];
+  }
   // Set redirect URL for after OAuth completion
   $_SESSION['redirect_after_oauth'] = 'https://mercurypay.ariticapp.com/mercurypay/v1/apply.php';
-  $applicationData = $_SESSION['application_data'];
 }
 ?>
 <!doctype html>
@@ -56,7 +81,9 @@ if ($_POST && !$oauthSuccess) {
       oauthSuccess: <?php echo json_encode($oauthSuccess); ?>,
       oauthError: <?php echo json_encode($oauthError); ?>,
       bankConnected: <?php echo json_encode($bankConnected); ?>,
-      applicationData: <?php echo json_encode($applicationData); ?>
+      applicationData: <?php echo json_encode($applicationData); ?>,
+      corporateData: <?php echo json_encode($corporateData); ?>,
+      applicationType: <?php echo json_encode($applicationType); ?>
     };
 
     // Redirect to login if not authenticated
@@ -148,7 +175,7 @@ if ($_POST && !$oauthSuccess) {
     <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
       <div class="progress-step active" data-step="1">
         <div class="step-circle">1</div>
-        <span class="step-label">Personal Info</span>
+        <span class="step-label" id="step1Label">Application Info</span>
       </div>
       <div class="progress-step" data-step="2">
         <div class="step-circle">2</div>
@@ -166,8 +193,34 @@ if ($_POST && !$oauthSuccess) {
 
     <!-- Application Form -->
     <form id="applicationForm" class="application-form" method="post">
+      <!-- Application Type Selector -->
+      <section id="step0" class="form-section active" style="text-align: center;">
+        <h3 style="margin-bottom: 2rem;">Select Application Type</h3>
+        <p style="color: #64748b; margin-bottom: 2rem;">Choose the type of credit application you'd like to submit</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 700px; margin: 0 auto;">
+          <!-- Personal Application Card -->
+          <div class="application-type-card" id="selectPersonal" style="background: linear-gradient(135deg, #7B2687 0%, #B83280 100%); color: white; padding: 2.5rem 2rem; border-radius: 16px; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 12px rgba(123, 38, 135, 0.3);" 
+               onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 8px 24px rgba(123, 38, 135, 0.4)';" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(123, 38, 135, 0.3)';">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">👤</div>
+            <h4 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 600;">Personal Application</h4>
+            <p style="font-size: 0.95rem; opacity: 0.95; line-height: 1.5;">Apply as an individual for personal credit line</p>
+          </div>
+          
+          <!-- Corporate Application Card -->
+          <div class="application-type-card" id="selectCorporate" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 2.5rem 2rem; border-radius: 16px; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);" 
+               onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 8px 24px rgba(30, 64, 175, 0.4)';" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(30, 64, 175, 0.3)';">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🏢</div>
+            <h4 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 600;">Corporate Application</h4>
+            <p style="font-size: 0.95rem; opacity: 0.95; line-height: 1.5;">Apply as a business entity for corporate credit line</p>
+          </div>
+        </div>
+      </section>
+
       <!-- Step 1: Personal Information -->
-      <section id="step1" class="form-section active">
+      <section id="step1" class="form-section">
         <h3>Personal Information</h3>
         <div class="form-grid">
           <div class="form-group">
@@ -197,8 +250,50 @@ if ($_POST && !$oauthSuccess) {
           </div>
         </div>
         <div class="form-actions">
+          <button type="button" class="btn-outline" id="backToSelector">← Back</button>
           <button type="button" class="btn-primary" id="nextStep1">Next: Connect Account</button>
           <button type="button" class="btn-outline" id="voiceApply">🎤 Start with Voice</button>
+        </div>
+      </section>
+
+      <!-- Step 1-Corporate: Corporate Information -->
+      <section id="step1-corporate" class="form-section">
+        <h3>Corporate Information</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="corporationName">Name of the Corporation *</label>
+            <input type="text" id="corporationName" name="corporationName" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($corporateData['corporationName'] ?? 'Al Baraka Trading LLC'); ?>"/>
+          </div>
+          <div class="form-group">
+            <label for="emiratesIDCorp">Emirates ID (Authorized Signatory) *</label>
+            <input type="text" id="emiratesIDCorp" name="emiratesIDCorp" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($corporateData['emiratesID'] ?? '784-1988-1234567-8'); ?>"/>
+          </div>
+          <div class="form-group">
+            <label for="vatCertificate">VAT Certificate Number *</label>
+            <input type="text" id="vatCertificate" name="vatCertificate" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($corporateData['vatCertificate'] ?? '100234567800003'); ?>"/>
+          </div>
+          <div class="form-group">
+            <label for="annualTurnover">Declared Annual Turnover (AED) *</label>
+            <input type="number" id="annualTurnover" name="annualTurnover" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($corporateData['annualTurnover'] ?? '2500000'); ?>"/>
+          </div>
+          <div class="form-group">
+            <label for="avgMonthlyBalance">Bank Average Monthly Balance (AED) *</label>
+            <input type="number" id="avgMonthlyBalance" name="avgMonthlyBalance" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($corporateData['avgMonthlyBalance'] ?? '185000'); ?>"/>
+          </div>
+          <div class="form-group full-width">
+            <label for="tradeLicense">Trade License Number *</label>
+            <input type="text" id="tradeLicense" name="tradeLicense" required aria-required="true" 
+                   value="<?php echo htmlspecialchars($corporateData['tradeLicense'] ?? 'CN-1234567'); ?>"/>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-outline" id="backToSelectorCorp">← Back</button>
+          <button type="button" class="btn-primary" id="nextStepCorporate">Next: Connect Account</button>
         </div>
       </section>
 
