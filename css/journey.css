@@ -7,7 +7,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.85);
   z-index: 9998;
   animation: journeyFadeIn 0.3s ease-out;
 }
@@ -24,13 +24,14 @@
 /* Journey Spotlight */
 .journey-spotlight {
   position: fixed;
-  border: 3px solid #3b82f6;
+  border: 4px solid #FFEB3B;
   border-radius: 8px;
   z-index: 9999;
   pointer-events: none;
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3),
-              0 0 0 9999px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 0 4px rgba(255, 235, 59, 0.4),
+              0 0 20px rgba(255, 235, 59, 0.6),
+              0 0 0 9999px rgba(0, 0, 0, 0.85);
 }
 
 .journey-spotlight-pulse {
@@ -39,37 +40,41 @@
 
 @keyframes journeyPulse {
   0%, 100% {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3),
-                0 0 0 9999px rgba(0, 0, 0, 0.7);
+    border-color: #FFEB3B;
+    box-shadow: 0 0 0 4px rgba(255, 235, 59, 0.4),
+                0 0 20px rgba(255, 235, 59, 0.6),
+                0 0 0 9999px rgba(0, 0, 0, 0.85);
   }
   50% {
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.5),
-                0 0 0 9999px rgba(0, 0, 0, 0.7);
+    border-color: #FFF176;
+    box-shadow: 0 0 0 8px rgba(255, 235, 59, 0.6),
+                0 0 30px rgba(255, 235, 59, 0.8),
+                0 0 0 9999px rgba(0, 0, 0, 0.85);
   }
 }
 
 /* Journey Tooltip */
 .journey-tooltip {
   position: fixed;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15),
+              0 0 0 2px rgba(255, 235, 59, 0.4);
   z-index: 10000;
-  max-width: 480px;
-  min-width: 360px;
-  animation: journeyTooltipIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  max-width: 320px;
+  min-width: 280px;
+  animation: journeyTooltipIn 0.3s ease-out;
 }
 
 @keyframes journeyTooltipIn {
   from {
     opacity: 0;
-    transform: scale(0.8);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -77,55 +82,53 @@
 .journey-tooltip-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 24px 24px 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #7B2687 0%, #A259C6 100%);
-  border-radius: 16px 16px 0 0;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .journey-tooltip-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  color: white;
+  color: #1f2937;
   flex: 1;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 
 .journey-tooltip-close {
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
   border: none;
-  color: white;
-  font-size: 24px;
+  color: #9ca3af;
+  font-size: 20px;
   cursor: pointer;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 4px;
   transition: all 0.2s;
   flex-shrink: 0;
-  margin-left: 16px;
+  margin-left: 8px;
 }
 
 .journey-tooltip-close:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.05);
+  color: #1f2937;
 }
 
 /* Tooltip Content */
 .journey-tooltip-content {
-  padding: 24px;
+  padding: 12px 16px;
 }
 
 .journey-tooltip-content p {
-  margin: 0 0 16px 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #374151;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4b5563;
 }
 
 .journey-tooltip-content p:last-child {
@@ -133,54 +136,81 @@
 }
 
 .journey-tooltip-tip {
-  background: #faf5fc;
-  border-left: 3px solid #7B2687;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #7B2687;
-  margin-top: 16px;
+  background: transparent;
+  border-left: 2px solid #FFEB3B;
+  padding: 8px 0 8px 10px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
 }
 
 .journey-tooltip-tip strong {
   font-weight: 600;
+  color: #4b5563;
 }
 
-/* Progress Bar */
+/* Progress Indicator */
 .journey-tooltip-progress {
-  padding: 0 24px 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
-.journey-tooltip-progress-bar {
-  width: 100%;
+.journey-tooltip-progress-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.journey-progress-dot {
+  width: 6px;
   height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+  transition: all 0.3s;
 }
 
-.journey-tooltip-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #7B2687 0%, #A259C6 100%);
-  border-radius: 3px;
-  transition: width 0.4s ease-out;
+.journey-progress-dot.active {
+  background: #7B2687;
+  width: 8px;
+  height: 8px;
 }
 
 .journey-tooltip-progress-text {
-  font-size: 12px;
-  color: #6b7280;
-  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
   font-weight: 500;
+  margin-left: 4px;
 }
 
-/* Tooltip Actions */
+/* Tooltip Actions - Hidden on mobile, shown in bottom bar */
 .journey-tooltip-actions {
   display: flex;
-  gap: 12px;
-  padding: 20px 24px;
+  gap: 8px;
+  padding: 12px 16px;
   align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.journey-tooltip-actions .journey-btn {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+.journey-tooltip-actions .journey-btn-skip {
+  flex: 0.8;
+  background: transparent;
+  color: #6b7280;
+}
+
+.journey-tooltip-actions .journey-btn-skip:hover {
+  background: #f3f4f6;
 }
 
 .journey-btn {
@@ -227,6 +257,53 @@
 .journey-btn-skip:hover {
   background: #f3f4f6;
   color: #374151;
+}
+
+/* Floating Bottom Button Bar */
+.journey-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+  z-index: 10001;
+  display: none; /* Hidden on desktop */
+  gap: 8px;
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.journey-bottom-bar .journey-btn {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+.journey-bottom-bar .journey-btn-prev-icon {
+  flex: 0 0 44px;
+  padding: 12px;
+  font-size: 18px;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.journey-bottom-bar .journey-btn-prev-icon:hover {
+  background: #e5e7eb;
+}
+
+.journey-bottom-bar .journey-btn-skip {
+  flex: 0.8;
+  background: transparent;
+  color: #6b7280;
+  padding: 12px;
+}
+
+.journey-bottom-bar .journey-btn-skip:hover {
+  background: #f3f4f6;
 }
 
 /* Journey Menu */
@@ -292,7 +369,7 @@
 /* Help Button (to trigger journey menu) */
 .journey-help-btn {
   position: fixed;
-  bottom: 120px;
+  bottom: 200px;
   right: 24px;
   width: 56px;
   height: 56px;
@@ -323,40 +400,152 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  /* Tooltip responsive sizing - compact design */
   .journey-tooltip {
     min-width: auto;
-    max-width: calc(100vw - 40px);
-    left: 20px !important;
-    right: 20px !important;
-    transform: none !important;
+    max-width: calc(100vw - 32px);
+    width: auto;
+    border-radius: 12px;
+  }
+
+  /* Tooltip header mobile adjustments */
+  .journey-tooltip-header {
+    padding: 10px 12px;
   }
 
   .journey-tooltip-title {
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .journey-tooltip-close {
+    width: 20px;
+    height: 20px;
     font-size: 18px;
+    margin-left: 6px;
   }
 
+  /* Tooltip content mobile padding */
   .journey-tooltip-content {
-    padding: 20px;
+    padding: 10px 12px;
   }
 
+  .journey-tooltip-content p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .journey-tooltip-tip {
+    padding: 6px 0 6px 8px;
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  /* Progress indicator mobile */
+  .journey-tooltip-progress {
+    padding: 6px 12px;
+  }
+
+  .journey-progress-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .journey-progress-dot.active {
+    width: 7px;
+    height: 7px;
+  }
+
+  .journey-tooltip-progress-text {
+    font-size: 10px;
+  }
+
+  /* Show bottom bar on mobile */
+  .journey-bottom-bar {
+    display: flex;
+  }
+
+  /* Keep actions hidden on mobile */
   .journey-tooltip-actions {
-    flex-direction: column;
+    display: none;
   }
 
-  .journey-btn {
-    width: 100%;
-  }
-
-  .journey-btn-skip {
-    order: -1;
-  }
-
+  /* Help button mobile positioning */
   .journey-help-btn {
-    bottom: 100px;
+    bottom: 180px;
     right: 20px;
     width: 48px;
     height: 48px;
     font-size: 20px;
+  }
+
+  /* Spotlight mobile adjustments */
+  .journey-spotlight {
+    border-width: 5px;
+    border-color: #FFEB3B;
+    box-shadow: 0 0 0 5px rgba(255, 235, 59, 0.5),
+                0 0 30px rgba(255, 235, 59, 0.8),
+                0 0 0 9999px rgba(0, 0, 0, 0.85);
+  }
+
+  /* Journey menu mobile */
+  .journey-menu {
+    padding: 16px;
+    margin: 20px 16px;
+  }
+
+  .journey-menu h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .journey-menu-item {
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .journey-tooltip {
+    max-width: calc(100vw - 24px);
+  }
+
+  .journey-tooltip-header {
+    padding: 8px 10px;
+  }
+
+  .journey-tooltip-title {
+    font-size: 14px;
+  }
+
+  .journey-tooltip-content {
+    padding: 8px 10px;
+  }
+
+  .journey-tooltip-content p {
+    font-size: 12px;
+  }
+
+  .journey-tooltip-tip {
+    font-size: 10px;
+  }
+
+  .journey-bottom-bar {
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .journey-bottom-bar .journey-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .journey-help-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    bottom: 170px;
   }
 }
 

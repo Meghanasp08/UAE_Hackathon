@@ -99,6 +99,13 @@ class JourneyEngine {
       this.tooltip.remove();
       this.tooltip = null;
     }
+    
+    // Remove bottom bar
+    const bottomBar = document.getElementById('journeyBottomBar');
+    if (bottomBar) {
+      bottomBar.remove();
+    }
+    
     document.body.style.overflow = '';
   }
 
@@ -170,7 +177,12 @@ class JourneyEngine {
   // Show tooltip
   showTooltip(step) {
     const totalSteps = this.currentJourney.steps.length;
-    const progressPercent = ((this.currentStep + 1) / totalSteps) * 100;
+    
+    // Generate progress dots
+    let dotsHTML = '';
+    for (let i = 0; i < totalSteps; i++) {
+      dotsHTML += `<div class="journey-progress-dot ${i === this.currentStep ? 'active' : ''}"></div>`;
+    }
 
     this.tooltip.innerHTML = `
       <div class="journey-tooltip-header">
@@ -180,30 +192,78 @@ class JourneyEngine {
       
       <div class="journey-tooltip-content">
         <p>${step.description}</p>
-        ${step.tip ? `<div class="journey-tooltip-tip">💡 <strong>Tip:</strong> ${step.tip}</div>` : ''}
+        ${step.tip ? `<div class="journey-tooltip-tip">💡 ${step.tip}</div>` : ''}
       </div>
 
       <div class="journey-tooltip-progress">
-        <div class="journey-tooltip-progress-bar">
-          <div class="journey-tooltip-progress-fill" style="width: ${progressPercent}%"></div>
+        <div class="journey-tooltip-progress-dots">
+          ${dotsHTML}
         </div>
-        <div class="journey-tooltip-progress-text">Step ${this.currentStep + 1} of ${totalSteps}</div>
+        <div class="journey-tooltip-progress-text">${this.currentStep + 1}/${totalSteps}</div>
       </div>
 
       <div class="journey-tooltip-actions">
-        ${this.currentStep > 0 ? '<button class="journey-btn journey-btn-secondary" id="journeyPrev">Previous</button>' : ''}
-        <button class="journey-btn journey-btn-skip" id="journeySkip">Skip Tour</button>
+        ${this.currentStep > 0 ? '<button class="journey-btn journey-btn-secondary" id="journeyPrevDesktop">←</button>' : ''}
+        <button class="journey-btn journey-btn-skip" id="journeySkipDesktop">Skip</button>
         ${this.currentStep < totalSteps - 1 ? 
-          '<button class="journey-btn journey-btn-primary" id="journeyNext">Next</button>' : 
-          '<button class="journey-btn journey-btn-primary" id="journeyComplete">Complete</button>'}
+          '<button class="journey-btn journey-btn-primary" id="journeyNextDesktop">Next →</button>' : 
+          '<button class="journey-btn journey-btn-primary" id="journeyCompleteDesktop">Complete ✓</button>'}
       </div>
     `;
+
+    // Create or update bottom bar
+    this.showBottomBar();
 
     // Position tooltip
     this.positionTooltip(step);
 
     // Add event listeners
     this.attachTooltipListeners();
+  }
+
+  // Show floating bottom button bar
+  showBottomBar() {
+    const totalSteps = this.currentJourney.steps.length;
+    
+    // Remove existing bottom bar if any
+    const existingBar = document.getElementById('journeyBottomBar');
+    if (existingBar) {
+      existingBar.remove();
+    }
+
+    // Create bottom bar
+    const bottomBar = document.createElement('div');
+    bottomBar.id = 'journeyBottomBar';
+    bottomBar.className = 'journey-bottom-bar';
+
+    bottomBar.innerHTML = `
+      ${this.currentStep > 0 ? '<button class="journey-btn journey-btn-prev-icon" id="journeyPrev" aria-label="Previous">←</button>' : ''}
+      <button class="journey-btn journey-btn-skip" id="journeySkip">Skip</button>
+      ${this.currentStep < totalSteps - 1 ? 
+        '<button class="journey-btn journey-btn-primary" id="journeyNext">Next →</button>' : 
+        '<button class="journey-btn journey-btn-primary" id="journeyComplete">Complete ✓</button>'}
+    `;
+
+    document.body.appendChild(bottomBar);
+
+    // Add event listeners to bottom bar buttons
+    const nextBtn = document.getElementById('journeyNext');
+    const prevBtn = document.getElementById('journeyPrev');
+    const skipBtn = document.getElementById('journeySkip');
+    const completeBtn = document.getElementById('journeyComplete');
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => this.nextStep());
+    }
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => this.previousStep());
+    }
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => this.skipJourney());
+    }
+    if (completeBtn) {
+      completeBtn.addEventListener('click', () => this.completeJourney());
+    }
   }
 
   // Position tooltip relative to highlighted element
@@ -258,26 +318,28 @@ class JourneyEngine {
 
   // Attach event listeners to tooltip buttons
   attachTooltipListeners() {
-    const nextBtn = document.getElementById('journeyNext');
-    const prevBtn = document.getElementById('journeyPrev');
-    const skipBtn = document.getElementById('journeySkip');
     const closeBtn = document.getElementById('journeyClose');
-    const completeBtn = document.getElementById('journeyComplete');
+    
+    // Desktop buttons
+    const nextBtnDesktop = document.getElementById('journeyNextDesktop');
+    const prevBtnDesktop = document.getElementById('journeyPrevDesktop');
+    const skipBtnDesktop = document.getElementById('journeySkipDesktop');
+    const completeBtnDesktop = document.getElementById('journeyCompleteDesktop');
 
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => this.nextStep());
-    }
-    if (prevBtn) {
-      prevBtn.addEventListener('click', () => this.previousStep());
-    }
-    if (skipBtn) {
-      skipBtn.addEventListener('click', () => this.skipJourney());
-    }
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.skipJourney());
     }
-    if (completeBtn) {
-      completeBtn.addEventListener('click', () => this.completeJourney());
+    if (nextBtnDesktop) {
+      nextBtnDesktop.addEventListener('click', () => this.nextStep());
+    }
+    if (prevBtnDesktop) {
+      prevBtnDesktop.addEventListener('click', () => this.previousStep());
+    }
+    if (skipBtnDesktop) {
+      skipBtnDesktop.addEventListener('click', () => this.skipJourney());
+    }
+    if (completeBtnDesktop) {
+      completeBtnDesktop.addEventListener('click', () => this.completeJourney());
     }
   }
 
