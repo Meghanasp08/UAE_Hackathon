@@ -198,7 +198,6 @@ if ($_POST && !$oauthSuccess) {
         </div>
         <div class="form-actions">
           <button type="button" class="btn-primary" id="nextStep1">Next: Connect Account</button>
-          <button type="button" class="btn-outline" id="voiceApply">🎤 Start with Voice</button>
         </div>
       </section>
 
@@ -460,11 +459,6 @@ if ($_POST && !$oauthSuccess) {
       </section>
     </form>
   </main>
-
-  <!-- Floating voice button -->
-  <button id="voiceBtn" class="voice-btn" aria-label="Activate voice commands" title="Voice commands">
-    🎤
-  </button>
 
   <!-- Voice feedback live region -->
   <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>

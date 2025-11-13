@@ -53,6 +53,12 @@
           <span class="nav-label">Apply</span>
         </div>
       </a>
+      <a href="accounts.php" class="nav-link" title="Accounts" aria-label="Accounts">
+        <div class="nav-item">
+          <img src="assets/nav-transactions.svg" alt="Accounts" style="height:28px;width:28px;"/>
+          <span class="nav-label">Accounts</span>
+        </div>
+      </a>
       <a href="transactions.html" class="nav-link" title="Transactions" aria-label="Transactions">
         <div class="nav-item">
           <img src="assets/nav-transactions.svg" alt="Transactions" style="height:28px;width:28px;"/>
@@ -120,7 +126,6 @@
         </div>
         <div class="form-actions">
           <button type="button" class="btn-primary" id="nextStep1">Next: Connect Account</button>
-          <button type="button" class="btn-outline" id="voiceApply">🎤 Start with Voice</button>
         </div>
       </section>
 
@@ -231,11 +236,6 @@
       </section>
     </form>
   </main>
-
-  <!-- Floating voice button -->
-  <button id="voiceBtn" class="voice-btn" aria-label="Activate voice commands" title="Voice commands">
-    🎤
-  </button>
 
   <!-- Voice feedback live region -->
   <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>

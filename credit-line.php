@@ -470,11 +470,6 @@ if ($creditData && isset($creditData['creditLimit'])) {
     </section>
   </main>
 
-  <!-- Floating voice button -->
-  <button id="voiceBtn" class="voice-btn" aria-label="Activate voice commands" title="Voice commands">
-    🎤
-  </button>
-
   <!-- Voice feedback live region -->
   <div id="voiceFeedback" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
