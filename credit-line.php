@@ -792,5 +792,7 @@ if ($creditData && isset($creditData['creditLimit'])) {
       }
     });
   </script>
+  <link rel="stylesheet" href="css/chatbot.css"/>
+  <script src="js/ai-chatbot.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

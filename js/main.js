@@ -1021,3 +1021,32 @@ window.requireAuth = requireAuth;
 window.logout = logout;
 window.getUser = getUser;
 window.updateUserDisplay = updateUserDisplay;
+
+// Chatbot integration - allow voice commands to trigger chatbot
+window.openChatbotWithQuery = (query) => {
+  if (window.chatbot) {
+    window.chatbot.handleQuickAssist(query);
+    if (!window.chatbot.isOpen) {
+      window.chatbot.toggleChatbot();
+    }
+  }
+};
+
+// Enhanced command handler that can delegate to chatbot
+const originalHandleCommand = typeof handleCommand !== 'undefined' ? handleCommand : null;
+window.handleCommandWithChatbot = (command) => {
+  // Try original handler first
+  if (originalHandleCommand) {
+    originalHandleCommand(command);
+  }
+  
+  // If command seems like a question, also open chatbot
+  const questionWords = ['what', 'how', 'why', 'when', 'where', 'explain', 'tell me', 'show me'];
+  const isQuestion = questionWords.some(word => command.toLowerCase().includes(word));
+  
+  if (isQuestion && window.chatbot) {
+    setTimeout(() => {
+      window.openChatbotWithQuery(command);
+    }, 500);
+  }
+};

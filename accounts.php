@@ -1473,5 +1473,7 @@ if (!$bankConnected && !$oauthSuccess) {
 
   <script src="js/main.js?v=<?php echo time(); ?>"></script>
   <script src="js/accounts.js?v=<?php echo time(); ?>"></script>
+  <link rel="stylesheet" href="css/chatbot.css"/>
+  <script src="js/ai-chatbot.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
